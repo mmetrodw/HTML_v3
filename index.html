@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="assets/css/tPlayer-style.css">
+	<title>Document</title>
+	<style>
+		
+		body {
+		margin: 0;
+		padding: 0;
+		background: #eee;
+		padding: 20px;
+		}
+
+	</style>
+</head>
+<body>
+	
+документація
+	<div id="playlist_01"></div>
+	<div id="playlist_02"></div>
+	<div id="playlist_03"></div>
+	<div id="playlist_04"></div>
+	<div id="radio"></div>
+	<script src="assets/js/tPlayer-script.js"></script>
+	<script>
+
+var playlist_01 = [{
+		artist: "Soul Prod Music",
+		title: "Nightfall",
+		audio: "assets/mp3/nightfall-future-bass-music-228100.mp3",
+		cover: "assets/img/SoulProdMusic.png",
+		download: "assets/mp3/nightfall-future-bass-music-228100.mp3"
+	}, {
+		artist: "Loksii",
+		title: "Flow",
+		audio: "assets/mp3/flow-211881.mp3",
+		cover: "assets/img/Loksii.png",
+		buy: "#"
+	}, {
+		artist: "Rockot",
+		title: "AMALGAM",
+		audio: "assets/mp3/amalgam-217007.mp3",
+		cover: "assets/img/Rockot.png"
+	}, {
+		artist: "Lidérc",
+		title: "For Her Chill Upbeat Summel Travel",
+		audio: "assets/mp3/for-her-chill-upbeat-summel-travel-vlog-and-ig-music-royalty-free-use-202298.mp3",
+		cover: "assets/img/Lidérc.png"
+	}, {
+		artist: "Moodmode",
+		title: "Groovy Ambient Funk",
+		audio: "assets/mp3/groovy-ambient-funk-201745.mp3",
+		cover: "assets/img/moodmode.png"
+	}, {
+		artist: "Alex Grohl",
+		title: "Sad Soul (Chasing a Feeling)",
+		audio: "assets/mp3/sad-soul-chasing-a-feeling-185750.mp3",
+		cover: "assets/img/AlexGrohl.png"
+	}, {
+		artist: "Alisia Beats",
+		title: "Titanium",
+		audio: "assets/mp3/titanium-170190.mp3",
+		cover: "assets/img/AlisiaBeats.png"
+	}, {
+		artist: "Pumpupthemind",
+		title: "Once In Paris",
+		audio: "assets/mp3/once-in-paris-168895.mp3",
+		cover: "assets/img/Pumpupthemind.png"
+	}, {
+		artist: "Hartzmann",
+		title: "Grid",
+		audio: "assets/mp3/grid-hartzmann-main-version-13277-02-49.mp3",
+		cover: "assets/img/Hartzmann.png"
+	}, {
+		artist: "Mountaineer",
+		title: "Shadow Runner",
+		audio: "assets/mp3/shadow-runner-mountaineer-main-version-21965-02-22.mp3",
+		cover: "assets/img/Mountaineer.png"
+	}];
+
+	var playlist_02 = [{
+		artist: "Soul Prod Music",
+		title: "Nightfall",
+		audio: "assets/mp3/nightfall-future-bass-music-228100.mp3",
+		cover: "assets/img/SoulProdMusic.png",
+		download: "assets/mp3/nightfall-future-bass-music-228100.mp3",
+		buy: "assets/mp3/nightfall-future-bass-music-228100.mp3"
+	}];
+
+	var _radio = [{
+		artist: "Soundstorm Radio (Shoutcast)",
+		audio: "https://stream.soundstorm-radio.com:8000/radio.mp3",
+		cover: "https://i.pinimg.com/736x/74/49/a4/7449a4b57ebb3b4e6ab871e9434fcd9d--retro-fabric-flat-illustration.jpg"
+	}, {
+		artist: "Soulconnexion Radio (Icecast)",
+		audio: "http://live.soulconnexionradio.com:1590/stream",
+		cover: "https://png.pngtree.com/png-vector/20190115/ourlarge/pngtree-isolated-old-radio-icon-flat-style-vector-illustration-png-image_315248.jpg"
+	}];
+
+	tPlayer({
+		container: "playlist_01",
+		playlist: playlist_01,
+		showShareButton: true,
+		options: {
+			rounded: false
+		}
+	});
+
+	tPlayer({
+		container: "playlist_02",
+		playlist: playlist_02
+	});
+
+	/*
+	tPlayer({
+		container: "radio",
+		playlist: _radio,
+		isRadio: true,
+		pluginDirectoryPath: 'http://127.0.0.1:5500',
+		updateRadioCovers: true,
+		updateRadioInterval: 5000,
+		options: {
+			scrollAfter: 0
+		}
+	});
+	*/
+	</script>
+</body>
+</html>
