@@ -27,12 +27,12 @@ canplaythrough() {
 
 durationchange() {
 	this.playerState.audioEvent = 'durationchange';
-	const { duration } = this.uiElements;
+	const { audioDuration } = this.uiElements;
 
 	// Update the duration display in the UI
-	duration.textContent = utils.secondsToTimecode(this.audio.duration);
+	audioDuration.textContent = utils.secondsToTimecode(this.audio.duration);
 	// Show or hide the duration element based on whether the duration is not Infinity
-	duration.style = this.audio.duration !== Infinity ? "block" : "none";
+	audioDuration.style = this.audio.duration !== Infinity ? "block" : "none";
 	// Set the seeking state to true
 	this.isSeeking(true);
 }
@@ -101,12 +101,12 @@ loadeddata() {
 
 loadedmetadata() {
 	this.playerState.audioEvent = 'loadedmetadata';
-	const { duration } = this.uiElements;
+	const { audioDuration } = this.uiElements;
 
 	// Update the duration display in the UI
-	duration.textContent = utils.secondsToTimecode(this.audio.duration);
+	audioDuration.textContent = utils.secondsToTimecode(this.audio.duration);
 	// Show or hide the duration element based on whether the duration is not Infinity
-	duration.style = this.audio.duration !== Infinity ? "block" : "none";
+	audioDuration.style = this.audio.duration !== Infinity ? "block" : "none";
 	// Set the seeking state to true
 	this.isSeeking(true);
 	// Set loading status to false
@@ -220,7 +220,7 @@ timeupdate() {
 		// Update the width of the playback progress bar
 		this.uiElements.audioPlaybackProgress.style.width = percent + '%';
 		// Update the displayed current time in the player
-		this.uiElements.currentTime.textContent = utils.secondsToTimecode(this.audio.currentTime);
+		this.uiElements.audioCurrentTime.textContent = utils.secondsToTimecode(this.audio.currentTime);
 		// Call the progress function to update the buffered progress bar
 		this.progress();
 	}

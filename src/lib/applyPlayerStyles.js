@@ -1,15 +1,8 @@
 async applyPlayerStyles(styles, element, prefix = '') {
-	return new Promise((resolve, reject) => {
-		try {
-			this.playerState.status = 'Aplly Custom Styles';
-			// Call the applyPlayerStyles function with the styles and playerElement
-			this.addPlayerStyle(styles, element, prefix);
-			this.playerState.status = 'Custom Styles Applied';
-			resolve(); 
-		} catch (err) {
-			reject(err);
-		}
-	});
+	this.playerState.status = 'Aplly Custom Styles';
+	// Call the applyPlayerStyles function with the styles and playerElement
+	this.addPlayerStyle(styles, element, prefix);
+	this.playerState.status = 'Custom Styles Applied';
 }
 
 addPlayerStyle(styles, element, prefix = '') {

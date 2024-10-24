@@ -301,8 +301,8 @@
 	background: var(--player-progress);
 }
 
-.tp-current-time,
-.tp-duration {
+.tp-audio-current-time,
+.tp-audio-duration {
 	position: absolute;
 	font-size: 12px;
 	font-weight: 400;
@@ -311,7 +311,7 @@
 	color: var(--player-timestamps);
 }
 
-.tp-duration {
+.tp-audio-duration {
 	right: 5px;
 	left: auto;
 }

@@ -18,10 +18,26 @@ function readFile(filePath) {
 // Функція для додавання відступів до коду
 function indentCode(code, indent) {
   const indentStr = indent || ''; // Визначаємо рядок для відступу
-  return code.split('\n').map(line => indentStr + line.trimEnd()).join(''); // Додаємо правильний символ нового рядка
+  return code.split('\n').map(line => indentStr + line.trimEnd()).join('\n'); // Додаємо символ нового рядка
 }
 
-// Основна функція для бандлінгу файлу
+// Рекурсивна функція для обробки @include вказівок у файлах
+function processIncludes(content) {
+  return content.replace(/([ \t]*)\/\/ @include\('(.+?)'\)/g, (match, indent, fileName) => {
+    const fileContent = readFile(`./src/${fileName}`);
+    if (!fileContent) {
+      console.error(`Не вдалося включити файл: ${fileName}`);
+      return ''; // Повертаємо порожній рядок, якщо файл не знайдено
+    }
+    // Обробляємо вміст вкладеного файлу на наявність інших @include
+    const processedContent = processIncludes(fileContent);
+    
+    // Додаємо правильний відступ до вкладеного вмісту
+    return indentCode(processedContent, indent);
+  });
+}
+
+// Основна функція для бандлінгу файлів
 function bundleFiles() {
   let mainFile = readFile('./src/index.js');
   if (!mainFile) {
@@ -29,18 +45,8 @@ function bundleFiles() {
     return;
   }
 
-  // Шукаємо всі @include і замінюємо на вміст відповідних файлів
-  mainFile = mainFile.replace(/(\s*)\/\/ @include\('(.+?)'\)/g, (match, indent, fileName) => {
-    const fileContent = readFile(`./src/${fileName}`);
-    if (!fileContent) {
-      console.error(`Не вдалося включити файл: ${fileName}`);
-      return ''; // Повертаємо порожній рядок, якщо файл не знайдено
-    }
-
-    // Додаємо правильний відступ до коду, який вставляється
-    const indentedContent = indentCode(fileContent, indent);
-    return indentedContent; // Повертаємо відформатований вміст
-  });
+  // Обробляємо всі вкладені @include в основному файлі
+  mainFile = processIncludes(mainFile);
 
   // Записуємо об'єднаний файл у bundle.js
   fs.writeFileSync('./assets/js/bundle.js', mainFile);

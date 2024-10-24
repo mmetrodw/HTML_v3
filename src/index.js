@@ -1,7 +1,8 @@
 var tPlayersCollection = [];
+// @include('data/defaultSettings.js')
 
 /* UTILS */
-var utils = {
+const utils = {
 	// Get Random ID
 	// @include('utils/getRandomID.js'),
 	// Deep Object Merge
@@ -24,7 +25,6 @@ var utils = {
 
 class tPlayerClass {
 	constructor(options) {
-		// @include('data/defaultSettings.js')
 		this.settings = utils.deepObjectMerge(defaultPlayerSettings, options);
 		this.playlist = JSON.parse(JSON.stringify(this.settings.playlist)); // Clone Palylist to variable
 		this.uiElements = [];
@@ -57,63 +57,49 @@ class tPlayerClass {
 
 	// Create Audio and Add It to Collection
 	async createAudio() {
-		return new Promise((resolve, reject) => {
-			try {
-				this.playerState.status = 'Create Audio Object';
-				this.audio = new Audio();
-				this.audio.preload = "metadata";
-				this.audio.volume = 0;
-				// Add to List of Players
-				tPlayersCollection[this.playerId] = this.audio;
-				this.playerState.status = 'Audio Object Was Created';
-				resolve();
-			} catch (error) {
-				reject(error);
-			}
-		});
+		this.playerState.status = 'Create Audio Object';
+		this.audio = new Audio();
+		this.audio.preload = "metadata";
+		this.audio.volume = 0;
+		// Add to List of Players
+		tPlayersCollection[this.playerId] = this.audio;
+		this.playerState.status = 'Audio Object Was Created';
 	}
 
 	// Sets up event listeners for the audio player
 	async setupEventListeners() {
-		return new Promise((resolve, reject) => {
-			try {
-				this.playerState.status = 'Setting Up Event Listeners';
-				// List of audio events to listen for
-				const audioEvents = [
-					'abort', 'canplay', 'canplaythrough', 'durationchange', 'emptied', 'ended', 'error', 
-					'loadeddata', 'loadedmetadata', 'loadstart', 'pause', 'play', 'playing', 'progress', 
-					'ratechange', 'seeked', 'seeking', 'stalled', 'suspend', 'timeupdate', 'volumechange', 'waiting'
-				];
+		this.playerState.status = 'Setting Up Event Listeners';
+		// List of audio events to listen for
+		const audioEvents = [
+			'abort', 'canplay', 'canplaythrough', 'durationchange', 'emptied', 'ended', 'error', 
+			'loadeddata', 'loadedmetadata', 'loadstart', 'pause', 'play', 'playing', 'progress', 
+			'ratechange', 'seeked', 'seeking', 'stalled', 'suspend', 'timeupdate', 'volumechange', 'waiting'
+		];
 
-				// Add event listeners for all audio events
-				audioEvents.forEach((event) => {
-					if (typeof this[event] === 'function') {
-						this.audio.addEventListener(event, this[event].bind(this));
-					} else {
-						return reject(`No handler found for event: ${event}`);
-					}
-				});
-
-				// Reference to UI elements
-				const {
-					playbackButton, prevButton, nextButton, volumeButton, repeatButton, shuffleButton, shareButton,
-					facebookButton, twitterButton, tumblrButton, togglePlaylistButton, playlistItem, audioSeekBar,
-					volumeLevelBar, playlistWrapper, playlist, scrollbarTrack, coverImage
-				} = this.uiElements;
-
-				// Add event listeners for control buttons
-				playbackButton.addEventListener('click', this.playback.bind(this));
-
-
-
-
-
-				this.playerState.status = 'Event Listeners Are Set';
-				resolve();
-			} catch (error) {
-				reject(error);
+		// Add event listeners for all audio events
+		audioEvents.forEach((event) => {
+			if (typeof this[event] === 'function') {
+				this.audio.addEventListener(event, this[event].bind(this));
+			} else {
+				return reject(`No handler found for event: ${event}`);
 			}
 		});
+
+		// Reference to UI elements
+		const {
+			playbackButton, prevButton, nextButton, volumeButton, repeatButton, shuffleButton, shareButton,
+			facebookButton, twitterButton, tumblrButton, togglePlaylistButton, playlistItem, audioSeekBar,
+			volumeLevelBar, playlistWrapper, playlist, scrollbarTrack, coverImage
+		} = this.uiElements;
+
+		// Add event listeners for control buttons
+		playbackButton.addEventListener('click', this.playback.bind(this));
+
+
+
+
+
+		this.playerState.status = 'Event Listeners Are Set';
 	}
 
 	/* AUDIO EVENTS */ 
@@ -164,28 +150,24 @@ class tPlayerClass {
 	// Function to animate the text change for the track title and artist
 	// @include('lib/animateTextChange.js')
 
-	async init() {
-		try {
-			this.playerState.status = 'Initializing';
-			// Validate Player Config
-			await this.validatePlayerConfig();
-			// Create Player Interface
-			await this.createPlayerInterface();
-			// Apply Player Styles
-			await this.applyPlayerStyles(this.settings.style, this.uiElements.wrapper);
-			// Create Audio and Add It to Collection
-			await this.createAudio();
+async	init() {
+		this.playerState.status = 'Initializing';
+		// Validate Player Config
+		await this.validatePlayerConfig();
+		// Create Player Interface
+		await this.createPlayerInterface();
+		// Apply Player Styles
+		await this.applyPlayerStyles(this.settings.style, this.uiElements.wrapper);
+		// Create Audio and Add It to Collection
+		await this.createAudio();
 
-			// await this.applyUserDefinedSettings();
+		// this.applyUserDefinedSettings();
 
-			// Setup Event Listeners
-			await this.setupEventListeners();
-			// Load And Prepare The Initial Track For Playback
-			await this.switchTrack();
-			console.log(this);
-		} catch (error) {
-			console.error('Error initializing tPlayer:', error);
-		}
+		// Setup Event Listeners
+		// this.setupEventListeners();
+		// Load And Prepare The Initial Track For Playback
+		// this.switchTrack();
+		console.log(this);
 	}
 
 	// Button Icons

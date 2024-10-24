@@ -1,7 +1,7 @@
 animateTextChange(previousTrack, currentTrack) {
 	// Clear any existing animation interval to prevent multiple animations running simultaneously
-	if (titleAnimationInterval) {
-		clearInterval(titleAnimationInterval);
+	if (this.playerState.titleAnimationInterval) {
+		clearInterval(this.playerState.titleAnimationInterval);
 	}
 
 	// Extract artist and title from previous and current track objects
@@ -28,12 +28,12 @@ animateTextChange(previousTrack, currentTrack) {
 		// Check if both artist and title have been fully updated to the current values
 		if (previousArtist === currentArtist && previousTitle === currentTitle) {
 			// Clear the interval once the animation is complete
-			clearInterval(titleAnimationInterval);
+			clearInterval(this.playerState.titleAnimationInterval);
 		}
 	};
 
 	// Set a new interval for the animation to update every 7 milliseconds
-	titleAnimationInterval = setInterval(updateText, 7); // Interval for smooth animation
+	this.playerState.titleAnimationInterval = setInterval(updateText, 7); // Interval for smooth animation
 }
 
 // Function to adjust the length of the text by either trimming or expanding it

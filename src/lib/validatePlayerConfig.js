@@ -1,47 +1,40 @@
 async validatePlayerConfig() {
-	return new Promise((resolve, reject) => {
-		try {
-			this.playerState.status = "Validating Player Configuration";
-			const playerContainerElement = document.getElementById(this.settings.container);
+	this.playerState.status = "Validating Player Configuration";
+	const playerContainerElement = document.getElementById(this.settings.container);
 
-			// Check if the 'id' property is missing or invalid
-			if (!this.settings.container) {
-				return reject("tPlayer Error: Please enter a valid container name.");
-			}
+	// Check if the 'id' property is missing or invalid
+	if (!this.settings.container) {
+		console.log("tPlayer Error: Please enter a valid container name.");
+	}
 
-			// Check if the 'wrapper' element associated with the given 'id' is missing
-			if (!playerContainerElement) {
-				return reject(`tPlayer Error: Element with id "${this.settings.container}" not found.`);
-			}
+	// Check if the 'wrapper' element associated with the given 'id' is missing
+	if (!playerContainerElement) {
+		console.log(`tPlayer Error: Element with id "${this.settings.container}" not found.`);
+	}
 
-			this.uiElements.wrapper = playerContainerElement;
+	this.uiElements.wrapper = playerContainerElement;
 
-			// Check if the 'playlist' property is missing or not provided
-			if (!Array.isArray(this.playlist) || this.playlist.length === 0) {
-				return reject("tPlayer Error: Please, add a valid Playlist to tPlayer.");
-			} else {
-				this.playerState.isPlaylist = this.playlist.length > 1 ? true : false;
-			}
+	// Check if the 'playlist' property is missing or not provided
+	if (!Array.isArray(this.playlist) || this.playlist.length === 0) {
+		console.log("tPlayer Error: Please, add a valid Playlist to tPlayer.");
+	}
 
-			// Check for audio link for each playlist item and update properties
-			for( const item of this.playlist) {
-				if(item.audio === undefined || item.audio === "") {
-					return reject("tPlayer Error: Not all tracks in the playlist have the audio property.");
-				}
-
-				// Update artist if Album Artist is set
-				if (this.settings.album.artist) {
-					item.artist = this.settings.album.artist;
-				}
-				// Update cover if Album Cover is set and cover usage is enabled
-				if (this.settings.album.cover && this.settings.album.cover !== "" && this.settings.showCover) {
-					item.cover = this.settings.album.cover;
-				}
-			}
-			this.playerState.status = "The Configuration Has Been Vlidated";
-			resolve();
-		} catch (error) {
-			reject(error);
+	// Check for audio link for each playlist item and update properties
+	for( const item of this.playlist) {
+		if(item.audio === undefined || item.audio === "") {
+			console.log("tPlayer Error: Not all tracks in the playlist have the audio property.");
 		}
-	});
+
+		// Update artist if Album Artist is set
+		if (this.settings.album.artist) {
+			item.artist = this.settings.album.artist;
+		}
+		// Update cover if Album Cover is set and cover usage is enabled
+		if (this.settings.album.cover && this.settings.album.cover !== "" && this.settings.showCover) {
+			item.cover = this.settings.album.cover;
+		}
+	}
+	
+	this.playerState.isPlaylist = this.playlist.length > 1 ? true : false;
+	this.playerState.status = "The Configuration Has Been Vlidated";
 }

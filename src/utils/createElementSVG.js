@@ -5,7 +5,7 @@ createElementSVG: (tagName, classNames = [], parentElement = null, attributes = 
 
 	// If classNames are provided, add them to the element
 	if (classNames.length > 0) {
-		this.utils.addClass(element, classNames);
+		utils.addClass(element, classNames);
 	}
 
 	// If attributes are provided, set them on the element

@@ -3,7 +3,7 @@ deepObjectMerge: (source, destination) => {
 		if (!(key in destination)) {
 			response[key] = value;
 		} else if (typeof value === "object" && value !== null) {
-			response[key] = this.utils.deepObjectMerge(value, destination[key]);
+			response[key] = utils.deepObjectMerge(value, destination[key]);
 		} else {
 			response[key] = destination[key];
 		}

@@ -9,7 +9,7 @@ createElement: (
   const element = document.createElement(tagName);
 
   // Add classes to the element using a utility function
-  this.utils.addClass(element, classNames);
+  utils.addClass(element, classNames);
 
   // If innerHtml is provided, set the element's inner HTML
   if (innerHtml) {

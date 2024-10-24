@@ -39,7 +39,7 @@ this.playerState = {
 	set audioEvent(value) {
 		if(this._audioEvent !== value) {
 			this._audioEvent = value;
-			this.handlePlayerStatusChange(`Audio Event: ${this._audioEvent}`);
+			this.handleStatusChange(`Audio Event: ${this._audioEvent}`);
 		}
 	},
 	set autoplay(value) { this._autoplay = value;	},
@@ -75,8 +75,6 @@ this.playerState = {
 			this.uiElements.playerStatus.innerHTML = state;
 		}
 	},
-
-	// Method to handle state changes
 	handleIsLoadingChange: () => {
 		if(this._isLoading) {
 			// Add the loading class to the player UI
