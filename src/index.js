@@ -1,7 +1,8 @@
 var tPlayersCollection = [];
+// @include('data/defaultSettings.js')
 
 /* UTILS */
-var utils = {
+const utils = {
 	// Get Random ID
 	// @include('utils/getRandomID.js'),
 	// Deep Object Merge
@@ -24,7 +25,6 @@ var utils = {
 
 class tPlayerClass {
 	constructor(options) {
-		// @include('data/defaultSettings.js')
 		this.settings = utils.deepObjectMerge(defaultPlayerSettings, options);
 		this.playlist = JSON.parse(JSON.stringify(this.settings.playlist)); // Clone Palylist to variable
 		this.uiElements = [];

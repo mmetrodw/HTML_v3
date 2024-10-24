@@ -75,8 +75,6 @@ this.playerState = {
 			this.uiElements.playerStatus.innerHTML = state;
 		}
 	},
-
-	// Method to handle state changes
 	handleIsLoadingChange: () => {
 		if(this._isLoading) {
 			// Add the loading class to the player UI
