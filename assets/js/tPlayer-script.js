@@ -89,7 +89,8 @@ class tPlayerClass {
 			isRadioInfoUpdateAllowed: false,
 			isRadioInfoUpdatePending: false,
 			isMobile: this.utils.isMobileDevice(),
-			playlistScrollbarHideDelay: null
+			playlistScrollbarHideDelay: null,
+			isPlaylist: this.playlist.length > 1 ? true : false 
 		};
 		// Create Audio
 		this.audio = new Audio();
@@ -156,167 +157,522 @@ class tPlayerClass {
 	// Create Player Interface
 	createPlayerInterface() {
 		const { wrapper } = this.uiElements;
-		const { rounded, skin } = this.settings;
-		const { addClass } = this.utils;
-		
+		const { rounded, skin, showRepeatButton, showShuffleButton, showShareButton} = this.settings;
+		const { addClass, createElement } = this.utils;
+		const { isMobile, isPlaylist } = this.playerState;
+		const fragment = document.createDocumentFragment();
+
 		// Set button icons based on 'rounded' setting
 		this.buttonIcons = rounded ? this.buttonIcons.rounded : this.buttonIcons.default;
 
 		// Add classes to the wrapper
-		addClass(wrapper, ["tp-wrapper", rounded ? "tp-rounded" : "", skin === "vertical" ? "tp-vertical" : ""]);
+		addClass(wrapper, ["tp-wrapper", "tp-loading", rounded ? "tp-rounded" : "", skin === "vertical" ? "tp-vertical" : ""]);
 
-		// Generate HTML markup for the player interface
-		let htmlMarkup = `
-				<div class="tp-player-wrapper">
-					${this.createCover()}
-					${this.createControls()}
-					${this.createSocialMedia()}
-				</div>
-				${this.createPlaylistWrapper()}
-				${this.createErrorWrapper()}
-		`;
+		const playerContainer = createElement('div', 'tp-player-container', fragment);
+		// Cover
+		let coverContainer = createElement('div', 'tp-cover-container', playerContainer);
+		createElement('div', 'tp-cover-loading-spinner', coverContainer, '<span></span><span></span><span></span>', false);
+		let cover = createElement('div', 'tp-cover', coverContainer);
+		this.uiElements.coverImage = createElement('img', 'tp-cover-image', cover);
 
-		// Inject the generated HTML into the wrapper
-		wrapper.innerHTML = htmlMarkup;
-	}
+		// Player
+		const player = createElement('div', 'tp-player', playerContainer);
 
-	// Create the cover section
-	createCover() {
-		return `
-		<div class="tp-cover-wrapper">
-				<div class="tp-cover-loader"><span></span><span></span><span></span></div>
-				<div class="tp-cover"><img class="tp-cover-image" src=""></div>
-		</div>`;
-	}
+		// Player Header
+		let playerHeader = createElement('div', 'tp-player-header', player);
+		this.uiElements.trackTitle = createElement('div', 'tp-track-title', playerHeader, 'Loading...');
 
+		// Player Body
+		let playerControls = createElement('div', 'tp-player-controls', player);
 
-	// Create the control buttons (play, prev, next, shuffle, etc.)
-	createControls() {
-		const { playback, prev, repeat, next, shuffle, playlist, volume } = this.buttonIcons;
-		const hasMultipleTracks = this.playlist.length > 1;
+		// Playback
+		this.uiElements.playbackButton = createElement('button', ['tp-playback-button', 'tp-button'], playerControls);
+		this.createButtonIcon(this.uiElements.playbackButton, [], [this.buttonIcons.playback.play]);
 
-		let controlsMarkup = `
-		<div class="tp-player-controls-wrapper">
-			<div class="tp-player-header">
-				<div class="tp-track-title"></div>
-			</div>
-			<div class="tp-player-controls">
-				${this.createButton(playback.play, "tp-playback-button")}
-				<div class="tp-audio-seekbar">
-					<div class="tp-audio-buffer-progress"></div>
-					<div class="tp-audio-playback-progress"></div>
-					<div class="tp-current-time">00:00</div>
-					<div class="tp-duration">00:00</div>
-					<div class="tp-player-loader"><span></span><span></span><span></span></div>
-				</div>
-			`;
-		// Add buttons only if there are multiple tracks
-		if (hasMultipleTracks) {
-			controlsMarkup += `
-				${this.createButton(prev.stroke, "tp-prev-button")}
-				${this.settings.showRepeatButton ? this.createButton(repeat.stroke, "tp-repeat-button") : ''}
-				${this.createButton(next.stroke, "tp-next-button")}
-				${this.settings.showShuffleButton ? this.createButton(shuffle.stroke, "tp-shuffle-button") : ''}
-			`;
-		}
-		controlsMarkup += `
-			</div>
-			<div class="tp-player-footer">`;
-			if (hasMultipleTracks) {
-				controlsMarkup += `${this.createButton(playlist.closed, "tp-toggle-playlist-button")}`
-			} else {
-				if (this.playlist[0].buy) {
-					controlsMarkup += `<a href=${this.playlist[0].buy} target="_blank" class="tp-playlist-track-buy tp-button"><svg viewBox="0 0 20 20"><path class="tp-stroke" d="${this.buttonIcons.buy}"></path></svg></a>`;
-				}
-				// Add download link if available
-				if (this.playlist[0].download) {
-					controlsMarkup += `<a href=${this.playlist[0].download} target="_blank" download class="tp-playlist-track-download tp-button"><svg viewBox="0 0 20 20"><path class="tp-stroke" d="${this.buttonIcons.download}"></path></svg></a>`;
-				}
+		// Create Seek, Buffered, Progress and Time codes
+		this.createSeekBar(playerControls);
+
+		// Prev, Repeat, Next, Shuffle, Share Buttons
+		const buttonsConfig = [
+			{ condition: isPlaylist, classNames: ['tp-prev-button', 'tp-button'], icon: this.buttonIcons.prev, key: 'prevButton' },
+			{ condition: showRepeatButton, classNames: ['tp-repeat-button', 'tp-button'], icon: this.buttonIcons.repeat, key: 'repeatButton' },
+			{ condition: isPlaylist, classNames: ['tp-next-button', 'tp-button'], icon: this.buttonIcons.next, key: 'nextButton' },
+			{ condition: isPlaylist && showShuffleButton, classNames: ['tp-shuffle-button', 'tp-button'], icon: this.buttonIcons.shuffle, key: 'shuffleButton' },
+			{ condition: showShareButton, classNames: ['tp-share-button', 'tp-button'], icon: this.buttonIcons.share.closed, key: 'shareButton' }
+		];
+
+		buttonsConfig.forEach(config => {
+			if (config.condition) {
+				this.uiElements[config.key] = createElement('button', config.classNames, playerControls);
+				this.createButtonIcon(this.uiElements[config.key], ['tp-stroke', 'tp-fill'], [config.icon.stroke, config.icon.fill]);
 			}
-			controlsMarkup +=`
-				<div class="tp-volume-control-wrapper">
-					<div class="tp-volume-button tp-button">
-						<svg viewBox="0 0 20 20">
-							<path class="tp-fill" d="${volume.speaker}"></path>
-							<path class="tp-stroke" d="${volume.line_1}"></path>
-							<path class="tp-stroke" d="${volume.line_2}"></path>
-							<path class="tp-stroke" d="${volume.muted}"></path>
-						</svg>
-					</div>
-					<div class="tp-volume-level-bar">
-						<div class="tp-volume-level"></div>
-					</div>
-				</div>
-			</div>
-		</div>
-		`;
-		return controlsMarkup;
-	}
+		});
 
-
-	// Create a single button
-	createButton(iconPath, cssClass) {
-		return `<div class="${cssClass} tp-button"><svg viewBox="0 0 20 20"><path d="${iconPath}"></path></svg></div>`;
-	}
-
-
-	// Create social media buttons
-	createSocialMedia() {
-		const { facebook, twitter, tumblr } = this.buttonIcons;
-		return `
-		<div class="tp-social-media-wrapper">
-			${this.createButton(facebook, "tp-facebook-button")}
-			${this.createButton(twitter, "tp-twitter-button")}
-			${this.createButton(tumblr, "tp-tumblr-button")}
-		</div>`;
-	}
-
-
-	// Create the playlist wrapper
-	createPlaylistWrapper() {
-		if (this.playlist.length > 1) {
-			return `
-				<div class="tp-playlist-wrapper">
-					<div class="tp-scrollbar-track">
-						<div class="tp-scrollbar-thumb"></div>
-					</div>
-					<ul class="tp-playlist">${this.generatePlaylistHTML()}</ul>
-				</div>`;
+		// Player Footer
+		let playerFooter = createElement('div', 'tp-player-footer', player);
+		// Playlist Toogle or Links
+		if(isPlaylist) {
+			this.uiElements.togglePlaylistButton = createElement('button', ['tp-toggle-playlist-button', 'tp-button'], playerFooter);
+			this.createButtonIcon(this.uiElements.togglePlaylistButton, ['tp-stroke'], [this.buttonIcons.playlist.closed])
+		} else {
+			if(this.playlist[0].buy) this.createLink('buy', this.playlist[0].buy, playerFooter);
+			if(this.playlist[0].download) this.createLink('download', this.playlist[0].download, playerFooter);
 		}
-		return '';
+
+		// Volume controls
+		if(!isMobile) {
+			let volumeControl = createElement('div', 'tp-volume-control', playerFooter);
+			this.uiElements.volumeButton = createElement('button', ['tp-volume-button', 'tp-button'], volumeControl);
+			this.createButtonIcon(
+				this.uiElements.volumeButton,
+				['tp-fill', 'tp-stroke', 'tp-stroke', 'tp-stroke'],
+				[this.buttonIcons.volume.speaker, this.buttonIcons.volume.line_1, this.buttonIcons.volume.line_2, this.buttonIcons.volume.muted]
+			);
+			this.uiElements.volumeLevelBar = createElement('div', 'tp-volume-level-bar', volumeControl);
+			this.uiElements.volumeLevel = createElement('div', 'tp-volume-level', this.uiElements.volumeLevelBar);
+		}
+
+		// Share Buttons
+		if(this.settings.showShareButton) {
+			let soicalWrapper = createElement('div', 'tp-social-media-container', playerContainer);
+			this.uiElements.facebookButton = createElement('button', ['tp-facebook-button', 'tp-button'], soicalWrapper);
+			this.createButtonIcon(this.uiElements.facebookButton, ['tp-fill'], [this.buttonIcons.facebook]);
+			this.uiElements.twitterButton = createElement('button', ['tp-twitter-button', 'tp-button'], soicalWrapper);
+			this.createButtonIcon(this.uiElements.twitterButton, ['tp-fill'], [this.buttonIcons.twitter]);
+			this.uiElements.tumblrButton = createElement('button', ['tp-tumblr-button', 'tp-button'], soicalWrapper);
+			this.createButtonIcon(this.uiElements.tumblrButton, ['tp-fill'], [this.buttonIcons.tumblr]);
+		}
+
+		// Playlist
+		if(isPlaylist) {
+			this.uiElements.playlistContainer = createElement('div', 'tp-playlist-container', fragment);
+			this.uiElements.scrollbarTrack = createElement('div', 'tp-scrollbar-track', this.uiElements.playlistContainer);
+			this.uiElements.scrollbarThumb = createElement('div', 'tp-scrollbar-thumb', this.uiElements.scrollbarTrack);
+			this.uiElements.playlist = createElement('ul', 'tp-playlist', this.uiElements.playlistContainer);
+			this.uiElements.playlistItem = this.createPlaylist();
+		}
+		let errorContainer = createElement('div', 'tp-error-container', fragment);
+		this.uiElements.errorMessage = createElement('div', 'tp-error-message', errorContainer);
+		this.uiElements.errorClose = createElement('button', 'tp-error-close', errorContainer);
+		this.createButtonIcon(this.uiElements.errorClose, ['tp-stroke'], [this.buttonIcons.playlist.closed]);
+
+		wrapper.appendChild(fragment);
 	}
 
 
-	// Create the error message wrapper
-	createErrorWrapper() {
-		const { playlist } = this.buttonIcons;
-		return `
-		<div class="tp-error-wrapper">
-			<div class="tp-error-message"></div>
-			<div class="tp-error-close">
-				<svg viewBox="0 0 20 20">
-					<path class="tp-stroke" d="${playlist.opened}"></path>
-				</svg>
-			</div>
-		</div>`;
+	createButtonIcon(parent, pathClasses = [], paths = []) {
+		let buttonIcon = this.utils.createElementSVG('svg', [], parent);
+
+		paths.forEach((path, index) => {
+			let currentPathClass = pathClasses[index] || [];
+			this.utils.createElementSVG('path', currentPathClass, buttonIcon, [{'d': path}], false);
+		});
 	}
 
 
-	// Generates the HTML for the playlist
-	generatePlaylistHTML() {
-		return this.playlist.map(track => {
-			const trackName = track.title ? `<b>${track.artist}</b> - ${track.title}` : `<b>${track.artist}</b>`;
-			const trackTitle = track.title ? `${track.artist} - ${track.title}` : track.artist;
-
-			return `
-				<div class="tp-playlist-item" title="${trackTitle}">
-					<div class="tp-playlist-indicator"><span></span><span></span><span></span></div>
-					<div class="tp-playlist-track">${trackName}</div>
-					${track.buy ? `<a href="${track.buy}" target="_blank" class="tp-playlist-track-buy"><svg viewBox="0 0 20 20"><path d="${this.buttonIcons.buy}"/></svg></a>` : ''}
-					${track.download ? `<a href="${track.download}" download target="_blank" class="tp-playlist-track-download"><svg viewBox="0 0 20 20"><path d="${this.buttonIcons.download}"/></svg></a>` : ''}
-				</div>`;
-		}).join("");
+	createSeekBar(parent) {
+		this.uiElements.audioSeekBar = this.utils.createElement('div', 'tp-audio-seekbar', parent);
+		this.uiElements.audioBufferedProgress = this.utils.createElement('div', 'tp-audio-buffered-progress', this.uiElements.audioSeekBar);
+		this.uiElements.audioPlaybackProgress = this.utils.createElement('div', 'tp-audio-playback-progress', this.uiElements.audioSeekBar);
+		this.uiElements.currentTime = this.utils.createElement('div', 'tp-current-time', this.uiElements.audioSeekBar, '00:00');
+		this.uiElements.duration = this.utils.createElement('div', 'tp-duration', this.uiElements.audioSeekBar, '00:00');
+		this.utils.createElement('div', 'tp-player-loader', this.uiElements.audioSeekBar, '<span></span><span></span><span></span>');
 	}
+
+
+	createLink(type, href, parent) {
+		let link = this.utils.createElement('a', ['tp-playlist-track-' + type, 'tp-button'], parent);
+		link.setAttribute('href', href);
+		link.setAttribute('target', '_blank');
+		link.setAttribute('title', type === 'download' ? 'Download Now' : 'Buy Now');
+		if (type === 'download') link.setAttribute('download', '');
+		this.createButtonIcon(link, ['tp-stroke'], [this.buttonIcons[type]]);
+	}
+
+
+	createPlaylist() {
+		const { createElement } = this.utils;
+		const items = [];
+		this.playlist.map(track => {
+			let trackName = track.title ? `<b>${track.artist}</b> - ${track.title}` : `<b>${track.artist}</b>`;
+			let trackTitle = track.title ? `${track.artist} - ${track.title}` : track.artist;
+
+			let item = createElement('li', 'tp-playlist-item', this.uiElements.playlist);
+			item.setAttribute('title', trackTitle);
+
+			createElement('div', 'tp-playlist-indicator', item, '<span></span><span></span><span></span>', false);
+			createElement('div', 'tp-playlist-track', item, trackName, false);
+			
+			if(track.buy) this.createLink('buy', track.buy, item);
+			if(track.download) this.createLink('download', track.download, item);
+
+			items.push(item);
+		});
+		return items;
+	}
+
+	
+	// Function to apply styles from the JSON object as CSS variables
+	applyPlayerStyles(styles, element, prefix = '') {
+		// Iterate over the keys of the styles object
+		Object.keys(styles).forEach((key) => {
+			const value = styles[key];
+
+			// If the value is an object, recursively process it
+			if (typeof value === 'object' && value !== null) {
+				// Call the function recursively with updated prefix
+				this.applyPlayerStyles(value, element, prefix ? `${prefix}-${key}` : key);
+			} else {
+				// Generate the CSS variable name using the key
+				// Replace camelCase with kebab-case (e.g., 'trackTitle' becomes 'track-title')
+				const cssVariableName = `--${prefix}${prefix ? '-' : ''}${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
+						
+				// Set the CSS variable on the provided element
+				element.style.setProperty(cssVariableName, value);
+			}
+		});
+	}
+
+	
+
+	// Applies user-defined settings to the player interface.
+	applyUserDefinedSettings() {
+		const { isMobile, isPlaylist } = this.playerState;
+
+		// Hide cover if the setting is disabled
+		if(!this.settings.showCover) {
+			this.utils.addClass(this.uiElements.wrapper, "tp-no-cover");
+		}
+
+		// Enable playlist scroll if allowed and the number of tracks exceeds the maximum visible tracks
+		if (this.settings.allowPlaylistScroll && isPlaylist && this.playlist.length > this.settings.maxVisibleTracks) {
+			this.utils.addClass(this.uiElements.wrapper, "tp-scrollable");
+			this.uiElements.playlist.style.height = `${40 * this.settings.maxVisibleTracks}px`;
+		}
+		
+		// Show playlist if the setting is enabled
+		if(this.settings.showPlaylist && isPlaylist) {
+			this.togglePlaylist();
+		}
+
+		// Hide volume controls if the device is a mobile phone
+		if (isMobile) {
+			[this.uiElements.volumeButton, this.uiElements.volumeLevelBar].forEach(element => element.style.display = "none");
+		}
+	}
+
+
+	// Sets up event listeners for the audio player
+	setupEventListeners() {
+		/// List of audio events to listen for
+		const audioEvents = [
+			'abort', 'canplay', 'canplaythrough', 'durationchange', 'emptied', 'ended', 'error', 
+			'loadeddata', 'loadedmetadata', 'loadstart', 'pause', 'play', 'playing', 'progress', 
+			'ratechange', 'seeked', 'seeking', 'stalled', 'suspend', 'timeupdate', 'volumechange', 'waiting'
+		];
+
+		// Add event listeners for all audio events
+		audioEvents.forEach((event) => {
+			if (typeof this[event] === 'function') {
+				this.audio.addEventListener(event, this[event].bind(this));
+			} else {
+				console.warn(`No handler found for event: ${event}`);
+			}
+		});
+	}
+
+
+	/* AUDIO EVENTS */
+	abort() {
+		// Set the seeking state to false
+		this.isSeeking(false);
+		// Disable radio info updates
+		this.playerState.isRadioInfoUpdateAllowed = false;
+	}
+
+
+	canplay() {
+		// Remove the loading class from the player UI
+		this.utils.removeClass(this.uiElements.wrapper, 'tp-loading');
+		// Set the seeking state to true
+		this.isSeeking(true);
+	}
+
+
+	canplaythrough() {
+		// Remove the loading class from the player UI
+		this.utils.removeClass(this.uiElements.wrapper, 'tp-loading');
+		// Set the seeking state to true
+		this.isSeeking(true);
+
+		// Start playback if autoplay is enabled
+		if (this.playerState.autoplay) this.audio.play();
+	}
+
+
+	durationchange() {
+		const { duration } = this.uiElements;
+
+		// Update the duration display in the UI
+		duration.textContent = this.utils.secondsToTimecode(this.audio.duration);
+		// Show or hide the duration element based on whether the duration is not Infinity
+		duration.style = this.audio.duration !== Infinity ? "block" : "none";
+		// Set the seeking state to true
+		this.isSeeking(true);
+	}
+
+
+	emptied() {
+		// Set the seeking state to false
+		this.isSeeking(false);
+		// Disable radio info updates
+		this.playerState.isRadioInfoUpdateAllowed = false;
+	}
+
+
+	// Ended
+	ended() {
+		// Play Next
+		this.nextTrack();
+	}
+
+
+	error() {
+		// Set the seeking state to false
+		this.isSeeking(false);
+
+		// Define error messages for different error codes
+		const errorCodes = {
+			1: 'The user canceled the audio.',
+			2: 'A network error occurred while fetching the audio.',
+			3: 'An error occurred while decoding the audio.',
+			4: 'The audio is missing or is in a format not supported by your browser.',
+			default: 'An unknown error occurred.'
+		};
+
+		// Get the error message based on the error code
+		const errorCode = errorCodes[this.audio.error.code] || errorCodes['default'];
+
+		// Disable radio info updates
+		this.playerState.isRadioInfoUpdateAllowed = false;
+		// Pause the audio
+		this.pause();
+		// Disable autoplay
+		this.playerState.autoplay = false;
+		// Remove the loading class from the player UI
+		this.utils.removeClass(this.uiElements.wrapper, 'tp-loading');
+		this.utils.addClass(this.uiElements.wrapper, 'tp-error');
+		// Show the error message
+		this.uiElements.errorMessage.textContent = "tPlayer Error: " + errorCode;
+		return false;
+	}
+
+
+	loadstart() {
+		// Add the loading class for the player UI
+		this.utils.addClass(this.uiElements.wrapper, 'tp-loading');
+	}
+
+
+	loadeddata() {
+		// Set the seeking state to true
+		this.isSeeking(true);
+	}
+
+
+	loadedmetadata() {
+		const { duration } = this.uiElements;
+
+		// Update the duration display in the UI
+		duration.textContent = this.utils.secondsToTimecode(this.audio.duration);
+		// Show or hide the duration element based on whether the duration is not Infinity
+		duration.style = this.audio.duration !== Infinity ? "block" : "none";
+		// Set the seeking state to true
+		this.isSeeking(true);
+	}
+
+
+	pause() {
+		const { playlistItem, playbackButton } = this.uiElements;
+		const { removeClass } = this.utils;
+
+		// Remove the 'playing' class from playlist items
+		removeClass(playlistItem, 'tp-playing');
+		// Remove the 'active' class from the playback button
+		removeClass(playbackButton, 'tp-active');
+		// Update the playback button icon to 'play' after a short delay
+		setTimeout(() => {
+			playbackButton.querySelector('path').setAttribute('d', this.buttonIcons.playback.play);
+		}, 200);
+		// Disable radio info updates
+		this.playerState.isRadioInfoUpdateAllowed = false;
+	}
+
+
+	play() {
+		const { playlistItem, playbackButton } = this.uiElements;
+		const { addClass } = this.utils;
+
+		// Pause all other players in the collection
+		for (let player in tPlayersCollection) {
+			if (player !== this.playerContainerId) {
+				tPlayersCollection[player].pause();
+			}
+		}
+		// Add the 'playing' class to the current playlist item
+		addClass(playlistItem[this.currentTrack.index], 'tp-playing');
+		// Add the 'active' class to the playback button
+		addClass(playbackButton, 'tp-active');
+		// Update the playback button icon to 'pause' after a short delay
+		setTimeout(() => {
+			playbackButton.querySelector('path').setAttribute('d', this.buttonIcons.playback.pause);
+		}, 200);
+		// Set the seeking state to true
+		this.isSeeking(true);
+		// Enable radio info updates
+		this.playerState.isRadioInfoUpdateAllowed = true;
+	}
+
+
+	playing() {
+		// Remove the loading class from the player UI
+		this.utils.removeClass(this.uiElements.wrapper, 'tp-loading');
+		// Set the seeking state to true
+		this.isSeeking(true);
+		// Enable radio info updates
+		this.playerState.isRadioInfoUpdateAllowed = true;
+	}
+
+
+	progress() {
+		// Check if there are buffered data
+		if (this.audio.buffered.length) {
+			const duration = this.audio.duration;
+			const buffered = this.audio.buffered.end(this.audio.buffered.length - 1);
+			const progress = buffered / duration;
+
+			// Update the width of the buffered progress bar
+			this.uiElements.audioBufferedProgress.style.width = `${progress * 100}%`;
+			// Set the opacity of the buffered progress bar
+			this.uiElements.audioBufferedProgress.style.opacity = progress === 1 ? 0 : 1;
+		}
+	}
+
+
+	ratechange(){
+		console.log("Rate Change");
+	}
+
+
+	seeked() {
+		// Remove the loading class from the player UI
+		this.utils.removeClass(this.uiElements.wrapper, 'tp-loading');
+	}
+
+
+	seeking() {
+		// Add the loading class for the player UI
+		this.utils.addClass(this.uiElements.wrapper, 'tp-loading');
+	}
+
+
+	stalled() {
+		// Set the seeking state to false
+		this.isSeeking(false);
+		// Disable radio info updates
+		this.playerState.isRadioInfoUpdateAllowed = false;
+		// Log the stalled event
+		console.log('Playback stalled at', this.audio.currentTime);
+	}
+
+
+	suspend() {
+		// Disable radio info updates
+		this.playerState.isRadioInfoUpdateAllowed = false;
+	}
+
+
+	timeupdate() {
+		if (!this.playerState.isUserSeekingAudio) {
+			// Set the current time of the track to match the audio's current time
+			this.currentTrack.currentTime = this.audio.currentTime;
+			// Calculate the percentage of the track that has been played
+			const percent = (this.currentTrack.currentTime / this.audio.duration) * 100;
+			// Update the width of the playback progress bar
+			this.uiElements.audioPlaybackProgress.style.width = percent + '%';
+			// Update the displayed current time in the player
+			this.uiElements.currentTime.textContent = this.utils.secondsToTimecode(this.audio.currentTime);
+			// Call the progress function to update the buffered progress bar
+			this.progress();
+		}
+	}
+
+
+	volumechange() {
+		const paths = this.uiElements.volumeButton.children[0].children;
+		this.volume = this.audio.volume !== 0 ? this.audio.volume : this.volume;
+		this.uiElements.volumeLevel.style.width = `${this.audio.volume * 100}%`;
+
+		// Update the visibility of volume level indicators
+		paths[1].style.transform = this.audio.volume < 0.25 ? "scale(0)" : "scale(1)";
+		paths[2].style.transform = this.audio.volume < 0.5 ? "scale(0)" : "scale(1)";
+		paths[3].style.transform = this.audio.volume === 0 ? "scale(1)" : "scale(0)";
+
+		// Update the mute state and button appearance
+		if(this.audio.volume === 0) {
+			this.playerState.isVolumeMuted = true;
+			this.utils.addClass(this.uiElements.volumeButton, 'tp-active');
+		} else {
+			this.playerState.isVolumeMuted = false;
+			this.utils.removeClass(this.uiElements.volumeButton, 'tp-active');
+		}
+	}
+
+
+	waiting() {
+		// Add the loading class for the player UI
+		this.utils.addClass(this.uiElements.wrapper, 'tp-loading');
+		// Set the seeking state to false
+		this.isSeeking(false);
+		// Disable radio info updates
+		this.playerState.isRadioInfoUpdateAllowed = false;
+	}
+
+
+
+
+
+
+
+
+	/* PLAYER FUNCTION */
+
+	// Sets the pointer events for the audio seek bar based on the seeking state.
+	isSeeking(state) {
+		this.uiElements.audioSeekBar.style.pointerEvents = state && this.audio.duration !== Infinity ? "all" : "none";
+	}
+
+
+
+	// Toggles the display state of the playlist.
+	togglePlaylist() {
+		
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 	init() {
@@ -324,6 +680,12 @@ class tPlayerClass {
 		this.validatePlayerConfig();
 		// Create Player Interface
 		this.createPlayerInterface();
+		// Apply Player Styles
+		this.applyPlayerStyles(this.settings.style, this.uiElements.wrapper);
+		// Apply User Defined Settings
+		this.applyUserDefinedSettings();
+		// Setup Event Listeners
+		this.setupEventListeners();
 	}
 
 	/* UTILS */
@@ -380,6 +742,46 @@ class tPlayerClass {
 				});
 			});
 		},
+		createElement: (tagName, classNames = [], parentElement = null, innerHtml = false, shouldReturn = true) => {
+			const element = document.createElement(tagName);
+			this.utils.addClass(element, classNames);
+
+			if(innerHtml) {
+				element.innerHTML = innerHtml;
+			}
+
+			if(parentElement) {
+				parentElement.appendChild(element);
+			}
+
+			return shouldReturn ? element : null;
+		},
+		createElementSVG: (tagName, classNames = [], parentElement = null, attributes = [], shouldReturn = true) => {
+			const element = document.createElementNS("http://www.w3.org/2000/svg", tagName);
+			if (classNames.length > 0) {
+				this.utils.addClass(element, classNames);
+			}
+
+			if (attributes.length > 0) {
+				attributes.forEach(attribute => {
+					const key = Object.keys(attribute)[0];
+					element.setAttribute(key, attribute[key]);
+				});
+			}
+
+			if(parentElement) {
+				parentElement.appendChild(element);
+			}
+
+			return shouldReturn ? element : null;
+		},
+		kebabize: (str) => {
+			return str.split('').map((letter, idx) => {
+				return letter.toUpperCase() === letter
+					? `${idx !== 0 ? '-' : ''}${letter.toLowerCase()}`
+					: letter;
+			}).join('');
+		},
 	};
 
 	// Button Icons
@@ -420,7 +822,7 @@ class tPlayerClass {
 			tumblr: "M0,0v20h20V0H0z M11.6,17.5c-3.3,0-3.9-2.5-3.9-3.2V9.4h-2V6.8C7.4,6,8.6,4.4,9,2.5H11v4.3h2.7v2.6H11v4.3c0,0.8,0.4,1.3,1.2,1.3c0.5,0,0.9-0.2,1.3-0.5l0.8,1.8C14.3,16.3,13.5,17.5,11.6,17.5z",
 			playlist: {
 				closed: "M0,3 20,3 M0,10 20,10 M0,17 20,17",
-				opened: "M1.5,1.5 18.5,18.5 M10,10 10,10 M1.5,18.5 18.5,1.5 "
+				opened: "M1.5,1.5 18.5,18.5 M10,10 10,10 M1.5,18.5 18.5,1.5"
 			},
 			volume: {
 				speaker: "M10,0 10,20 4,15 0,15 0,5 4,5z",

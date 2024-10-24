@@ -25,7 +25,7 @@
 	<div id="playlist_03"></div>
 	<div id="playlist_04"></div>
 	<div id="radio"></div>
-	<script src="assets/js/tPlayer-script.js"></script>
+	<script src="assets/js/bundle.js"></script>
 	<script>
 
 var playlist_01 = [{
@@ -88,7 +88,7 @@ var playlist_01 = [{
 		audio: "assets/mp3/nightfall-future-bass-music-228100.mp3",
 		cover: "assets/img/SoulProdMusic.png",
 		download: "assets/mp3/nightfall-future-bass-music-228100.mp3",
-		buy: "assets/mp3/nightfall-future-bass-music-228100.mp3"
+		buy: "assets/mp3/nightfall-future-bass-music-228100.mp3",
 	}];
 
 	var _radio = [{
@@ -110,12 +110,13 @@ var playlist_01 = [{
 		}
 	});
 
+
+	/*
 	tPlayer({
 		container: "playlist_02",
 		playlist: playlist_02
 	});
 
-	/*
 	tPlayer({
 		container: "radio",
 		playlist: _radio,

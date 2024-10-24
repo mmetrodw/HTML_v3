@@ -1,0 +1,10 @@
+{
+  "name": "your-project",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "nodemon --watch src -e js --exec \"node build.js\""
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.0"
+  }
+}
