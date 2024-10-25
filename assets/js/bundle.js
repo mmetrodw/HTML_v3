@@ -132,61 +132,6 @@ const utils = {
 			});
 		});
 	},
-	// Create Element
-	createElement: (
-	  tagName,
-	  classNames = [],
-	  parentElement = null,
-	  innerHtml = false,
-	  shouldReturn = true
-	) => {
-	  // Create a new element with the specified tag name
-	  const element = document.createElement(tagName);
-	
-	  // Add classes to the element using a utility function
-	  utils.addClass(element, classNames);
-	
-	  // If innerHtml is provided, set the element's inner HTML
-	  if (innerHtml) {
-	    element.innerHTML = innerHtml;
-	  }
-	
-	  // If a parent element is specified, append the new element to it
-	  if (parentElement) {
-	    parentElement.appendChild(element);
-	  }
-	
-	  // Return the created element or null based on the shouldReturn parameter
-	  return shouldReturn ? element : null;
-	},
-	// Create Element SVG
-	createElementSVG: (tagName, classNames = [], parentElement = null, attributes = [], shouldReturn = true) => {
-		// Create a new SVG element with the specified tag name
-		// Using createElementNS with the SVG namespace to ensure proper SVG element creation
-		const element = document.createElementNS("http://www.w3.org/2000/svg", tagName);
-	
-		// If classNames are provided, add them to the element
-		if (classNames.length > 0) {
-			utils.addClass(element, classNames);
-		}
-	
-		// If attributes are provided, set them on the element
-		if (attributes.length > 0) {
-			attributes.forEach(attribute => {
-				// Each attribute is expected to be an object with a single key-value pair
-				const key = Object.keys(attribute)[0];
-				element.setAttribute(key, attribute[key]);
-			});
-		}
-	
-		// If a parent element is specified, append the new SVG element to it
-		if(parentElement) {
-			parentElement.appendChild(element);
-		}
-	
-		// Return the created SVG element or null based on the shouldReturn parameter
-		return shouldReturn ? element : null;
-	},
 	// Format Time
 	secondsToTimecode: (totalSeconds) => {
 		if(totalSeconds == Infinity) {
@@ -205,7 +150,289 @@ const utils = {
 			return value !== "00" || index > 0;
 		});
 		return filteredArr.join(":");
-	}
+	},
+	// Shuffle Array
+	getShuffledPlaylistOrder: () => {
+		let array = [], i, j, temp = null;
+		// Create Array of Nums from 0 to Playlist Length
+		for (i = 0; i < this.playlist.length; i++) {
+			if (i !== this.currentTrack.index) {
+				array.push(i);
+			}
+		}
+		// Shuffle Array and Return
+		for (i = array.length - 1; i > 0; i--) {
+			j = Math.floor(Math.random() * (i + 1));
+			temp = array[i];
+			array[i] = array[j];
+			array[j] = temp;
+		}
+		return array;
+	},
+	// Animate Path Svg
+	animatePathSvg: (pathElement, fromD, toD, duration = 1000, easing = 'linear', callback) => {
+		let startTime = null;
+	
+		// Function to interpolate the 'd' attribute of the path element
+		function interpolateD(from, to, progress) {
+			// Split 'd' attribute values into commands and numbers
+			const fromCommands = from.match(/[a-zA-Z]+|[-.\d]+/g);
+			const toCommands = to.match(/[a-zA-Z]+|[-.\d]+/g);
+	
+			let result = '';
+			let isNumber = false;
+	
+			// Iterate over each command/number pair
+			for (let i = 0; i < fromCommands.length; i++) {
+				if (isNaN(fromCommands[i])) {
+					// If it's a command (e.g., M, L), append it to the result
+					result += (isNumber ? ' ' : '') + fromCommands[i];
+					isNumber = false; // The next value will be a number
+				} else {
+					// If it's a number, interpolate between 'from' and 'to' values
+					const fromValue = parseFloat(fromCommands[i]);
+					const toValue = parseFloat(toCommands[i]);
+					const interpolatedValue = fromValue + (toValue - fromValue) * progress;
+	
+					// Determine decimal places based on progress (more precise during animation)
+					result += (isNumber ? ',' : ' ') + interpolatedValue;
+	
+					isNumber = true; // The next value will be a number
+				}
+			}
+	
+			return result;
+		}
+	
+		// Function to handle the animation frame
+		const animate = (currentTime) => {
+			if (!startTime) startTime = currentTime; // Initialize start time on first frame
+			const elapsedTime = currentTime - startTime; // Calculate elapsed time
+			const progress = Math.min(elapsedTime / duration, 1); // Normalize progress to a value between 0 and 1
+	
+			// Apply easing function to smooth the progress
+			const easedProgress = easingFunctions[easing](progress);
+	
+			// Update the 'd' attribute of the path element with interpolated values
+			pathElement.setAttribute('d', interpolateD(fromD, toD, easedProgress));
+	
+			// Continue animating if progress is less than 1, otherwise call the callback function
+			if (progress < 1) {
+				requestAnimationFrame(animate); // Request next animation frame
+			} else if (callback) {
+				callback(); // Call the callback function when animation is complete
+			}
+		};
+	
+		requestAnimationFrame(animate); // Start the animation
+	},
+};
+
+// Easings 
+const easingFunctions = {
+	linear: (time) => {
+		return time;
+	},
+	easeInSine: (time) => {
+		return -1 * Math.cos(time * (Math.PI / 2)) + 1;
+	},
+	easeOutSine: (time) => {
+		return Math.sin(time * (Math.PI / 2));
+	},
+	easeInOutSine: (time) => {
+		return -0.5 * (Math.cos(Math.PI * time) - 1);
+	},
+	easeInQuad: (time) => {
+		return time * time;
+	},
+	easeOutQuad: (time) => {
+		return time * (2 - time);
+	},
+	easeInOutQuad: (time) => {
+		return time < 0.5 ? 2 * time * time : -1 + (4 - 2 * time) * time;
+	},
+	easeInCubic: (time) => {
+		return time * time * time;
+	},
+	easeOutCubic: (time) => {
+		const time1 = time - 1;
+		return time1 * time1 * time1 + 1;
+	},
+	easeInOutCubic: (time) => {
+		return time < 0.5
+			? 4 * time * time * time
+			: (time - 1) * (2 * time - 2) * (2 * time - 2) + 1;
+	},
+	easeInQuart: (time) => {
+		return time * time * time * time;
+	},
+	easeOutQuart: (time) => {
+		const time1 = time - 1;
+		return 1 - time1 * time1 * time1 * time1;
+	},
+	easeInOutQuart: (time) => {
+		const time1 = time - 1;
+		return time < 0.5
+			? 8 * time * time * time * time
+			: 1 - 8 * time1 * time1 * time1 * time1;
+	},
+	easeInQuint: (time) => {
+		return time * time * time * time * time;
+	},
+	easeOutQuint: (time) => {
+		const time1 = time - 1;
+		return 1 + time1 * time1 * time1 * time1 * time1;
+	},
+	easeInOutQuint: (time) => {
+		const time1 = time - 1;
+		return time < 0.5
+			? 16 * time * time * time * time * time
+			: 1 + 16 * time1 * time1 * time1 * time1 * time1;
+	},
+	easeInExpo: (time) => {
+		if (time === 0) {
+			return 0;
+		}
+		return Math.pow(2, 10 * (time - 1));
+	},
+	easeOutExpo: (time) => {
+		if (time === 1) {
+			return 1;
+		}
+		return -Math.pow(2, -10 * time) + 1;
+	},
+	easeInOutExpo: (time) => {
+		if (time === 0 || time === 1) {
+			return time;
+		}
+
+		const scaledTime = time * 2;
+		const scaledTime1 = scaledTime - 1;
+
+		if (scaledTime < 1) {
+			return 0.5 * Math.pow(2, 10 * scaledTime1);
+		}
+
+		return 0.5 * (-Math.pow(2, -10 * scaledTime1) + 2);
+	},
+	easeInCirc: (time) => {
+		const scaledTime = time / 1;
+		return -1 * (Math.sqrt(1 - scaledTime * time) - 1);
+	},
+	easeOutCirc: (time) => {
+		const time1 = time - 1;
+		return Math.sqrt(1 - time1 * time1);
+	},
+	easeInOutCirc: (time) => {
+		const scaledTime = time * 2;
+		const scaledTime1 = scaledTime - 2;
+
+		if (scaledTime < 1) {
+			return -0.5 * (Math.sqrt(1 - scaledTime * scaledTime) - 1);
+		}
+
+		return 0.5 * (Math.sqrt(1 - scaledTime1 * scaledTime1) + 1);
+	},
+	easeInBack: (time, magnitude = 1.70158) => {
+		return time * time * ((magnitude + 1) * time - magnitude);
+	},
+	easeOutBack: (time, magnitude = 1.70158) => {
+		const scaledTime = time / 1 - 1;
+		return (
+			scaledTime * scaledTime * ((magnitude + 1) * scaledTime + magnitude) + 1
+		);
+	},
+	easeInOutBack: (time, magnitude = 1.70158) => {
+		const scaledTime = time * 2;
+		const scaledTime2 = scaledTime - 2;
+		const s = magnitude * 1.525;
+
+		if (scaledTime < 1) {
+			return 0.5 * scaledTime * scaledTime * ((s + 1) * scaledTime - s);
+		}
+
+		return 0.5 * (scaledTime2 * scaledTime2 * ((s + 1) * scaledTime2 + s) + 2);
+	},
+	easeInElastic: (time, magnitude = 0.7) => {
+		if (time === 0 || time === 1) {
+			return time;
+		}
+
+		const scaledTime = time / 1;
+		const scaledTime1 = scaledTime - 1;
+		const p = 1 - magnitude;
+		const s = (p / (2 * Math.PI)) * Math.asin(1);
+
+		return -(
+			Math.pow(2, 10 * scaledTime1) *
+			Math.sin(((scaledTime1 - s) * (2 * Math.PI)) / p)
+		);
+	},
+	easeOutElastic: (time, magnitude = 0.7) => {
+		if (time === 0 || time === 1) {
+			return time;
+		}
+
+		const p = 1 - magnitude;
+		const scaledTime = time * 2;
+		const s = (p / (2 * Math.PI)) * Math.asin(1);
+
+		return (
+			Math.pow(2, -10 * scaledTime) *
+				Math.sin(((scaledTime - s) * (2 * Math.PI)) / p) +
+			1
+		);
+	},
+	easeInOutElastic: (time, magnitude = 0.65) => {
+		if (time === 0 || time === 1) {
+			return time;
+		}
+
+		const p = 1 - magnitude;
+		const scaledTime = time * 2;
+		const scaledTime1 = scaledTime - 1;
+		const s = (p / (2 * Math.PI)) * Math.asin(1);
+
+		if (scaledTime < 1) {
+			return (
+				-0.5 *
+				(Math.pow(2, 10 * scaledTime1) *
+					Math.sin(((scaledTime1 - s) * (2 * Math.PI)) / p))
+			);
+		}
+
+		return (
+			Math.pow(2, -10 * scaledTime1) *
+				Math.sin(((scaledTime1 - s) * (2 * Math.PI)) / p) *
+				0.5 +
+			1
+		);
+	},
+	easeOutBounce: (time) => {
+		const scaledTime = time / 1;
+
+		if (scaledTime < 1 / 2.75) {
+			return 7.5625 * scaledTime * scaledTime;
+		} else if (scaledTime < 2 / 2.75) {
+			const scaledTime2 = scaledTime - 1.5 / 2.75;
+			return 7.5625 * scaledTime2 * scaledTime2 + 0.75;
+		} else if (scaledTime < 2.5 / 2.75) {
+			const scaledTime2 = scaledTime - 2.25 / 2.75;
+			return 7.5625 * scaledTime2 * scaledTime2 + 0.9375;
+		} else {
+			const scaledTime2 = scaledTime - 2.625 / 2.75;
+			return 7.5625 * scaledTime2 * scaledTime2 + 0.984375;
+		}
+	},
+	easeInBounce: (time) => {
+		return 1 - this.utils.easingFunctions.easeOutBounce(1 - time);
+	},
+	easeInOutBounce: (time) => {
+		if (time < 0.5) {
+			return this.utils.easingFunctions.easeInBounce(time * 2) * 0.5;
+		}
+		return this.utils.easingFunctions.easeOutBounce(time * 2 - 1) * 0.5 + 0.5;
+	},
 };
 
 class tPlayerClass {
@@ -222,7 +449,7 @@ class tPlayerClass {
 			_repeat: false,
 			_scrollbarTimeOutId: null,
 			_shuffle: false,
-			_status: null,
+			_status: [],
 			_titleAnimationInterval: null,
 			_volumeToggle: false,
 			_isLoading: false,
@@ -257,18 +484,14 @@ class tPlayerClass {
 			set audioEvent(value) {
 				if(this._audioEvent !== value) {
 					this._audioEvent = value;
-					this.handleStatusChange(`Audio Event: ${this._audioEvent}`);
+					this._status.push(`Audio Event: ${this._audioEvent}`);
 				}
 			},
 			set autoplay(value) { this._autoplay = value;	},
 			set repeat(value) { this._repeat = value; },
 			set scrollbarTimeOutId(value) { this._scrollbarTimeOutId = value; },
 			set shuffle(value) { this._shuffle = value; },
-			set status(value) {
-				if(this._status !== value) {
-					this._status = value;
-					this.handleStatusChange(`Player Status: ${this._status}`);
-				}
+			set status(value) {	this._status.push(value);
 			},
 			set titleAnimationInterval(value) { this._titleAnimationInterval = value; },
 			set volumeToggle(value) { this._volumeToggle = value; },
@@ -288,11 +511,6 @@ class tPlayerClass {
 			set isUserSeekingAudio(value) { this._isUserSeekingAudio = value; },
 			set isVolumeMuted(value) { this._isVolumeMuted = value; },
 		
-			handleStatusChange: (state) => {
-				if(this.uiElements.playerStatus) {
-					this.uiElements.playerStatus.innerHTML = state;
-				}
-			},
 			handleIsLoadingChange: () => {
 				if(this._isLoading) {
 					// Add the loading class to the player UI
@@ -320,6 +538,8 @@ class tPlayerClass {
 	// Validate Player Config
 	async validatePlayerConfig() {
 		this.playerState.status = "Validating Player Configuration";
+		const startTime = new Date().getTime();
+	
 		const playerContainerElement = document.getElementById(this.settings.container);
 	
 		// Check if the 'id' property is missing or invalid
@@ -356,13 +576,14 @@ class tPlayerClass {
 		}
 	
 		this.playerState.isPlaylist = this.playlist.length > 1 ? true : false;
-		this.playerState.status = "The Configuration Has Been Vlidated";
+	
+		const endTime = new Date().getTime();
+		const duration = (endTime - startTime);
+		this.playerState.status = `The Configuration Has Been Validated ${duration} ms.`;
 	}
 
 	// Create Player Interface
 	createElement(node) {
-		if (node.skip) return null;
-	
 		const element = node.isSvg ? document.createElementNS('http://www.w3.org/2000/svg', node.tag) : document.createElement(node.tag);
 	
 		if (node.id) element.id = node.id;
@@ -381,36 +602,130 @@ class tPlayerClass {
 	
 	async buildDOMTree(jsonArray) {
 		const fragment = document.createDocumentFragment();
-	  const stack = [];
+		const stack = [];
 	
-	  jsonArray.forEach(json => {
-	    stack.push({ node: json, parent: fragment });
-	  });
+		for (let i = jsonArray.length - 1; i >= 0; i--) {
+			stack.push({ node: jsonArray[i], parent: fragment });
+		}
 	
-	  while (stack.length) {
-	    const { node, parent } = stack.pop();
-	    const element = this.createElement(node);
-	    if (element) parent.appendChild(element);
+		while (stack.length) {
+			const { node, parent } = stack.pop();
 	
-	    if (node.children) {
-	      for (let i = node.children.length - 1; i >= 0; i--) {
-	        stack.push({ node: node.children[i], parent: element });
-	      }
-	    }
-	  }
+			if(node.skip) continue;
 	
+			const element = this.createElement(node);
+			parent.appendChild(element);
+	
+			if (node.children) {
+				for (let i = node.children.length - 1; i >= 0; i--) {
+					stack.push({ node: node.children[i], parent: element });
+				}
+			}
+		}
 		return fragment;
+	}
+	
+	createPlaylistDOMTree() {
+		const playlistArray = [];
+		this.playlist.map(track => {
+			// Determine the track name to display, including artist and title if available
+			const trackName = track.title ? `<b>${track.artist}</b> - ${track.title}` : `<b>${track.artist}</b>`;
+			// Determine the full track title for the tooltip, including artist and title if available
+			const trackTitle = track.title ? `${track.artist} - ${track.title}` : track.artist;
+	
+			const playlistItem = {
+				tag: "li",
+				class: "tp-playlist-item",
+				attributes: {
+					title: trackTitle,
+				},
+				children: [
+					{
+						tag: "div",
+						class: "tp-playlist-indicator",
+						html: "<span></span><span></span><span></span>",
+					},
+					{
+						tag: "div",
+						class: "tp-playlist-track",
+						html: trackName,
+					},
+					{
+						tag: "a",
+						class: "tp-playlist-track-buy",
+						skip: track.buy ? false : true,
+						attributes: {
+							href: track.buy,
+							target: "_blank",
+						},
+						children: [
+							{
+								tag: "svg",
+								isSvg: true,
+								attributes: {
+									viewBox: "0 0 20 20",
+								},
+								children: [
+									{
+										tag: "path",
+										isSvg: true,
+										class: "tp-stroke",
+										attributes: {
+											d: this.buttonIcons.buy,
+										},
+									},
+								],
+							},
+						],
+					},
+					{
+						tag: "a",
+						class: "tp-playlist-track-download",
+						skip: track.download ? false : true,
+						attributes: {
+							href: track.download,
+							target: "_blank",
+							download: "",
+						},
+						children: [
+							{
+								tag: "svg",
+								isSvg: true,
+								attributes: {
+									viewBox: "0 0 20 20",
+								},
+								children: [
+									{
+										tag: "path",
+										isSvg: true,
+										class: "tp-stroke",
+										attributes: {
+											d: this.buttonIcons.download,
+										},
+									},
+								],
+							},
+						],
+					},
+				],
+			};
+	
+			playlistArray.push(playlistItem);
+		});
+		return playlistArray;
 	}
 	
 	async createPlayerInterface() {
 		this.playerState.status = 'Create Player Interface';
+		const startTime = new Date().getTime();
+	
 		const { wrapper } = this.uiElements;
 		const { rounded, skin, showRepeatButton, showShuffleButton, showShareButton} = this.settings;
 		const { addClass } = utils;
 		const { isMobile, isPlaylist } = this.playerState;
 	
 		// Add classes to the wrapper
-		addClass(wrapper, ["tp-wrapper", rounded ? "tp-rounded" : "", skin === "vertical" ? "tp-vertical" : ""]);
+		addClass(wrapper, ["tp-wrapper", "tp-loading", rounded ? "tp-rounded" : "", skin === "vertical" ? "tp-vertical" : ""]);
 	
 		// Set button icons based on 'rounded' setting
 		this.buttonIcons = rounded ? this.buttonIcons.rounded : this.buttonIcons.default;
@@ -423,6 +738,7 @@ class tPlayerClass {
 					{
 						tag: "div",
 						class: "tp-cover-container",
+						skip: this.settings.showCover ? false : true,
 						children: [
 							{
 								tag: "div",
@@ -432,12 +748,12 @@ class tPlayerClass {
 							{
 								tag: "div",
 								class: "tp-cover",
-								streAs: "cover",
+								storeAs: "cover",
 								children: [
 									{
 										tag: "img",
 										class: "tp-cover-image",
-										streAs: "coverImage",
+										storeAs: "coverImage",
 									},
 								],
 							},
@@ -518,18 +834,13 @@ class tPlayerClass {
 												class: "tp-player-loader",
 												html: "<span></span><span></span><span></span>",
 											},
-											{
-												tag: "div",
-												class: "tp-player-status",
-												storeAs: "playerStatus",
-											},
 										],
 									},
 									{
 										tag: "button",
 										class: "tp-button tp-prev-button",
 										storeAs: "prevButton",
-										skip: this.playerState.isPlaylist ? false : true,
+										skip: isPlaylist ? false : true,
 										children: [
 											{
 												tag: "svg",
@@ -595,7 +906,7 @@ class tPlayerClass {
 										tag: "button",
 										class: "tp-button tp-next-button",
 										storeAs: "nextButton",
-										skip: this.playerState.isPlaylist ? false : true,
+										skip: isPlaylist ? false : true,
 										children: [
 											{
 												tag: "svg",
@@ -629,9 +940,7 @@ class tPlayerClass {
 										class: "tp-button tp-shuffle-button",
 										storeAs: "shuffleButton",
 										skip:
-											this.playerState.isPlaylist && this.settings.showShuffleButton
-												? false
-												: true,
+											isPlaylist && this.settings.showShuffleButton ? false : true,
 										children: [
 											{
 												tag: "svg",
@@ -698,18 +1007,173 @@ class tPlayerClass {
 							{
 								tag: "div",
 								class: "tp-player-footer",
-								children: [{}],
+								children: [
+									{
+										tag: "button",
+										class: "tp-button tp-toggle-playlist-button",
+										storeAs: "togglePlaylistButton",
+										skip: isPlaylist ? false : true,
+										children: [
+											{
+												tag: "svg",
+												isSvg: true,
+												attributes: {
+													viewBox: "0 0 20 20",
+												},
+												children: [
+													{
+														tag: "path",
+														isSvg: true,
+														class: "tp-stroke",
+														attributes: {
+															d: this.buttonIcons.playlist.closed,
+														},
+													},
+												],
+											},
+										],
+									},
+									{
+										tag: "a",
+										class: "tp-button tp-playlist-track-buy",
+										skip: isPlaylist ? true : this.playlist[0].buy ? false : true,
+										attributes: {
+											href: this.playlist[0].buy,
+											target: "_blank",
+										},
+										children: [
+											{
+												tag: "svg",
+												isSvg: true,
+												attributes: {
+													viewBox: "0 0 20 20",
+												},
+												children: [
+													{
+														tag: "path",
+														isSvg: true,
+														class: "tp-stroke",
+														attributes: {
+															d: this.buttonIcons.buy,
+														},
+													},
+												],
+											},
+										],
+									},
+									{
+										tag: "a",
+										class: "tp-button tp-playlist-track-download",
+										skip: isPlaylist
+											? true
+											: this.playlist[0].download
+											? false
+											: true,
+										attributes: {
+											href: this.playlist[0].download,
+											target: "_blank",
+											download: "",
+										},
+										children: [
+											{
+												tag: "svg",
+												isSvg: true,
+												attributes: {
+													viewBox: "0 0 20 20",
+												},
+												children: [
+													{
+														tag: "path",
+														isSvg: true,
+														class: "tp-stroke",
+														attributes: {
+															d: this.buttonIcons.download,
+														},
+													},
+												],
+											},
+										],
+									},
+									{
+										tag: "div",
+										class: "tp-volume-control",
+										skip: isMobile ? true : false,
+										children: [
+											{
+												tag: "button",
+												class: "tp-button tp-volume-button",
+												storeAs: "volumeButton",
+												children: [
+													{
+														tag: "svg",
+														isSvg: true,
+														attributes: {
+															viewBox: "0 0 20 20",
+														},
+														children: [
+															{
+																tag: "path",
+																isSvg: true,
+																class: "tp-fill",
+																attributes: {
+																	d: this.buttonIcons.volume.speaker,
+																},
+															},
+															{
+																tag: "path",
+																isSvg: true,
+																class: "tp-stroke",
+																attributes: {
+																	d: this.buttonIcons.volume.line_1,
+																},
+															},
+															{
+																tag: "path",
+																isSvg: true,
+																class: "tp-stroke",
+																attributes: {
+																	d: this.buttonIcons.volume.line_2,
+																},
+															},
+															{
+																tag: "path",
+																isSvg: true,
+																class: "tp-stroke",
+																attributes: {
+																	d: this.buttonIcons.volume.muted,
+																},
+															},
+														],
+													},
+												],
+											},
+											{
+												tag: "div",
+												class: "tp-volume-level-bar",
+												storeAs: "volumeLevelBar",
+												children: [
+													{
+														tag: "div",
+														class: "tp-volume-level",
+														storeAs: "volumeLevel",
+													},
+												],
+											},
+										],
+									},
+								],
 							},
 						],
 					},
 					{
 						tag: "div",
 						class: "tp-social-media-container",
+						skip: this.settings.showShareButton ? false : true,
 						children: [
 							{
 								tag: "button",
 								class: "tp-button tp-facebook-button",
-								streAs: "facebookButton",
+								storeAs: "facebookButton",
 								children: [
 									{
 										tag: "svg",
@@ -733,7 +1197,7 @@ class tPlayerClass {
 							{
 								tag: "button",
 								class: "tp-button tp-twitter-button",
-								streAs: "twitterButton",
+								storeAs: "twitterButton",
 								children: [
 									{
 										tag: "svg",
@@ -757,7 +1221,7 @@ class tPlayerClass {
 							{
 								tag: "button",
 								class: "tp-button tp-tumblr-button",
-								streAs: "tumblrButton",
+								storeAs: "tumblrButton",
 								children: [
 									{
 										tag: "svg",
@@ -785,24 +1249,24 @@ class tPlayerClass {
 			{
 				tag: "div",
 				class: "tp-playlist-container",
-				streAs: "playlistContainer",
+				storeAs: "playlistContainer",
 				children: [
 					{
 						tag: "div",
 						class: "tp-scrollbar-track",
-						streAs: "scrollbarTrack",
+						storeAs: "scrollbarTrack",
 						children: [
 							{
 								tag: "div",
 								class: "tp-scrollbar-thumb",
-								streAs: "scrollbarThumb",
+								storeAs: "scrollbarThumb",
 							},
 						],
 					},
 					{
-						tag: "div",
+						tag: "ul",
 						class: "tp-playlist",
-						streAs: "playlist",
+						storeAs: "playlist",
 					},
 				],
 			},
@@ -813,12 +1277,12 @@ class tPlayerClass {
 					{
 						tag: "div",
 						class: "tp-error-message",
-						streAs: "errorMessage",
+						storeAs: "errorMessage",
 					},
 					{
 						tag: "button",
 						class: "tp-error-close",
-						streAs: "errorClose",
+						storeAs: "errorClose",
 						children: [
 							{
 								tag: "svg",
@@ -843,20 +1307,32 @@ class tPlayerClass {
 			},
 		];
 	
+		// if Has Playlist add the playlist to the playerDOMTree
+		if(isPlaylist) playerDOMTree[1].children[1].children = this.createPlaylistDOMTree();
 	
+		// Create Player Fragment
 		const fragment = await this.buildDOMTree(playerDOMTree);
+		// Appent Player
 		wrapper.appendChild(fragment);
-		console.log(this)
+		// Get playlist items if they exist
+		if(isPlaylist) this.uiElements.playlistItem = wrapper.querySelectorAll('.tp-playlist-item');
 	
-		this.playerState.status = 'The Player Interface is Created';
+		const endTime = new Date().getTime();
+		const duration = (endTime - startTime);
+		this.playerState.status = `The Player Interface is Created in ${duration} ms`;
 	}
 
 	// Function to apply styles from the JSON object as CSS variables
 	async applyPlayerStyles(styles, element, prefix = '') {
 		this.playerState.status = 'Aplly Custom Styles';
+		const startTime = new Date().getTime();
+	
 		// Call the applyPlayerStyles function with the styles and playerElement
 		this.addPlayerStyle(styles, element, prefix);
-		this.playerState.status = 'Custom Styles Applied';
+	
+		const endTime = new Date().getTime();
+		const duration = (endTime - startTime);
+		this.playerState.status = `Custom Styles Applied in ${duration} ms`;
 	}
 	
 	addPlayerStyle(styles, element, prefix = '') {
@@ -879,20 +1355,11 @@ class tPlayerClass {
 		});
 	}
 
-	// Create Audio and Add It to Collection
-	async createAudio() {
-		this.playerState.status = 'Create Audio Object';
-		this.audio = new Audio();
-		this.audio.preload = "metadata";
-		this.audio.volume = 0;
-		// Add to List of Players
-		tPlayersCollection[this.playerId] = this.audio;
-		this.playerState.status = 'Audio Object Was Created';
-	}
-
 	// Sets up event listeners for the audio player
 	async setupEventListeners() {
 		this.playerState.status = 'Setting Up Event Listeners';
+		const { isPlaylist, isMoblie } = this.playerState;
+		const { showRepeatButton, showShuffleButton, showShareButton } = this.settings;
 		// List of audio events to listen for
 		const audioEvents = [
 			'abort', 'canplay', 'canplaythrough', 'durationchange', 'emptied', 'ended', 'error', 
@@ -905,7 +1372,7 @@ class tPlayerClass {
 			if (typeof this[event] === 'function') {
 				this.audio.addEventListener(event, this[event].bind(this));
 			} else {
-				return reject(`No handler found for event: ${event}`);
+				console.log(`No handler found for event: ${event}`);
 			}
 		});
 
@@ -913,13 +1380,26 @@ class tPlayerClass {
 		const {
 			playbackButton, prevButton, nextButton, volumeButton, repeatButton, shuffleButton, shareButton,
 			facebookButton, twitterButton, tumblrButton, togglePlaylistButton, playlistItem, audioSeekBar,
-			volumeLevelBar, playlistWrapper, playlist, scrollbarTrack, coverImage
+			volumeLevelBar, playlistConainer, playlist, scrollbarTrack, coverImage
 		} = this.uiElements;
 
 		// Add event listeners for control buttons
 		playbackButton.addEventListener('click', this.playback.bind(this));
 
+		if(isPlaylist) {
+			prevButton.addEventListener('click', this.prevTrack.bind(this));
+			nextButton.addEventListener('click', this.nextTrack.bind(this));
+			if(showShuffleButton) shuffleButton.addEventListener('click', this.shuffleToggle.bind(this));
+			togglePlaylistButton.addEventListener('click', this.togglePlaylist.bind(this));
+		}
 
+		if(showRepeatButton) repeatButton.addEventListener('click', this.repeatToggle.bind(this));
+		if(showShareButton) {
+			shareButton.addEventListener('click', this.shareToggle.bind(this));
+			facebookButton.addEventListener('click', this.shareFacebook.bind(this));
+			twitterButton.addEventListener('click', this.shareTwitter.bind(this));
+			tumblrButton.addEventListener('click', this.shareTumblr.bind(this));
+		}
 
 
 
@@ -1030,7 +1510,7 @@ class tPlayerClass {
 	
 	loadedmetadata() {
 		this.playerState.audioEvent = 'loadedmetadata';
-		const { audioDuration } = this.uiElements;
+		const { audioDuration } = this.uiElements;а
 	
 		// Update the duration display in the UI
 		audioDuration.textContent = utils.secondsToTimecode(this.audio.duration);
@@ -1220,10 +1700,238 @@ class tPlayerClass {
 
 
 	/* PLAYER FUNCTION */
+	
 	// Sets the pointer events for the audio seek bar based on the seeking state.
 	isSeeking(state) {
 		this.uiElements.audioSeekBar.style.pointerEvents = state && this.audio.duration !== Infinity ? "all" : "none";
 	}
+
+	// Toggle Playlist
+	togglePlaylist() {
+		let playlistHeight = 0;
+		const { togglePlaylistButton, playlistContainer } = this.uiElements;
+		const { maxVisibleTracks, allowPlaylistScroll } = this.settings;
+
+		// Toggle the playlist display state
+		this.playerState.isPlaylistDisplayed = !this.playerState.isPlaylistDisplayed;
+		// Toggle the "tp-active" class on the toggle playlist button
+		utils.toggleClass(togglePlaylistButton, "tp-active");
+		// Simulate the click effect on the toggle playlist button
+		this.simulateClickEffect(togglePlaylistButton);
+
+		if (this.playerState.isPlaylistDisplayed && this.playlist.length > 1) {
+			// Animate the button icon to the "opened" state
+			utils.animatePathSvg(
+				togglePlaylistButton.querySelector('path'),
+				this.buttonIcons.playlist.closed,
+				this.buttonIcons.playlist.opened,
+				250,
+				'easeOutExpo'
+			);
+			// Calculate the playlist height based on the number of tracks and settings
+			playlistHeight = (this.playlist.length > maxVisibleTracks && allowPlaylistScroll) 
+			? maxVisibleTracks * 40 - 1 
+			: this.playlist.length * 40;
+		} else {
+			// Animate the button icon to the "closed" state
+			utils.animatePathSvg(
+				this.uiElements.togglePlaylistButton.querySelector('path'),
+				this.buttonIcons.playlist.opened,
+				this.buttonIcons.playlist.closed,
+				250,
+				'easeOutExpo'
+			);
+		}
+
+		// Set the height of the playlist wrapper
+		playlistContainer.style.height = `${playlistHeight}px`;
+	}
+	
+	// Handles the logic for switching to the previous track.
+	prevTrack() {
+		// Simulate button click effect
+		this.simulateClickEffect(this.uiElements.prevButton);
+
+		// Store the current track index as the previous track index
+		this.previousTrackIndex = this.currentTrack.index;
+
+		if(this.playerState.shuffle) {
+			// Set current track to the first index of the order list and remove it
+			this.currentTrack.index = this.orderList.shift();
+
+			// If the order list is now empty, get a new shuffled order list
+			if(this.orderList.length === 0) {
+				this.orderList = utils.getShuffledPlaylistOrder();
+			}
+		} else {
+			// If there is a previous track in the playlist
+			if(this.currentTrack.index - 1 >= 0) {
+				// Decrement the current track index
+				this.currentTrack.index--;
+			} else {
+				// If there is no previous track and Repeat Mode is On, play the last track in the playlist
+				if(this.playerState.repeat) {
+					this.currentTrack.index = this.playlist.length - 1;
+				} else {
+					// If Repeat Mode is Off, pause the audio, set current time to 0, and turn off autoplay
+					this.audio.pause();
+					this.audio.currentTime = 0;
+					this.playerState.autoplay = false;
+					return;
+				}
+			}
+		}
+		// Switch to the next track
+		this.switchTrack();
+	}
+
+	// Handles the logic for switching to the next track.
+	nextTrack() {
+		// Simulate the click effect on the next button
+		this.simulateClickEffect(this.uiElements.nextButton);
+
+		// Store the current track index as the previous track index
+		this.previousTrackIndex = this.currentTrack.index;
+
+		if(this.playerState.shuffle) {
+			// If shuffle is enabled, get the next track index from the shuffled order list
+			this.currentTrack.index = this.orderList.shift();
+
+			// If the order list is empty, regenerate the shuffled playlist order
+			if(this.orderList.length === 0) {
+				this.orderList = utils.getShuffledPlaylistOrder();
+			}
+		} else {
+			// If shuffle is not enabled, move to the next track in the playlist
+			if(this.currentTrack.index + 1 < this.playlist.length) {
+				this.currentTrack.index++;
+			} else {
+				// If repeat is enabled, go back to the first track
+				if(this.playerState.repeat) {
+					this.currentTrack.index = 0;
+				} else {
+					// If repeat is not enabled, stop the audio and reset the player state
+					this.audio.pause();
+					this.audio.currentTime = 0;
+					this.playerState.autoplay = false;
+					return;
+				}
+			}
+		}
+
+		// Switch to the new track
+		this.switchTrack();
+	}
+
+	// Toggles the repeat state of the player.
+	repeatToggle() {
+		const { repeatButton } = this.uiElements;
+
+		// Toggle the repeat state
+		this.playerState.repeat = !this.playerState.repeat;
+		// Toggle the "tp-active" class on the repeat button
+		this.utils.toggleClass(repeatButton, "tp-active");
+		// Simulate the click effect on the repeat button
+		this.simulateClickEffect(repeatButton);
+	}
+
+	// Toggles the shuffle state of the player.
+	shuffleToggle() {
+		const { shuffleButton } = this.uiElements;
+		const { toggleClass, getShuffledPlaylistOrder } = this.utils;
+		
+		// Toggle the shuffle state
+		this.playerState.shuffle = !this.playerState.shuffle;
+
+		// Toggle the "tp-active" class on the shuffle button
+		toggleClass(shuffleButton, "tp-active");
+
+		// Simulate the click effect on the shuffle button
+		this.simulateClickEffect(shuffleButton);
+
+		// Regenerate the shuffled playlist order if shuffle is enabled, otherwise set to null
+		this.orderList = (this.playerState.shuffle) ? getShuffledPlaylistOrder() : null;
+	}
+
+	// Toggles the share state of the player.
+	shareToggle() {
+		const { shareButton, wrapper } = this.uiElements;
+
+		// Toggle the shera display state
+		this.playerState.isShareDisplayed = !this.playerState.isShareDisplayed;
+		// Toggle the "tp-sharing" class on the player
+		this.utils.toggleClass(wrapper, "tp-sharing");
+		// Toggle the "tp-active" class on the share button
+		this.utils.toggleClass(shareButton, "tp-active");
+		// Simulate the click effect on the share button
+		this.simulateClickEffect(shareButton);
+
+		if (this.playerState.isShareDisplayed) {
+			// Animate the button icon to the "opened" state
+			this.utils.animatePathD(
+				shareButton.querySelector('.tp-stroke'),
+				this.buttonIcons.share.closed.stroke,
+				this.buttonIcons.share.opened.stroke,
+				250,
+				'easeOutExpo'
+			);
+			this.utils.animatePathD(
+				shareButton.querySelector('.tp-fill'),
+				this.buttonIcons.share.closed.fill,
+				this.buttonIcons.share.opened.fill,
+				250,
+				'easeOutExpo'
+			);
+		} else {
+			// Animate the button icon to the "closed" state
+			this.utils.animatePathD(
+				shareButton.querySelector('.tp-stroke'),
+				this.buttonIcons.share.opened.stroke,
+				this.buttonIcons.share.closed.stroke,
+				250,
+				'easeOutExpo'
+			);
+			this.utils.animatePathD(
+				shareButton.querySelector('.tp-fill'),
+				this.buttonIcons.share.opened.fill,
+				this.buttonIcons.share.closed.fill,
+				250,
+				'easeOutExpo'
+			);
+		}
+	}
+
+	openPopup(url) {
+		var width = 550;
+		var height = 400;
+		var left = (window.innerWidth - width) / 2;
+		var top = (window.innerHeight - height) / 2;
+		var options = 'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top;
+		window.open(url, 'Share', options);
+	}
+
+	shareFacebook() {
+		const url = window.location.href;
+		const text = this.currentTrack.artist + " - " + this.currentTrack.title;
+		const shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text);
+		this.openPopup(shareUrl);
+	}
+
+	shareTwitter() {
+		const url = window.location.href;
+		const text = this.currentTrack.artist + " - " + this.currentTrack.title;
+		const shareUrl = 'https://twitter.com/intent/tweet?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text);
+		this.openPopup(shareUrl);
+	}
+
+	shareTumblr() {
+		const url = window.location.href;
+		const text = this.currentTrack.artist + " - " + this.currentTrack.title;
+		const shareUrl = 'https://www.tumblr.com/widgets/share/tool?canonicalUrl=' + encodeURIComponent(url) + '&caption=' + encodeURIComponent(text);
+		this.openPopup(shareUrl);
+	}
+
+
 
 	// Switches to the next track in the playlist.
 	switchTrack() {
@@ -1359,7 +2067,7 @@ class tPlayerClass {
 		return currentText; // Texts are the same length
 	}
 
-async	init() {
+	async init() {
 		this.playerState.status = 'Initializing';
 		// Validate Player Config
 		await this.validatePlayerConfig();
@@ -1368,15 +2076,26 @@ async	init() {
 		// Apply Player Styles
 		await this.applyPlayerStyles(this.settings.style, this.uiElements.wrapper);
 		// Create Audio and Add It to Collection
-		await this.createAudio();
-
-		// this.applyUserDefinedSettings();
-
+		this.audio = new Audio();
+		this.audio.preload = "metadata";
+		this.audio.volume = 0;
+		// Add to List of Players
+		tPlayersCollection[this.playerId] = this.audio;
+		// Enable playlist scroll if allowed and the number of tracks exceeds the maximum visible tracks
+		if (this.settings.allowPlaylistScroll && this.playlist.length > this.settings.maxVisibleTracks && this.playerState.isPlaylist) {
+			utils.addClass(this.uiElements.wrapper, "tp-scrollable");
+			this.uiElements.playlist.style.height = `${40 * this.settings.maxVisibleTracks}px`;
+		}
+		// Show playlist if the setting is enabled and its Playlist
+		if(this.settings.showPlaylist && this.playerState.isPlaylist) {
+			this.togglePlaylist();
+		}
 		// Setup Event Listeners
-		// this.setupEventListeners();
+		this.setupEventListeners();
 		// Load And Prepare The Initial Track For Playback
 		// this.switchTrack();
 		console.log(this);
+		console.log(this.playerState.status);
 	}
 
 	// Button Icons

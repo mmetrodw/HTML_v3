@@ -4,7 +4,7 @@ this.playerState = {
 	_repeat: false,
 	_scrollbarTimeOutId: null,
 	_shuffle: false,
-	_status: null,
+	_status: [],
 	_titleAnimationInterval: null,
 	_volumeToggle: false,
 	_isLoading: false,
@@ -39,18 +39,14 @@ this.playerState = {
 	set audioEvent(value) {
 		if(this._audioEvent !== value) {
 			this._audioEvent = value;
-			this.handleStatusChange(`Audio Event: ${this._audioEvent}`);
+			this._status.push(`Audio Event: ${this._audioEvent}`);
 		}
 	},
 	set autoplay(value) { this._autoplay = value;	},
 	set repeat(value) { this._repeat = value; },
 	set scrollbarTimeOutId(value) { this._scrollbarTimeOutId = value; },
 	set shuffle(value) { this._shuffle = value; },
-	set status(value) {
-		if(this._status !== value) {
-			this._status = value;
-			this.handleStatusChange(`Player Status: ${this._status}`);
-		}
+	set status(value) {	this._status.push(value);
 	},
 	set titleAnimationInterval(value) { this._titleAnimationInterval = value; },
 	set volumeToggle(value) { this._volumeToggle = value; },
@@ -70,11 +66,6 @@ this.playerState = {
 	set isUserSeekingAudio(value) { this._isUserSeekingAudio = value; },
 	set isVolumeMuted(value) { this._isVolumeMuted = value; },
 
-	handleStatusChange: (state) => {
-		if(this.uiElements.playerStatus) {
-			this.uiElements.playerStatus.innerHTML = state;
-		}
-	},
 	handleIsLoadingChange: () => {
 		if(this._isLoading) {
 			// Add the loading class to the player UI

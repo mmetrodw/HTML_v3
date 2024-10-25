@@ -1,8 +1,13 @@
 async applyPlayerStyles(styles, element, prefix = '') {
 	this.playerState.status = 'Aplly Custom Styles';
+	const startTime = new Date().getTime();
+	
 	// Call the applyPlayerStyles function with the styles and playerElement
 	this.addPlayerStyle(styles, element, prefix);
-	this.playerState.status = 'Custom Styles Applied';
+
+	const endTime = new Date().getTime();
+	const duration = (endTime - startTime);
+	this.playerState.status = `Custom Styles Applied in ${duration} ms`;
 }
 
 addPlayerStyle(styles, element, prefix = '') {

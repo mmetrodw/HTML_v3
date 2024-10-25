@@ -24,34 +24,21 @@
 	position: relative;
 	width: 100%;
 	height: 200px;
-	display: grid;
-	grid-template-columns: 200px 1fr 0px;
-	grid-template-rows: 1fr;
-	gap: 0;
+	display: flex;
+	flex: 1 1 auto;
 	overflow: hidden;
-	transition: all 500ms var(--easeInOutExpo);
 	background: var(--player-background);
-}
-
-.tp-wrapper.tp-no-cover .tp-player-container {
-	grid-template-columns: 0px 1fr 0px;
-}
-
-.tp-wrapper.tp-sharing .tp-player-container {
-	grid-template-columns: 200px 1fr 60px;
-}
-
-.tp-wrapper.tp-sharing.tp-no-cover .tp-player-container {
-	grid-template-columns: 0px 1fr 60px;
 }
 
 .tp-cover-container {
 	position: relative;
-	width: 100%;
+	width: 200px;
 	height: 100%;
-	overflow: hidden;
 	aspect-ratio: 1/1;
+	flex: 0 0 auto;
+	overflow: hidden;
 	background: var(--player-cover-background);
+	transition: all 500ms var(--easeInOutExpo);
 }
 
 .tp-cover {
@@ -125,8 +112,8 @@
 	width: 100%;
 	min-width: 0;
 	height: 200px;
-	display: flex;
 	padding: 20px;
+	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
 	gap: 20px;
@@ -359,19 +346,6 @@
 	animation-delay: 300ms;
 }
 
-.tp-player-status {
-	position: relative;
-	width: 100%;
-	height: 100%;
-	z-index: 10;
-	pointer-events: none;
-	font-size: 12px;
-	line-height: 20px;
-	font-weight: 400;
-	color: var(--player-timestamps);
-	text-align: center;
-}
-
 .tp-player-footer {
 	position: relative;
 	width: 100%;
@@ -410,12 +384,21 @@
 }
 
 .tp-social-media-container {
-	padding: 20px;
+	position: relative;
+	width: 0;
+	padding: 20px 0px;
 	display: flex;
 	flex-wrap: nowrap;
 	justify-content: space-between;
 	align-content: flex-start;
 	flex-direction: column;
+	overflow: hidden;
+	transition: all 500ms var(--easeInOutExpo);
+}
+
+.tp-show-share .tp-social-media-container {
+	width: 60px;
+	padding: 20px 20px;
 }
 
 .tp-playlist-container {
@@ -471,6 +454,9 @@
 	position: relative;
 	width: 100%;
 	height: 40px;
+	margin: 0 !important;
+	padding: 0 !important;
+	list-style-type: none !important;
 	border-bottom-width: 1px;
 	border-bottom-style: solid;
 	display: flex;

@@ -6,6 +6,7 @@ const playerDOMTree = [
 			{
 				tag: "div",
 				class: "tp-cover-container",
+				skip: this.settings.showCover ? false : true,
 				children: [
 					{
 						tag: "div",
@@ -15,12 +16,12 @@ const playerDOMTree = [
 					{
 						tag: "div",
 						class: "tp-cover",
-						streAs: "cover",
+						storeAs: "cover",
 						children: [
 							{
 								tag: "img",
 								class: "tp-cover-image",
-								streAs: "coverImage",
+								storeAs: "coverImage",
 							},
 						],
 					},
@@ -101,18 +102,13 @@ const playerDOMTree = [
 										class: "tp-player-loader",
 										html: "<span></span><span></span><span></span>",
 									},
-									{
-										tag: "div",
-										class: "tp-player-status",
-										storeAs: "playerStatus",
-									},
 								],
 							},
 							{
 								tag: "button",
 								class: "tp-button tp-prev-button",
 								storeAs: "prevButton",
-								skip: this.playerState.isPlaylist ? false : true,
+								skip: isPlaylist ? false : true,
 								children: [
 									{
 										tag: "svg",
@@ -178,7 +174,7 @@ const playerDOMTree = [
 								tag: "button",
 								class: "tp-button tp-next-button",
 								storeAs: "nextButton",
-								skip: this.playerState.isPlaylist ? false : true,
+								skip: isPlaylist ? false : true,
 								children: [
 									{
 										tag: "svg",
@@ -212,9 +208,7 @@ const playerDOMTree = [
 								class: "tp-button tp-shuffle-button",
 								storeAs: "shuffleButton",
 								skip:
-									this.playerState.isPlaylist && this.settings.showShuffleButton
-										? false
-										: true,
+									isPlaylist && this.settings.showShuffleButton ? false : true,
 								children: [
 									{
 										tag: "svg",
@@ -281,18 +275,173 @@ const playerDOMTree = [
 					{
 						tag: "div",
 						class: "tp-player-footer",
-						children: [{}],
+						children: [
+							{
+								tag: "button",
+								class: "tp-button tp-toggle-playlist-button",
+								storeAs: "togglePlaylistButton",
+								skip: isPlaylist ? false : true,
+								children: [
+									{
+										tag: "svg",
+										isSvg: true,
+										attributes: {
+											viewBox: "0 0 20 20",
+										},
+										children: [
+											{
+												tag: "path",
+												isSvg: true,
+												class: "tp-stroke",
+												attributes: {
+													d: this.buttonIcons.playlist.closed,
+												},
+											},
+										],
+									},
+								],
+							},
+							{
+								tag: "a",
+								class: "tp-button tp-playlist-track-buy",
+								skip: isPlaylist ? true : this.playlist[0].buy ? false : true,
+								attributes: {
+									href: this.playlist[0].buy,
+									target: "_blank",
+								},
+								children: [
+									{
+										tag: "svg",
+										isSvg: true,
+										attributes: {
+											viewBox: "0 0 20 20",
+										},
+										children: [
+											{
+												tag: "path",
+												isSvg: true,
+												class: "tp-stroke",
+												attributes: {
+													d: this.buttonIcons.buy,
+												},
+											},
+										],
+									},
+								],
+							},
+							{
+								tag: "a",
+								class: "tp-button tp-playlist-track-download",
+								skip: isPlaylist
+									? true
+									: this.playlist[0].download
+									? false
+									: true,
+								attributes: {
+									href: this.playlist[0].download,
+									target: "_blank",
+									download: "",
+								},
+								children: [
+									{
+										tag: "svg",
+										isSvg: true,
+										attributes: {
+											viewBox: "0 0 20 20",
+										},
+										children: [
+											{
+												tag: "path",
+												isSvg: true,
+												class: "tp-stroke",
+												attributes: {
+													d: this.buttonIcons.download,
+												},
+											},
+										],
+									},
+								],
+							},
+							{
+								tag: "div",
+								class: "tp-volume-control",
+								skip: isMobile ? true : false,
+								children: [
+									{
+										tag: "button",
+										class: "tp-button tp-volume-button",
+										storeAs: "volumeButton",
+										children: [
+											{
+												tag: "svg",
+												isSvg: true,
+												attributes: {
+													viewBox: "0 0 20 20",
+												},
+												children: [
+													{
+														tag: "path",
+														isSvg: true,
+														class: "tp-fill",
+														attributes: {
+															d: this.buttonIcons.volume.speaker,
+														},
+													},
+													{
+														tag: "path",
+														isSvg: true,
+														class: "tp-stroke",
+														attributes: {
+															d: this.buttonIcons.volume.line_1,
+														},
+													},
+													{
+														tag: "path",
+														isSvg: true,
+														class: "tp-stroke",
+														attributes: {
+															d: this.buttonIcons.volume.line_2,
+														},
+													},
+													{
+														tag: "path",
+														isSvg: true,
+														class: "tp-stroke",
+														attributes: {
+															d: this.buttonIcons.volume.muted,
+														},
+													},
+												],
+											},
+										],
+									},
+									{
+										tag: "div",
+										class: "tp-volume-level-bar",
+										storeAs: "volumeLevelBar",
+										children: [
+											{
+												tag: "div",
+												class: "tp-volume-level",
+												storeAs: "volumeLevel",
+											},
+										],
+									},
+								],
+							},
+						],
 					},
 				],
 			},
 			{
 				tag: "div",
 				class: "tp-social-media-container",
+				skip: this.settings.showShareButton ? false : true,
 				children: [
 					{
 						tag: "button",
 						class: "tp-button tp-facebook-button",
-						streAs: "facebookButton",
+						storeAs: "facebookButton",
 						children: [
 							{
 								tag: "svg",
@@ -316,7 +465,7 @@ const playerDOMTree = [
 					{
 						tag: "button",
 						class: "tp-button tp-twitter-button",
-						streAs: "twitterButton",
+						storeAs: "twitterButton",
 						children: [
 							{
 								tag: "svg",
@@ -340,7 +489,7 @@ const playerDOMTree = [
 					{
 						tag: "button",
 						class: "tp-button tp-tumblr-button",
-						streAs: "tumblrButton",
+						storeAs: "tumblrButton",
 						children: [
 							{
 								tag: "svg",
@@ -368,24 +517,24 @@ const playerDOMTree = [
 	{
 		tag: "div",
 		class: "tp-playlist-container",
-		streAs: "playlistContainer",
+		storeAs: "playlistContainer",
 		children: [
 			{
 				tag: "div",
 				class: "tp-scrollbar-track",
-				streAs: "scrollbarTrack",
+				storeAs: "scrollbarTrack",
 				children: [
 					{
 						tag: "div",
 						class: "tp-scrollbar-thumb",
-						streAs: "scrollbarThumb",
+						storeAs: "scrollbarThumb",
 					},
 				],
 			},
 			{
-				tag: "div",
+				tag: "ul",
 				class: "tp-playlist",
-				streAs: "playlist",
+				storeAs: "playlist",
 			},
 		],
 	},
@@ -396,12 +545,12 @@ const playerDOMTree = [
 			{
 				tag: "div",
 				class: "tp-error-message",
-				streAs: "errorMessage",
+				storeAs: "errorMessage",
 			},
 			{
 				tag: "button",
 				class: "tp-error-close",
-				streAs: "errorClose",
+				storeAs: "errorClose",
 				children: [
 					{
 						tag: "svg",

@@ -101,7 +101,7 @@ loadeddata() {
 
 loadedmetadata() {
 	this.playerState.audioEvent = 'loadedmetadata';
-	const { audioDuration } = this.uiElements;
+	const { audioDuration } = this.uiElements;а
 
 	// Update the duration display in the UI
 	audioDuration.textContent = utils.secondsToTimecode(this.audio.duration);
