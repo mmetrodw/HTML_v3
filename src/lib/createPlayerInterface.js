@@ -61,7 +61,7 @@ async createPlayerInterface() {
 
 	const { wrapper } = this.uiElements;
 	const { rounded, skin, showRepeatButton, showShuffleButton, showShareButton} = this.settings;
-	const { addClass } = utils;
+	const { addClass } = this.utils;
 	const { isMobile, isPlaylist } = this.playerState;
 
 	// Add classes to the wrapper

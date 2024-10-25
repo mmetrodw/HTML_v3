@@ -8,7 +8,7 @@ this.playerState = {
 	_titleAnimationInterval: null,
 	_volumeToggle: false,
 	_isLoading: false,
-	_isMobile: utils.isMobileDevice(),
+	_isMobile: this.utils.isMobileDevice(),
 	_isPlaylist: null,
 	_isPlaylistDisplayed: false,
 	_isRadioInfoUpdateAllowed: false,
@@ -69,10 +69,10 @@ this.playerState = {
 	handleIsLoadingChange: () => {
 		if(this._isLoading) {
 			// Add the loading class to the player UI
-			utils.addClass(this.uiElements.wrapper, 'tp-loading');
+			this.utils.addClass(this.uiElements.wrapper, 'tp-loading');
 		} else {
 			// Remove the loading class from the player UI
-			utils.removeClass(this.uiElements.wrapper, 'tp-loading');
+			this.utils.removeClass(this.uiElements.wrapper, 'tp-loading');
 		}
 	},
 }

@@ -123,18 +123,14 @@
 .tp-player-header {
 	position: relative;
 	width: auto;
+	height: 20px;
 	padding: 0;
-	font-size: 28px;
-	font-weight: 100;
-	line-height: 35px;
 	display: flex;
 	flex-wrap: nowrap;
 	justify-content: center;
 	align-items: center;
 	align-content: flex-start;
 	flex-direction: row;
-	overflow: hidden;
-	color: var(--player-tracktitle);
 }
 
 .tp-track-title {
@@ -142,7 +138,10 @@
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	color: inherit;
+	color: var(--player-tracktitle);
+	font-size: 28px;
+	font-weight: 100;
+	line-height: 35px;
 }
 
 .tp-track-title b {
@@ -392,11 +391,46 @@
 	justify-content: space-between;
 	align-content: flex-start;
 	flex-direction: column;
+	flex: 0 0 auto;
+	gap: 20px;
 	overflow: hidden;
-	transition: all 500ms var(--easeInOutExpo);
+	transition: all 500ms var(--easeOutExpo);
 }
 
-.tp-show-share .tp-social-media-container {
+.tp-social-media-container .tp-button {
+	transform: translateX(-200%);
+	transition: all 500ms var(--easeOutExpo);
+}
+
+.tp-social-media-container .tp-button:nth-child(1) {
+	transition-delay: 50ms;
+}
+
+.tp-social-media-container .tp-button:nth-child(2) {
+	transition-delay: 100ms;
+}
+
+.tp-social-media-container .tp-button:nth-child(3) {
+	transition-delay: 150ms;
+}
+
+.tp-sharing .tp-social-media-container .tp-button {
+	transform: translateX(0%);
+}
+
+.tp-sharing .tp-social-media-container .tp-button:nth-child(1) {
+	transition-delay: 0ms;
+}
+
+.tp-sharing .tp-social-media-container .tp-button:nth-child(2) {
+	transition-delay: 50ms;
+}
+
+.tp-sharing .tp-social-media-container .tp-button:nth-child(3) {
+	transition-delay: 100ms;
+}
+
+.tp-sharing .tp-social-media-container {
 	width: 60px;
 	padding: 20px 20px;
 }
@@ -471,6 +505,7 @@
 	border-bottom-color: var(--playlist-separator);
 }
 
+.tp-playlist-item.tp-playing,
 .tp-playlist-item:hover {
 	background: var(--playlist-hover-background);
 	color: var(--playlist-hover-color);
@@ -776,7 +811,7 @@
 	flex-direction: row;
 }
 
-.tp-sharing.tp-vertical.tp-no-cover .tp-player-container {
+.tp-sharing.tp-vertical.tp-no-cover .tp-social-media-container {
 	grid-template-columns: 1fr;
 	grid-template-rows: 0fr 200px 60px;
 }

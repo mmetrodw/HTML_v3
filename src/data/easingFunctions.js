@@ -194,12 +194,12 @@ const easingFunctions = {
 		}
 	},
 	easeInBounce: (time) => {
-		return 1 - this.utils.easingFunctions.easeOutBounce(1 - time);
+		return 1 - easingFunctions.easeOutBounce(1 - time);
 	},
 	easeInOutBounce: (time) => {
 		if (time < 0.5) {
-			return this.utils.easingFunctions.easeInBounce(time * 2) * 0.5;
+			return easingFunctions.easeInBounce(time * 2) * 0.5;
 		}
-		return this.utils.easingFunctions.easeOutBounce(time * 2 - 1) * 0.5 + 0.5;
+		return easingFunctions.easeOutBounce(time * 2 - 1) * 0.5 + 0.5;
 	},
 };

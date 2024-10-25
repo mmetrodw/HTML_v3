@@ -30,7 +30,7 @@ durationchange() {
 	const { audioDuration } = this.uiElements;
 
 	// Update the duration display in the UI
-	audioDuration.textContent = utils.secondsToTimecode(this.audio.duration);
+	audioDuration.textContent = this.utils.secondsToTimecode(this.audio.duration);
 	// Show or hide the duration element based on whether the duration is not Infinity
 	audioDuration.style = this.audio.duration !== Infinity ? "block" : "none";
 	// Set the seeking state to true
@@ -78,7 +78,7 @@ error() {
 	// Disable autoplay
 	this.playerState.autoplay = false;
 	// Add the 'error' class to the player UI
-	utils.addClass(this.uiElements.wrapper, 'tp-error');
+	this.utils.addClass(this.uiElements.wrapper, 'tp-error');
 	// Show the error message
 	this.uiElements.errorMessage.textContent = "tPlayer Error: " + errorCode;
 	console.log("tPlayer Error: " + errorCode);
@@ -101,10 +101,10 @@ loadeddata() {
 
 loadedmetadata() {
 	this.playerState.audioEvent = 'loadedmetadata';
-	const { audioDuration } = this.uiElements;а
+	const { audioDuration } = this.uiElements;
 
 	// Update the duration display in the UI
-	audioDuration.textContent = utils.secondsToTimecode(this.audio.duration);
+	audioDuration.textContent = this.utils.secondsToTimecode(this.audio.duration);
 	// Show or hide the duration element based on whether the duration is not Infinity
 	audioDuration.style = this.audio.duration !== Infinity ? "block" : "none";
 	// Set the seeking state to true
@@ -116,7 +116,7 @@ loadedmetadata() {
 pause() {
 	this.playerState.audioEvent = 'pause';
 	const { playlistItem, playbackButton } = this.uiElements;
-	const { removeClass } = utils;
+	const { removeClass } = this.utils;
 
 	// Remove the 'playing' class from playlist items
 	removeClass(playlistItem, 'tp-playing');
@@ -131,7 +131,7 @@ pause() {
 play() {
 	this.playerState.audioEvent = 'play';
 	const { playlistItem, playbackButton } = this.uiElements;
-	const { addClass } = utils;
+	const { addClass } = this.utils;
 	// Pause all other players in the collection
 	for (let player in tPlayersCollection) {
 		if (player !== this.playerId) {
@@ -139,7 +139,7 @@ play() {
 		}
 	}
 	// Add the 'playing' class to the current playlist item
-	addClass(playlistItem[this.currentTrack.index], 'tp-playing');
+	if(this.playerState.isPlaylist) addClass(playlistItem[this.currentTrack.index], 'tp-playing');
 	// Add the 'active' class to the playback button
 	addClass(playbackButton, 'tp-active');
 	// Update the playback button icon to 'pause'
@@ -220,7 +220,7 @@ timeupdate() {
 		// Update the width of the playback progress bar
 		this.uiElements.audioPlaybackProgress.style.width = percent + '%';
 		// Update the displayed current time in the player
-		this.uiElements.audioCurrentTime.textContent = utils.secondsToTimecode(this.audio.currentTime);
+		this.uiElements.audioCurrentTime.textContent = this.utils.secondsToTimecode(this.audio.currentTime);
 		// Call the progress function to update the buffered progress bar
 		this.progress();
 	}
@@ -240,10 +240,10 @@ volumechange() {
 	// Update the mute state and button appearance
 	if(this.audio.volume === 0) {
 		this.playerState.isVolumeMuted = true;
-		utils.addClass(this.uiElements.volumeButton, 'tp-active');
+		this.utils.addClass(this.uiElements.volumeButton, 'tp-active');
 	} else {
 		this.playerState.isVolumeMuted = false;
-		utils.removeClass(this.uiElements.volumeButton, 'tp-active');
+		this.utils.removeClass(this.uiElements.volumeButton, 'tp-active');
 	}
 }
 

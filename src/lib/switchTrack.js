@@ -4,7 +4,7 @@ switchTrack() {
 
 	const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, trackTitle, wrapper, coverImage } = this.uiElements;
 	const { allowPlaylistScroll, maxVisibleTracks, showCover } = this.settings;
-	const { addClass, removeClass } = utils;
+	const { addClass, removeClass } = this.utils;
 	const currentTrackIndex = this.currentTrack.index;
 
 	// Disable radio info update
