@@ -65,22 +65,18 @@ async createPlayerInterface() {
 
 	// Add cover section if cover display is enabled
 	if(showCover) {
-		const coverContainer = document.createElement("div");
-		addClass(coverContainer, "tp-aside-player");
-		playerContainer.appendChild(coverContainer);
+		const playerASide = document.createElement("div");
+		addClass(playerASide, "tp-aside-player");
+		playerContainer.appendChild(playerASide);
 
 		const coverLoadingSpinner = document.createElement("div");
 		addClass(coverLoadingSpinner, "tp-cover-loading-spinner");
 		coverLoadingSpinner.innerHTML = "<span></span><span></span><span></span>";
-		coverContainer.appendChild(coverLoadingSpinner);
+		playerASide.appendChild(coverLoadingSpinner);
 
-		const cover = document.createElement("div");
-		addClass(cover, "tp-cover");
-		coverContainer.appendChild(cover);
-
-		this.uiElements.coverImage = document.createElement("img");
-		addClass(this.uiElements.coverImage, "tp-cover-image");
-		cover.appendChild(this.uiElements.coverImage);
+		this.uiElements.coverContainer = document.createElement("div");
+		addClass(this.uiElements.coverContainer, "tp-cover");
+		playerASide.appendChild(this.uiElements.coverContainer);
 	}
 
 	// Controls container and structure

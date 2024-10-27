@@ -228,15 +228,11 @@
 	fill: var(--player-buttons-normal);
 }
 
-.tp-playback-button:focus path,
-.tp-button:focus .tp-stroke,
 .tp-playback-button:hover path,
 .tp-button:hover .tp-stroke {
 	stroke: var(--player-buttons-hover);
 }
 
-.tp-playback-button:focus path,
-.tp-button:focus .tp-fill,
 .tp-playback-button:hover path,
 .tp-button:hover .tp-fill {
 	fill: var(--player-buttons-hover);

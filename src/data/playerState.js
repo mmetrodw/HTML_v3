@@ -42,7 +42,7 @@ this.playerState = {
 	set allowSeeking(value) { 
 		if(this._allowSeeking !== value) {
 			this._allowSeeking = value;
-			this.handleAllowSeekingChange();
+			this.handleAllowSeekingChange(value);
 		}
 	},
 	set audioEvent(value) {
@@ -60,7 +60,6 @@ this.playerState = {
 	set volumeToggle(value) { this._volumeToggle = value; },
 	set isLoading(value) {
 		if(this._isLoading !== value) {
-			console.log(`isLoading: ${value}`);
 			this._isLoading = value;
 			this.handleIsLoadingChange(value);
 		}
@@ -73,8 +72,8 @@ this.playerState = {
 	set isUserSeekingAudio(value) { this._isUserSeekingAudio = value; },
 	set isVolumeMuted(value) { this._isVolumeMuted = value; },
 
-	handleAllowSeekingChange: () => {
-		this.uiElements.audioSeekBar.style.pointerEvents = this._allowSeeking && this.audio.duration !== Infinity ? "all" : "none";
+	handleAllowSeekingChange: (state) => {
+		this.uiElements.audioSeekBar.style.pointerEvents = state && this.audio.duration !== Infinity ? "all" : "none";
 	},
 	handleIsLoadingChange: (state) => {
 		const { addClass, removeClass } = this;

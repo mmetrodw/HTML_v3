@@ -328,7 +328,7 @@ class tPlayerClass {
 			set allowSeeking(value) {
 				if(this._allowSeeking !== value) {
 					this._allowSeeking = value;
-					this.handleAllowSeekingChange();
+					this.handleAllowSeekingChange(value);
 				}
 			},
 			set audioEvent(value) {
@@ -346,7 +346,6 @@ class tPlayerClass {
 			set volumeToggle(value) { this._volumeToggle = value; },
 			set isLoading(value) {
 				if(this._isLoading !== value) {
-					console.log(`isLoading: ${value}`);
 					this._isLoading = value;
 					this.handleIsLoadingChange(value);
 				}
@@ -359,8 +358,8 @@ class tPlayerClass {
 			set isUserSeekingAudio(value) { this._isUserSeekingAudio = value; },
 			set isVolumeMuted(value) { this._isVolumeMuted = value; },
 		
-			handleAllowSeekingChange: () => {
-				this.uiElements.audioSeekBar.style.pointerEvents = this._allowSeeking && this.audio.duration !== Infinity ? "all" : "none";
+			handleAllowSeekingChange: (state) => {
+				this.uiElements.audioSeekBar.style.pointerEvents = state && this.audio.duration !== Infinity ? "all" : "none";
 			},
 			handleIsLoadingChange: (state) => {
 				const { addClass, removeClass } = this;
@@ -502,22 +501,18 @@ class tPlayerClass {
 	
 		// Add cover section if cover display is enabled
 		if(showCover) {
-			const coverContainer = document.createElement("div");
-			addClass(coverContainer, "tp-aside-player");
-			playerContainer.appendChild(coverContainer);
+			const playerASide = document.createElement("div");
+			addClass(playerASide, "tp-aside-player");
+			playerContainer.appendChild(playerASide);
 	
 			const coverLoadingSpinner = document.createElement("div");
 			addClass(coverLoadingSpinner, "tp-cover-loading-spinner");
 			coverLoadingSpinner.innerHTML = "<span></span><span></span><span></span>";
-			coverContainer.appendChild(coverLoadingSpinner);
+			playerASide.appendChild(coverLoadingSpinner);
 	
-			const cover = document.createElement("div");
-			addClass(cover, "tp-cover");
-			coverContainer.appendChild(cover);
-	
-			this.uiElements.coverImage = document.createElement("img");
-			addClass(this.uiElements.coverImage, "tp-cover-image");
-			cover.appendChild(this.uiElements.coverImage);
+			this.uiElements.coverContainer = document.createElement("div");
+			addClass(this.uiElements.coverContainer, "tp-cover");
+			playerASide.appendChild(this.uiElements.coverContainer);
 		}
 	
 		// Controls container and structure
@@ -910,16 +905,16 @@ class tPlayerClass {
 	async setupEventListeners() {
 		this.playerState.log = 'Setting Up Event Listeners';
 		const { isPlaylist, isMobile } = this.playerState;
-		const { showRepeatButton, showShuffleButton, showShareButton, showCover } = this.settings;
+		const { showRepeatButton, showShuffleButton, showShareButton, showCover, allowPlaylistScroll, maxVisibleTracks } = this.settings;
 		const { removeClass } = this;
-
+	
 		// List of audio events to listen for
 		const audioEvents = [
-			'abort', 'canplay', 'canplaythrough', 'durationchange', 'emptied', 'ended', 'error', 
-			'loadeddata', 'loadedmetadata', 'loadstart', 'pause', 'play', 'playing', 'progress', 
+			'abort', 'canplay', 'canplaythrough', 'durationchange', 'emptied', 'ended', 'error',
+			'loadeddata', 'loadedmetadata', 'loadstart', 'pause', 'play', 'playing', 'progress',
 			'ratechange', 'seeked', 'seeking', 'stalled', 'suspend', 'timeupdate', 'volumechange', 'waiting'
 		];
-
+	
 		// Add event listeners for all audio events
 		audioEvents.forEach((event) => {
 			if (typeof this[event] === 'function') {
@@ -928,27 +923,27 @@ class tPlayerClass {
 				console.log(`No handler found for event: ${event}`);
 			}
 		});
-
+	
 		// Reference to UI elements
 		const {
 			wrapper, playbackButton, prevButton, nextButton, volumeButton, repeatButton, shuffleButton, shareButton,
 			facebookButton, twitterButton, tumblrButton, togglePlaylistButton, playlistItem, audioSeekBar,
 			volumeLevelBar, playlistContainer, playlist, scrollbarTrack, coverImage, errorCloseButton
 		} = this.uiElements;
-
+	
 		playbackButton.addEventListener('click', this.playback.bind(this));
-
+	
 		if(isPlaylist) {
 			prevButton.addEventListener('click', this.prevTrack.bind(this));
 			nextButton.addEventListener('click', this.nextTrack.bind(this));
 			if(showShuffleButton) shuffleButton.addEventListener('click', this.shuffleToggle.bind(this));
 			togglePlaylistButton.addEventListener('click', this.togglePlaylist.bind(this));
-
+	
 			// Add event listeners for playlist items
 			playlistItem.forEach((item, index) => {
 				const download = item.querySelector('.tp-playlist-track-download');
 				const buy = item.querySelector('.tp-playlist-track-buy');
-
+	
 				// Select Track From Playlist
 				item.addEventListener('click', () => {
 					if (this.currentTrack.index !== index) {
@@ -960,34 +955,37 @@ class tPlayerClass {
 						this.playback();
 					}
 				});
-
+	
 				// Prevent click events on download and buy links from propagating
 				const preventClick = event => event.stopPropagation();
 				if (download) download.addEventListener('click', preventClick);
 				if (buy) buy.addEventListener('click', preventClick);
 			});
-
-			// Add event listeners for scrollbar interactions
-			playlistContainer.addEventListener('mouseenter', this.showScrollbar.bind(this)); // Show scrollbar on mouse enter
-			playlistContainer.addEventListener('mouseleave', this.hideScrollbar.bind(this)); // Hide scrollbar on mouse leave
-			playlist.addEventListener('scroll', this.updateScrollbarThumb.bind(this)); // Update scrollbar thumb position on scroll
-			this.updateScrollbarThumb(); // Set Initial Scrollbar Thumb Position
-			scrollbarTrack.addEventListener('wheel', event => { // Handle mouse wheel scrolling
-				event.preventDefault();
-				playlist.scrollTop += event.deltaY;
-			}, { passive: false });
-			scrollbarTrack.addEventListener('mousedown', this.scrollbarTrackSeekingStart.bind(this)); // Handle mouse down for scrollbar dragging
+	
+			if(allowPlaylistScroll && maxVisibleTracks > this.playlist.length) {
+				// Add event listeners for scrollbar interactions
+				playlistContainer.addEventListener('mouseenter', this.showScrollbar.bind(this)); // Show scrollbar on mouse enter
+				playlistContainer.addEventListener('mouseleave', this.hideScrollbar.bind(this)); // Hide scrollbar on mouse leave
+				playlist.addEventListener('scroll', this.updateScrollbarThumb.bind(this)); // Update scrollbar thumb position on scroll
+				// Update The Position And Size Of The Scrollbar
+				this.updateScrollbarThumb();
+				scrollbarTrack.addEventListener('wheel', event => { // Handle mouse wheel scrolling
+					event.preventDefault();
+					playlist.scrollTop += event.deltaY;
+				}, { passive: false });
+				scrollbarTrack.addEventListener('mousedown', this.scrollbarTrackSeekingStart.bind(this)); // Handle mouse down for scrollbar dragging
+			}
 		}
-
+	
 		if(showRepeatButton) repeatButton.addEventListener('click', this.repeatToggle.bind(this));
-
+	
 		if(showShareButton) {
 			shareButton.addEventListener('click', this.shareToggle.bind(this));
 			facebookButton.addEventListener('click', this.shareFacebook.bind(this));
 			twitterButton.addEventListener('click', this.shareTwitter.bind(this));
 			tumblrButton.addEventListener('click', this.shareTumblr.bind(this));
 		}
-
+	
 		// Add event listeners for seeking audio and Volume
 		if (isMobile) {
 			audioSeekBar.addEventListener('touchstart', this.startAudioSeeking.bind(this), { passive: true });
@@ -996,15 +994,15 @@ class tPlayerClass {
 			volumeLevelBar.addEventListener('mousedown', this.startVolumeAdjustment.bind(this), false);
 			volumeButton.addEventListener('click', this.volumeToggle.bind(this));
 		}
-
+	
 		// Add event listener for window resize
 		window.addEventListener("resize", this.playerResize.bind(this));
-
+	
 		// Error Close
 		errorCloseButton.addEventListener('click', () => {
 			removeClass(wrapper, "tp-error");
 		});
-
+	
 		this.playerState.log = 'Event Listeners Are Set';
 	}
 
@@ -1203,6 +1201,10 @@ class tPlayerClass {
 	seeked() {
 		// Set loading status to false
 		this.playerState.isLoading = false;
+		// Allow Seeking
+		this.playerState.allowSeeking = true;
+		// Enable radio info updates
+		this.playerState.allowRadioInfoUpdate = true;
 		// Set Audio Event
 		this.playerState.audioEvent = 'seeked';
 	}
@@ -1210,6 +1212,10 @@ class tPlayerClass {
 	seeking() {
 		// Set loading status to true
 		this.playerState.isLoading = true;
+		// Forbid Seeking
+		this.playerState.allowSeeking = false;
+		// Disable radio info updates
+		this.playerState.allowRadioInfoUpdate = false;
 		// Set Audio Event
 		this.playerState.audioEvent = 'seeking';
 	}
@@ -1577,13 +1583,13 @@ class tPlayerClass {
 		document.addEventListener(pointerUpEvent, this.finalizeAudioSeeking.bind(this), false);
 	
 		// Remove transitions for smooth seeking
-		this.uiElements.currentTime.style.transition = "";
-		this.uiElements.duration.style.transition = "";
+		this.uiElements.audioCurrentTime.style.transition = "";
+		this.uiElements.audioDuration.style.transition = "";
 	}
 	
 	// Updates the audio seek position based on the user's input.
 	updateAudioSeekPosition(event) {
-		const { audioSeekBar, audioPlaybackProgress, currentTime, duration } = this.uiElements;
+		const { audioSeekBar, audioPlaybackProgress, audioCurrentTime, audioDuration } = this.uiElements;
 		const { secondsToTimecode } = this;
 	
 		// Return if the user is not seeking audio
@@ -1602,22 +1608,22 @@ class tPlayerClass {
 		// Update the current track time based on the percentage
 		this.currentTrack.currentTime = percent * this.audio.duration;
 		// Update the current time display
-		currentTime.textContent = secondsToTimecode(this.currentTrack.currentTime);
+		audioCurrentTime.textContent = secondsToTimecode(this.currentTrack.currentTime);
 	
 		// Calculate offsets for the current time and duration displays
-		const currentTimeOffset = mousePosition - seekBarBounds.left - currentTime.offsetWidth - 5;
-		const durationOffset = seekBarBounds.width - (mousePosition - seekBarBounds.left) - duration.offsetWidth - 5;
+		const currentTimeOffset = mousePosition - seekBarBounds.left - audioCurrentTime.offsetWidth - 5;
+		const durationOffset = seekBarBounds.width - (mousePosition - seekBarBounds.left) - audioDuration.offsetWidth - 5;
 	
 		// Adjust the position of the current time and duration displays
 		if(percent !== 0 && percent !== 1) {
-			currentTime.style.left = `${currentTimeOffset}px`;
-			duration.style.right = `${durationOffset}px`;
+			audioCurrentTime.style.left = `${currentTimeOffset}px`;
+			audioDuration.style.right = `${durationOffset}px`;
 		}
 	}
 	
 	// Finalizes the audio seeking process.
 	finalizeAudioSeeking() {
-		const { currentTime, duration } = this.uiElements;
+		const { audioCurrentTime, audioDuration } = this.uiElements;
 	
 		// Set the user seeking state to false
 		this.playerState.isUserSeekingAudio = false;
@@ -1634,12 +1640,12 @@ class tPlayerClass {
 		this.audio.currentTime = this.currentTrack.currentTime;
 	
 		// Add transitions for smooth UI updates
-		Object.assign(currentTime.style, {
+		Object.assign(audioCurrentTime.style, {
 				transition: "all 250ms var(--easeOutExpo)",
 				left: "5px"
 		});
 	
-		Object.assign(duration.style, {
+		Object.assign(audioDuration.style, {
 				transition: "all 250ms var(--easeOutExpo)",
 				right: "5px"
 		});
@@ -1788,7 +1794,7 @@ class tPlayerClass {
 		this.playerState.log = 'Changing the Track';
 		let scrollDistance = 0;
 	
-		const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, trackTitle, wrapper, coverImage } = this.uiElements;
+		const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, trackTitle, coverContainer } = this.uiElements;
 		const { allowPlaylistScroll, maxVisibleTracks, showCover } = this.settings;
 		const { addClass, removeClass } = this;
 		const currentTrackIndex = this.currentTrack.index;
@@ -1846,19 +1852,9 @@ class tPlayerClass {
 		// Handle cover display
 		const { cover } = this.playlist[currentTrackIndex];
 	
-		// Hide the cover of previous track
-		coverImage.style.transform = 'scale(2)';
-		coverImage.style.filter = 'blur(25px)';
-		coverImage.style.opacity = 0;
-		coverImage.style.transition = 'all 500ms var(--quickSlideInverse)';
-	
 		if(cover && cover !== "" && showCover) {
-			removeClass(wrapper, 'tp-no-cover');
-			setTimeout(() => {
-				coverImage.setAttribute('src', cover);
-			}, 500)
-		} else {
-			addClass(wrapper, 'tp-no-cover');
+			coverContainer.innerHTML = "";
+			this.loadCover(cover);
 		}
 	
 		this.playerState.log = 'Track Changed';
@@ -2099,6 +2095,28 @@ class tPlayerClass {
 		};
 	
 		requestAnimationFrame(animate); // Start the animation
+	}
+	// Load Cover
+	loadCover(url) {
+		// Create a new Image object
+		const img = new Image();
+		// Load the image source
+		img.src = url;
+		img.classList.add('tp-cover-image');
+	
+		// Add an event listener for when the image is loaded
+		img.onload = function() {
+			// Once loaded, set opacity to 1 to show the image
+			img.style.opacity = '1';
+		};
+	
+		// Optionally, handle loading errors
+		img.onerror = function() {
+			console.error("Failed to load image:", url);
+			// You might want to show an error placeholder or message
+		};
+	
+		this.uiElements.coverContainer.appendChild(img);
 	}
 
 	// Button Icons

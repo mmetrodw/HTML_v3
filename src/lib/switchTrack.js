@@ -2,7 +2,7 @@ switchTrack() {
 	this.playerState.log = 'Changing the Track';
 	let scrollDistance = 0;
 
-	const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, trackTitle, wrapper, coverImage } = this.uiElements;
+	const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, trackTitle, coverContainer } = this.uiElements;
 	const { allowPlaylistScroll, maxVisibleTracks, showCover } = this.settings;
 	const { addClass, removeClass } = this;
 	const currentTrackIndex = this.currentTrack.index;
@@ -60,19 +60,9 @@ switchTrack() {
 	// Handle cover display
 	const { cover } = this.playlist[currentTrackIndex];
 
-	// Hide the cover of previous track
-	coverImage.style.transform = 'scale(2)';
-	coverImage.style.filter = 'blur(25px)';
-	coverImage.style.opacity = 0;
-	coverImage.style.transition = 'all 500ms var(--quickSlideInverse)';
-
 	if(cover && cover !== "" && showCover) {
-		removeClass(wrapper, 'tp-no-cover');
-		setTimeout(() => {
-			coverImage.setAttribute('src', cover);
-		}, 500)
-	} else {
-		addClass(wrapper, 'tp-no-cover');
+		coverContainer.innerHTML = "";
+		this.loadCover(cover);
 	}
 	
 	this.playerState.log = 'Track Changed';

@@ -192,6 +192,10 @@ ratechange() {
 seeked() {
 	// Set loading status to false
 	this.playerState.isLoading = false;
+	// Allow Seeking
+	this.playerState.allowSeeking = true;
+	// Enable radio info updates
+	this.playerState.allowRadioInfoUpdate = true;
 	// Set Audio Event
 	this.playerState.audioEvent = 'seeked';
 }
@@ -199,6 +203,10 @@ seeked() {
 seeking() {
 	// Set loading status to true
 	this.playerState.isLoading = true;
+	// Forbid Seeking
+	this.playerState.allowSeeking = false;
+	// Disable radio info updates
+	this.playerState.allowRadioInfoUpdate = false;
 	// Set Audio Event
 	this.playerState.audioEvent = 'seeking';
 }

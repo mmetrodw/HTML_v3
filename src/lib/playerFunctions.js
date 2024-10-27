@@ -288,13 +288,13 @@ startAudioSeeking(event) {
 	document.addEventListener(pointerUpEvent, this.finalizeAudioSeeking.bind(this), false);
 
 	// Remove transitions for smooth seeking
-	this.uiElements.currentTime.style.transition = "";
-	this.uiElements.duration.style.transition = "";
+	this.uiElements.audioCurrentTime.style.transition = "";
+	this.uiElements.audioDuration.style.transition = "";
 }
 
 // Updates the audio seek position based on the user's input.
 updateAudioSeekPosition(event) {
-	const { audioSeekBar, audioPlaybackProgress, currentTime, duration } = this.uiElements;
+	const { audioSeekBar, audioPlaybackProgress, audioCurrentTime, audioDuration } = this.uiElements;
 	const { secondsToTimecode } = this;
 
 	// Return if the user is not seeking audio
@@ -313,22 +313,22 @@ updateAudioSeekPosition(event) {
 	// Update the current track time based on the percentage
 	this.currentTrack.currentTime = percent * this.audio.duration;
 	// Update the current time display
-	currentTime.textContent = secondsToTimecode(this.currentTrack.currentTime);
+	audioCurrentTime.textContent = secondsToTimecode(this.currentTrack.currentTime);
 
 	// Calculate offsets for the current time and duration displays
-	const currentTimeOffset = mousePosition - seekBarBounds.left - currentTime.offsetWidth - 5;
-	const durationOffset = seekBarBounds.width - (mousePosition - seekBarBounds.left) - duration.offsetWidth - 5;
+	const currentTimeOffset = mousePosition - seekBarBounds.left - audioCurrentTime.offsetWidth - 5;
+	const durationOffset = seekBarBounds.width - (mousePosition - seekBarBounds.left) - audioDuration.offsetWidth - 5;
 
 	// Adjust the position of the current time and duration displays
 	if(percent !== 0 && percent !== 1) {
-		currentTime.style.left = `${currentTimeOffset}px`;
-		duration.style.right = `${durationOffset}px`;
+		audioCurrentTime.style.left = `${currentTimeOffset}px`;
+		audioDuration.style.right = `${durationOffset}px`;
 	}
 }
 
 // Finalizes the audio seeking process.
 finalizeAudioSeeking() {
-	const { currentTime, duration } = this.uiElements;
+	const { audioCurrentTime, audioDuration } = this.uiElements;
 
 	// Set the user seeking state to false
 	this.playerState.isUserSeekingAudio = false;
@@ -345,12 +345,12 @@ finalizeAudioSeeking() {
 	this.audio.currentTime = this.currentTrack.currentTime;
 
 	// Add transitions for smooth UI updates
-	Object.assign(currentTime.style, {
+	Object.assign(audioCurrentTime.style, {
 			transition: "all 250ms var(--easeOutExpo)",
 			left: "5px"
 	});
 
-	Object.assign(duration.style, {
+	Object.assign(audioDuration.style, {
 			transition: "all 250ms var(--easeOutExpo)",
 			right: "5px"
 	});
