@@ -1,4 +1,5 @@
 animateTextChange(previousTrack, currentTrack) {
+	const { adjustText } = this;
 	// Clear any existing animation interval to prevent multiple animations running simultaneously
 	if (this.playerState.titleAnimationInterval) {
 		clearInterval(this.playerState.titleAnimationInterval);
@@ -13,10 +14,10 @@ animateTextChange(previousTrack, currentTrack) {
 	// Function to update the text in the element, adjusting artist and title
 	const updateText = () => {
 		// Adjust the artist text based on its length compared to the current artist
-		previousArtist = this.adjustText(previousArtist, currentArtist);
+		previousArtist = adjustText(previousArtist, currentArtist);
 			
 		// Adjust the title text based on its length compared to the current title
-		previousTitle = this.adjustText(previousTitle, currentTitle);
+		previousTitle = adjustText(previousTitle, currentTitle);
 			
 		// Update the track title element with the new artist and title
 		if(previousTitle !== " ") {

@@ -1,5 +1,5 @@
 async validatePlayerConfig() {
-	this.playerState.status = "Validating Player Configuration";
+	this.playerState.log = "Validating Player Configuration";
 	const startTime = new Date().getTime();
 
 	const playerContainerElement = document.getElementById(this.settings.container);
@@ -41,5 +41,5 @@ async validatePlayerConfig() {
 	
 	const endTime = new Date().getTime();
 	const duration = (endTime - startTime);
-	this.playerState.status = `The Configuration Has Been Validated ${duration} ms.`;
+	this.playerState.log = `The Configuration Has Been Validated ${duration} ms.`;
 }

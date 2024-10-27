@@ -638,7 +638,7 @@ class tPlayerClass {
 		// Error Close
 		this.uiElements.errorClose.addEventListener('click', () => {
 			this.utils.removeClass(this.uiElements.wrapper, "tp-error");
-		})
+		});
 	}
 
 	/* AUDIO EVENTS */

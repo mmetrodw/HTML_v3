@@ -1,10 +1,10 @@
 switchTrack() {
-	this.playerState.status = 'Changing the Track';
+	this.playerState.log = 'Changing the Track';
 	let scrollDistance = 0;
 
 	const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, trackTitle, wrapper, coverImage } = this.uiElements;
 	const { allowPlaylistScroll, maxVisibleTracks, showCover } = this.settings;
-	const { addClass, removeClass } = this.utils;
+	const { addClass, removeClass } = this;
 	const currentTrackIndex = this.currentTrack.index;
 
 	// Disable radio info update
@@ -75,5 +75,5 @@ switchTrack() {
 		addClass(wrapper, 'tp-no-cover');
 	}
 	
-	this.playerState.status = 'Track Changed';
+	this.playerState.log = 'Track Changed';
 }

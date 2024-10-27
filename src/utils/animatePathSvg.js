@@ -1,4 +1,4 @@
-animatePathSvg: (pathElement, fromD, toD, duration = 1000, easing = 'linear', callback) => {
+animatePathSvg(pathElement, fromD, toD, duration = 1000, easing = 'linear', callback) {
 	let startTime = null;
 
 	// Function to interpolate the 'd' attribute of the path element

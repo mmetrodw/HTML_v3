@@ -1,4 +1,4 @@
-getShuffledPlaylistOrder: () => {
+getShuffledPlaylistOrder() {
 	let array = [], i, j, temp = null;
 	// Create Array of Nums from 0 to Playlist Length
 	for (i = 0; i < this.playlist.length; i++) {

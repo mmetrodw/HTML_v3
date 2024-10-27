@@ -1,4 +1,4 @@
-secondsToTimecode: (totalSeconds) => {
+secondsToTimecode(totalSeconds) {
 	if(totalSeconds == Infinity) {
 		return "00:00";
 	}

@@ -18,8 +18,9 @@
 	</style>
 </head>
 <body>
-	
-документація
+	документація <br>
+	переверіти чи працюють аудіо івенти sekking та seeked, якщо так то додати до них this.playerState.allowSeeking
+
 	<div id="playlist_01"></div>
 	<div id="playlist_02"></div>
 	<div id="playlist_03"></div>
@@ -44,7 +45,9 @@ var playlist_01 = [{
 		artist: "Rockot",
 		title: "AMALGAM",
 		audio: "assets/mp3/amalgam-217007.mp3",
-		cover: "assets/img/Rockot.png"
+		cover: "assets/img/Rockot.png",
+		download: "assets/mp3/nightfall-future-bass-music-228100.mp3",
+		buy: "#"
 	}, {
 		artist: "Lidérc",
 		title: "For Her Chill Upbeat Summel Travel",
@@ -104,9 +107,6 @@ var playlist_01 = [{
 	tPlayer({
 		container: "playlist_01",
 		playlist: playlist_01,
-		options: {
-			rounded: false
-		}
 	});
 
 
