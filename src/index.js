@@ -8,7 +8,7 @@ class tPlayerClass {
 		this.uiElements = [];
 		this.playerId = this.getRandomID();
 		
-		// PLAYER STATE
+		// Player State
 		// @include('data/playerState.js')
 
 		this.currentTrack = {
@@ -17,12 +17,10 @@ class tPlayerClass {
 			artist: null,
 			cover: null,
 		};
-
 		this.previousTrackIndex = 0;
-
+		// Init
 		this.init();
 	}
-
 
 	// Validate Player Config
 	// @include('lib/validatePlayerConfig.js')
@@ -41,13 +39,6 @@ class tPlayerClass {
 
 	/* PLAYER FUNCTION */
 	// @include('lib/playerFunctions.js')
-	
-	// Switches to the next track in the playlist.
-	// @include('lib/switchTrack.js')
-
-	// Function to animate the text change for the track title and artist
-	// @include('lib/animateTextChange.js')
-
 
 	async init() {
 		this.playerState.log = 'Initializing';

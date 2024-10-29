@@ -36,13 +36,7 @@ prevTrack() {
 	this.previousTrackIndex = this.currentTrack.index;
 
 	if(this.playerState.shuffle) {
-		// Set current track to the first index of the order list and remove it
-		this.currentTrack.index = this.orderList.shift();
-
-		// If the order list is now empty, get a new shuffled order list
-		if(this.orderList.length === 0) {
-			this.orderList = this.getShuffledPlaylistOrder();
-		}
+		this.handleShuffleMode();
 	} else {
 		// If there is a previous track in the playlist
 		if(this.currentTrack.index - 1 >= 0) {
@@ -74,13 +68,7 @@ nextTrack() {
 	this.previousTrackIndex = this.currentTrack.index;
 
 	if(this.playerState.shuffle) {
-		// If shuffle is enabled, get the next track index from the shuffled order list
-		this.currentTrack.index = this.orderList.shift();
-
-		// If the order list is empty, regenerate the shuffled playlist order
-		if(this.orderList.length === 0) {
-			this.orderList = this.getShuffledPlaylistOrder();
-		}
+		this.handleShuffleMode();
 	} else {
 		// If shuffle is not enabled, move to the next track in the playlist
 		if(this.currentTrack.index + 1 < this.playlist.length) {
@@ -103,14 +91,24 @@ nextTrack() {
 	this.switchTrack();
 }
 
+handleShuffleMode() {
+	// If shuffle is enabled, get the next track index from the shuffled order list
+	this.currentTrack.index = this.orderList.shift();
+
+	// If the order list is empty, regenerate the shuffled playlist order
+	if(this.orderList.length === 0) {
+		this.orderList = this.getShuffledPlaylistOrder();
+	}
+}
+
 // Toggles the repeat state of the player.
 repeatToggle() {
 	const { repeatButton } = this.uiElements;
-
+	const { toggleClass } = this;
 	// Toggle the repeat state
 	this.playerState.repeat = !this.playerState.repeat;
 	// Toggle the "tp-active" class on the repeat button
-	this.toggleClass(repeatButton, "tp-active");
+	toggleClass(repeatButton, "tp-active");
 	// Simulate the click effect on the repeat button
 	this.simulateClickEffect(repeatButton);
 }
@@ -119,16 +117,12 @@ repeatToggle() {
 shuffleToggle() {
 	const { shuffleButton } = this.uiElements;
 	const { toggleClass } = this;
-	
 	// Toggle the shuffle state
 	this.playerState.shuffle = !this.playerState.shuffle;
-
 	// Toggle the "tp-active" class on the shuffle button
 	toggleClass(shuffleButton, "tp-active");
-
 	// Simulate the click effect on the shuffle button
 	this.simulateClickEffect(shuffleButton);
-
 	// Regenerate the shuffled playlist order if shuffle is enabled, otherwise set to null
 	this.orderList = (this.playerState.shuffle) ? this.getShuffledPlaylistOrder() : null;
 }
@@ -136,7 +130,6 @@ shuffleToggle() {
 // Toggles the share state of the player.
 shareToggle() {
 	const { shareButton, wrapper } = this.uiElements;
-
 	// Toggle the shera display state
 	this.playerState.isShareDisplayed = !this.playerState.isShareDisplayed;
 	// Toggle the "tp-sharing" class on the player
@@ -145,22 +138,12 @@ shareToggle() {
 	this.toggleClass(shareButton, "tp-active");
 	// Simulate the click effect on the share button
 	this.simulateClickEffect(shareButton);
-
 	if (this.playerState.isShareDisplayed) {
 		// Animate the button icon to the "opened" state
 		shareButton.children[0].children[0].setAttribute('d', this.buttonIcons.close);
 	} else {
 		shareButton.children[0].children[0].setAttribute('d', this.buttonIcons.share);
 	}
-}
-
-openPopup(url) {
-	var width = 550;
-	var height = 400;
-	var left = (window.innerWidth - width) / 2;
-	var top = (window.innerHeight - height) / 2;
-	var options = 'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top;
-	window.open(url, 'Share', options);
 }
 
 shareFacebook() {
@@ -184,25 +167,35 @@ shareTumblr() {
 	this.openPopup(shareUrl);
 }
 
+openPopup(url) {
+	var width = 550;
+	var height = 400;
+	var left = (window.innerWidth - width) / 2;
+	var top = (window.innerHeight - height) / 2;
+	var options = 'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top;
+	window.open(url, 'Share', options);
+}
+
 // Toggle Playlist
 togglePlaylist() {
 	let playlistHeight = 0;
 	const { togglePlaylistButton, playlistContainer } = this.uiElements;
 	const { maxVisibleTracks, allowPlaylistScroll } = this.settings;
+	const { toggleClass } = this;
 
 	// Toggle the playlist display state
 	this.playerState.isPlaylistDisplayed = !this.playerState.isPlaylistDisplayed;
 	// Toggle the "tp-active" class on the toggle playlist button
-	this.toggleClass(togglePlaylistButton, "tp-active");
+	toggleClass(togglePlaylistButton, "tp-active");
 	// Simulate the click effect on the toggle playlist button
 	this.simulateClickEffect(togglePlaylistButton);
 
-	if (this.playerState.isPlaylistDisplayed && this.playerState.isPlaylist) {
+	if (this.playerState.isPlaylistDisplayed) {
 		// Animate the button icon to the "opened" state
 		togglePlaylistButton.children[0].children[0].setAttribute('d', this.buttonIcons.close);
 		// Calculate the playlist height based on the number of tracks and settings
-		playlistHeight = (this.playlist.length > maxVisibleTracks && allowPlaylistScroll) 
-		? maxVisibleTracks * 40 - 1 
+		playlistHeight = (this.playlist.length > maxVisibleTracks && allowPlaylistScroll)
+		? maxVisibleTracks * 40 - 1
 		: this.playlist.length * 40;
 	} else {
 		// Animate the button icon to the "closed" state
@@ -230,118 +223,119 @@ volumeToggle() {
 	volumeLevel.style.width = this.playerState.isVolumeMuted ? this.audio.volume * 100 : 0;
 }
 
-// Initiates the audio seeking process.
-startAudioSeeking(event) {
+// the audio seeking process.
+audioSeeking(event) {
 	const { isMobile } = this.playerState;
-	if(!isMobile) event.preventDefault();
-
 	// Check if the event is from a non-primary mouse button on non-mobile devices
 	if(!isMobile && event.button !== 0) return false;
 
+	const { audioSeekBar, audioPlaybackProgress, audioCurrentTime, audioDuration } = this.uiElements;
+	const { secondsToTimecode } = this;// Get the bounds of the seek bar
+	
+	const moveEvent = isMobile ? "touchmove" : "mousemove";
+	const upEvent = isMobile ? "touchend" : "mouseup";
+	const seekBarBounds = audioSeekBar.getBoundingClientRect();
+
 	// Set the user seeking state to true
 	this.playerState.isUserSeekingAudio = true;
-	this.updateAudioSeekPosition(event, this);
 	// Remove transitions for smooth seeking
 	this.uiElements.audioCurrentTime.style.transition = "";
 	this.uiElements.audioDuration.style.transition = "";
-}
 
-// Updates the audio seek position based on the user's input.
-updateAudioSeekPosition(event) {
-	// Return if the user is not seeking audio
-	if(!this.playerState.isUserSeekingAudio) return;
-
-	const { audioSeekBar, audioPlaybackProgress, audioCurrentTime, audioDuration } = this.uiElements;
-	const { secondsToTimecode } = this;// Get the bounds of the seek bar
-	const seekBarBounds = audioSeekBar.getBoundingClientRect();
-	// Determine the mouse position based on the device type
-	const mousePosition = this.playerState.isMobile ? event.touches[0].clientX : event.clientX;
-	// Calculate the percentage of the seek bar that has been traversed
-	let percent = (mousePosition - seekBarBounds.left) / seekBarBounds.width;
-	percent = Math.max(0, Math.min(1, percent));
-
-	// Update the playback progress bar width
-	audioPlaybackProgress.style.width = `${percent * 100}%`;
-	// Update the current track time based on the percentage
-	this.currentTrack.currentTime = percent * this.audio.duration;
-	// Update the current time display
-	audioCurrentTime.textContent = secondsToTimecode(this.currentTrack.currentTime);
-
-	// Calculate offsets for the current time and duration displays
-	const currentTimeOffset = mousePosition - seekBarBounds.left - audioCurrentTime.offsetWidth - 5;
-	const durationOffset = seekBarBounds.width - (mousePosition - seekBarBounds.left) - audioDuration.offsetWidth - 5;
-
-	// Adjust the position of the current time and duration displays
-	if(percent !== 0 && percent !== 1) {
-		audioCurrentTime.style.left = `${currentTimeOffset}px`;
-		audioDuration.style.right = `${durationOffset}px`;
+	const seeking = (event) => {
+		// Determine the mouse position based on the device type
+		const mousePosition = this.playerState.isMobile ? event.touches[0].clientX : event.clientX;
+		// Calculate the percentage of the seek bar that has been traversed
+		const percent = Math.max(0, Math.min(1, (mousePosition - seekBarBounds.left) / seekBarBounds.width));
+		// Update the playback progress bar width
+		audioPlaybackProgress.style.width = `${percent * 100}%`;
+		// Update the current track time based on the percentage
+		this.currentTrack.currentTime = percent * this.audio.duration;
+		// Update the current time display
+		audioCurrentTime.textContent = secondsToTimecode(this.currentTrack.currentTime);
+		// Calculate offsets for the current time and duration displays
+		const currentTimeOffset = mousePosition - seekBarBounds.left - audioCurrentTime.offsetWidth - 5;
+		const durationOffset = seekBarBounds.width - (mousePosition - seekBarBounds.left) - audioDuration.offsetWidth - 5;
+		// Adjust the position of the current time and duration displays
+		if(percent !== 0 && percent !== 1) {
+			audioCurrentTime.style.left = `${currentTimeOffset}px`;
+			audioDuration.style.right = `${durationOffset}px`;
+		}
 	}
+	seeking(event);
+
+	const seeked = (event) => {
+		document.removeEventListener(moveEvent, seeking);
+		document.removeEventListener(upEvent, seeked);
+
+		// Return if the user is not seeking audio
+		if(!this.playerState.isUserSeekingAudio) return;
+		// Set the user seeking state to false
+		this.playerState.isUserSeekingAudio = false;
+		// Update the audio current time to match the current track time
+		this.audio.currentTime = this.currentTrack.currentTime;
+		// Add transitions for smooth UI updates
+		Object.assign(audioCurrentTime.style, {
+				transition: "all 250ms var(--easeOutExpo)",
+				left: "5px"
+		});
+		Object.assign(audioDuration.style, {
+				transition: "all 250ms var(--easeOutExpo)",
+				right: "5px"
+		});
+	}
+	
+	// Add event listeners for dragging and releasing the mouse
+	document.addEventListener(moveEvent, seeking);
+	document.addEventListener(upEvent, seeked);
 }
 
-// Finalizes the audio seeking process.
-finalizeAudioSeeking() {
-	const { audioCurrentTime, audioDuration } = this.uiElements;
-	// Return if the user is not seeking audio
-	if(!this.playerState.isUserSeekingAudio) return;
-	// Set the user seeking state to false
-	this.playerState.isUserSeekingAudio = false;
-	// Update the audio current time to match the current track time
-	this.audio.currentTime = this.currentTrack.currentTime;
-
-	// Add transitions for smooth UI updates
-	Object.assign(audioCurrentTime.style, {
-			transition: "all 250ms var(--easeOutExpo)",
-			left: "5px"
-	});
-
-	Object.assign(audioDuration.style, {
-			transition: "all 250ms var(--easeOutExpo)",
-			right: "5px"
-	});
-}
-
-// Initiates the volume adjustment process.
-startVolumeAdjustment(event) {
+// the volume adjustment process.
+volumeAdjustment(event) {
 	event.preventDefault();
-
-	// Check if the event is from a non-primary mouse button
-	if(event.button !== 0) return false;
 	// Set the user adjusting volume state to true
 	this.playerState.isUserAdjustingVolume = true;
-	// Update the volume based on the event
-	this.updateVolumeAdjustment(event, this); // If No MouseMove, Set Value From Start
-}
-
-// Updates the volume based on the user's input.
-updateVolumeAdjustment(event) {
-	// Return if the user is not adjusting the volume
-	if(!this.playerState.isUserAdjustingVolume) return;
+	// Cache DOM references and calculations
 	// Get the bounds of the volume bar
 	const volumeBarBounds = this.uiElements.volumeLevelBar.getBoundingClientRect();
-	// Determine the mouse position
-	const mousePosition = event.clientX;
-	// Calculate the percentage of the volume bar that has been traversed
-	let percent = (mousePosition - volumeBarBounds.left) / volumeBarBounds.width;
-	percent = Math.max(0, Math.min(1, percent));
-	// Update the audio volume based on the percentage
-	this.audio.volume = percent;
-}
+	const barLeft = volumeBarBounds.left;
+	const barWidth = volumeBarBounds.width;
 
-// Finalizes the volume adjustment process.
-finalizeVolumeAdjustment() {
-	// Set the user adjusting volume state to false
-	this.playerState.isUserAdjustingVolume = false;
+	const seeking = (event) => {
+		// Return if the user is not adjusting the volume
+		if(!this.playerState.isUserAdjustingVolume) return;
+		// Determine the mouse position
+		const mousePosition = event.clientX;
+		// Calculate the percentage of the volume bar that has been traversed
+		const percent = Math.max(0, Math.min(1, (mousePosition - barLeft) / barWidth));
+		// Update the audio volume based on the percentage
+		this.audio.volume = percent;
+	};
+
+	const seeked = (event) => {
+		document.removeEventListener('mousemove', seeking);
+		document.removeEventListener('mouseup', seeked);
+		// Set the user adjusting volume state to false
+		this.playerState.isUserAdjustingVolume = false;
+	};
+
+	// Intial Seek for click
+	seeking(event);
+
+	// Add event listeners for dragging and releasing the mouse
+	document.addEventListener('mousemove', seeking);
+	document.addEventListener('mouseup', seeked);
 }
 
 // Function to update the scrollbar thumb's size and position
 updateScrollbarThumb() {
+	const { scrollbarThumb } = this.uiElements;
+
 	var visibleRatio = this.uiElements.playlist.clientHeight / this.uiElements.playlist.scrollHeight;
-
 	// Set thumb height relative to the visible portion of the playlist, with a minimum of 10%
-	this.uiElements.scrollbarThumb.style.height = Math.max(visibleRatio * 100, 10) + "%";
-
+	scrollbarThumb.style.height = Math.max(visibleRatio * 100, 10) + "%";
 	// Position the thumb based on the current scroll position
-	this.uiElements.scrollbarThumb.style.top = (this.uiElements.playlist.scrollTop / this.uiElements.playlist.scrollHeight) * 100 + "%";
+	scrollbarThumb.style.top = (this.uiElements.playlist.scrollTop / this.uiElements.playlist.scrollHeight) * 100 + "%";
 }
 
 // Shows the scrollbar by adding a class to the playlist wrapper.
@@ -350,14 +344,14 @@ showScrollbar() {
 	// Add the class to show the scrollbar
 	addClass(this.uiElements.playlistContainer, 'tp-playlist-hovered');
 	// Clear any existing timeout for hiding the scrollbar
-	clearTimeout(this.playerState.playlistScrollbarHideDelay);
+	clearTimeout(this.playerState.scrollbarTimeOutId);
 }
 
 // Hides the scrollbar by removing a class from the playlist wrapper after a delay.
 hideScrollbar() {
 	const { removeClass } = this;
 	// Set a timeout to remove the class and hide the scrollbar
-	this.playerState.playlistScrollbarHideDelay = setTimeout(() => {
+	this.playerState.scrollbarTimeOutId = setTimeout(() => {
 		removeClass(this.uiElements.playlistContainer, 'tp-playlist-hovered')
 	}, 2000);
 }
@@ -365,9 +359,7 @@ hideScrollbar() {
 // Initiates the scrollbar track seeking process.
 scrollbarTrackSeekingStart(event) {
 	event.preventDefault();
-	
 	const { playlist, scrollbarTrack } = this.uiElements;
-
 	const initialMouseY = event.clientY; // Starting Y position of the mouse
 	const initialScrollTop = playlist.scrollTop; // Initial scroll position
 	const maxScrollPosition = playlist.scrollHeight - playlist.clientHeight; // Max scroll position
@@ -379,7 +371,7 @@ scrollbarTrackSeekingStart(event) {
 
 		// Determine if dragging has started (more than 5px of movement)
 		if (Math.abs(dragDeltaY) > 5) {
-	isDragging = true;
+			isDragging = true;
 		}
 
 		// Calculate new scroll position relative to the drag distance and track size
@@ -396,13 +388,13 @@ scrollbarTrackSeekingStart(event) {
 
 		// If it was a simple click (no dragging), scroll to the click position
 		if (!isDragging) {
-	const clickPositionY = event.clientY;
-	const trackRect = this.uiElements.scrollbarTrack.getBoundingClientRect();
-	const clickRatio = (clickPositionY - trackRect.top) / scrollbarTrack.clientHeight; // Position in % on the track
-	const newScrollTop = clickRatio * maxScrollPosition;
+			const clickPositionY = event.clientY;
+			const trackRect = this.uiElements.scrollbarTrack.getBoundingClientRect();
+			const clickRatio = (clickPositionY - trackRect.top) / scrollbarTrack.clientHeight; // Position in % on the track
+			const newScrollTop = clickRatio * maxScrollPosition;
 
-	// Scroll to the clicked position
-	playlist.scrollTop = Math.max(0, Math.min(newScrollTop, maxScrollPosition));
+			// Scroll to the clicked position
+			playlist.scrollTop = Math.max(0, Math.min(newScrollTop, maxScrollPosition));
 		}
 	};
 
@@ -436,4 +428,135 @@ playerResize() {
 			removeClass(this.uiElements.wrapper, 'tp-vertical');
 		}
 	}
+}
+
+// Switches to the next track in the playlist.
+switchTrack() {
+	this.playerState.log = 'Changing the Track';
+	let scrollDistance = 0;
+
+	const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, trackTitle, coverContainer, coverImage } = this.uiElements;
+	const { allowPlaylistScroll, maxVisibleTracks, showCover } = this.settings;
+	const { addClass, removeClass } = this;
+	const { isPlaylist } = this.playerState;
+	const currentTrackIndex = this.currentTrack.index;
+
+	// Disable radio info update
+	this.playerState.allowRadioInfoUpdate = false;
+
+	// Reset audio progress bars and pause audio
+	audioBufferedProgress.style.width = "0px";
+	audioPlaybackProgress.style.width = "0px";
+	this.audio.pause();
+	this.audio.currentTime = 0;
+
+	// Update audio source and volume
+	this.audio.src = this.playlist[currentTrackIndex].audio;
+	this.audio.volume = this.playerState.isVolumeMuted ? 0 : this.settings.volume;
+
+	// Update playlist item classes
+	if(isPlaylist) {
+		removeClass(playlistItem, ['tp-active', 'tp-playing']);
+		addClass(playlistItem[currentTrackIndex], 'tp-active');
+	}
+
+	// Handle autoplay
+	if(this.playerState.autoplay) {
+		this.audio.play();
+		this.playerState.allowRadioInfoUpdate = true;
+	}
+
+	// Handle playlist scrolling
+	if(allowPlaylistScroll && this.playlist.length > maxVisibleTracks && this.playerState.isPlaylistDisplayed) {
+		if(currentTrackIndex + 1 >= maxVisibleTracks) {
+			scrollDistance = 40 * (currentTrackIndex - maxVisibleTracks + 1);
+		}
+		playlist.scrollTo({
+			top: scrollDistance,
+			behavior: 'smooth'
+		});
+	}
+
+	// Update current track details
+	this.currentTrack.artist = this.playlist[currentTrackIndex].artist;
+	this.currentTrack.title = this.playlist[currentTrackIndex].title;
+	this.currentTrack.cover = this.playlist[currentTrackIndex].cover;
+
+	// Animate text change
+	this.animateTextChange({
+		artist: this.previousTrackIndex === currentTrackIndex ? '' : this.playlist[this.previousTrackIndex].artist,
+		title: this.previousTrackIndex === currentTrackIndex ? '' : this.playlist[this.previousTrackIndex].title,
+	}, {
+		artist: this.currentTrack.artist,
+		title: this.currentTrack.title
+	});
+	// Update track title attribute
+	trackTitle.setAttribute('title', `${this.currentTrack.artist} - ${this.currentTrack.title}`);
+
+	// Handle cover display
+	const { cover } = this.playlist[currentTrackIndex];
+
+	if(cover && cover !== "" && showCover) {
+		addClass(coverContainer, 'tp-start-change-cover');
+		coverContainer.onanimationend = () => {
+			coverContainer.onanimationend = null;
+			coverImage.src = cover;
+		}
+	}
+	
+	this.playerState.log = 'Track Changed';
+}
+
+// Function to animate the text change for the track title and artist
+animateTextChange(previousTrack, currentTrack) {
+	const { adjustText } = this;
+	// Clear any existing animation interval to prevent multiple animations running simultaneously
+	if (this.playerState.titleAnimationInterval) {
+		clearInterval(this.playerState.titleAnimationInterval);
+	}
+
+	// Extract artist and title from previous and current track objects
+	let previousArtist = previousTrack.artist;
+	let currentArtist = currentTrack.artist;
+	let previousTitle = previousTrack.title ? previousTrack.title : " ";
+	let currentTitle = currentTrack.title ? currentTrack.title : " ";
+
+	// Function to update the text in the element, adjusting artist and title
+	const updateText = () => {
+		// Adjust the artist text based on its length compared to the current artist
+		previousArtist = adjustText(previousArtist, currentArtist);
+			
+		// Adjust the title text based on its length compared to the current title
+		previousTitle = adjustText(previousTitle, currentTitle);
+			
+		// Update the track title element with the new artist and title
+		if(previousTitle !== " ") {
+			this.uiElements.trackTitle.innerHTML = `<b>${previousArtist}</b> - ${previousTitle}`;
+		} else  {
+			this.uiElements.trackTitle.innerHTML = `<b>${previousArtist}</b>`;
+		}
+
+		// Check if both artist and title have been fully updated to the current values
+		if (previousArtist === currentArtist && previousTitle === currentTitle) {
+			// Clear the interval once the animation is complete
+			clearInterval(this.playerState.titleAnimationInterval);
+		}
+	};
+
+	// Set a new interval for the animation to update every 7 milliseconds
+	this.playerState.titleAnimationInterval = setInterval(updateText, 7); // Interval for smooth animation
+}
+
+// Function to adjust the length of the text by either trimming or expanding it
+adjustText(previousText, currentText) {
+	// If the previous text is longer than the current text, trim the previous text
+	if (previousText.length > currentText.length) {
+		return previousText.slice(0, -1); // Remove the last character
+	} 
+	// If the previous text is shorter than the current text, expand the previous text
+	else if (previousText.length < currentText.length) {
+		return currentText.slice(0, previousText.length + 1); // Add the next character
+	}
+	// If both texts are of the same length, return the current text
+	return currentText; // Texts are the same length
 }

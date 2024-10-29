@@ -82,31 +82,12 @@ async setupEventListeners() {
 		tumblrButton.addEventListener('click', this.shareTumblr.bind(this));
 	}
 
-	// Add event listeners for seeking audio and Volume
-	const eventsSeekbar = isMobile ? 
-		{
-			startEvent: 'touchstart',
-			moveEvent: 'touchmove',
-			endEvent: 'touchend',
-			options: { passive: true } 
-		} 
-		: 
-		{
-			startEvent: 'mousedown',
-			moveEvent: 'mousemove',
-			endEvent: 'mouseup',
-			options: false
-		};
-
-		audioSeekBar.addEventListener(eventsSeekbar.startEvent, this.startAudioSeeking.bind(this), eventsSeekbar.options);
-		document.addEventListener(eventsSeekbar.moveEvent, this.updateAudioSeekPosition.bind(this), eventsSeekbar.options);
-		document.addEventListener(eventsSeekbar.endEvent, this.finalizeAudioSeeking.bind(this), eventsSeekbar.options);
-	
 	if (!isMobile) {
+		audioSeekBar.addEventListener('mousedown', this.audioSeeking.bind(this));
 		volumeButton.addEventListener('click', this.volumeToggle.bind(this));
-		volumeLevelBar.addEventListener('mousedown', this.startVolumeAdjustment.bind(this), false);
-		document.addEventListener('mousemove', this.updateVolumeAdjustment.bind(this), false);
-		document.addEventListener('mouseup', this.finalizeVolumeAdjustment.bind(this), false);
+		volumeLevelBar.addEventListener('mousedown', this.volumeAdjustment.bind(this));
+	} else {
+		audioSeekBar.addEventListener('touchstart', this.audioSeeking.bind(this), {passive: true});
 	}
 
 	if(showCover) coverImage.addEventListener('load', this.coverLoaded.bind(this));
