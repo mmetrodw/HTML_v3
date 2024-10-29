@@ -45,6 +45,34 @@
 	position: relative;
 	width: 100%;
 	height: 100%;
+	z-index: 2;
+	background: var(--player-cover-loader);
+}
+
+.tp-cover.tp-start-change-cover {
+	animation: tp-start-change-cover 300ms var(--easeOutExpo) forwards;
+}
+
+@keyframes tp-start-change-cover {
+	0% {
+		clip-path: circle(70.7% at 50% 50%);
+	}
+	100% {
+		clip-path: circle(0% at 50% 50%);
+	}
+}
+
+.tp-cover.tp-end-change-cover {
+	animation: tp-end-change-cover 300ms var(--easeInExpo) forwards;
+}
+
+@keyframes tp-end-change-cover {
+	0% {
+		clip-path: circle(0% at 50% 50%);
+	}
+	100% {
+		clip-path: circle(70.7% at 50% 50%);
+	}
 }
 
 .tp-cover-image {
@@ -55,8 +83,34 @@
 	margin: 0;
 	padding: 0;
 	object-fit: cover;
-	z-index: 2;
+}
+
+.tp-cover.tp-start-change-cover .tp-cover-image {
+	animation: tp-start-change-cover-img 300ms linear forwards;
+	opacity: 1;
+}
+
+@keyframes tp-start-change-cover-img {
+	0% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
+.tp-cover.tp-end-change-cover .tp-cover-image {
+	animation: tp-end-change-cover-img 300ms linear forwards;
 	opacity: 0;
+}
+
+@keyframes tp-end-change-cover-img {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
 }
 
 .tp-cover-loading-spinner {
@@ -204,47 +258,15 @@
 	z-index: 2;
 }
 
-.tp-playlist-track-buy.tp-button path {
-	stroke-width: 2px;
-}
-
-.tp-volume-button .tp-stroke {
-	stroke-width: 2px !important;
-	stroke-linecap: round;
-	stroke-linejoin: round;
-}
-
-.tp-toggle-playlist-button .tp-stroke {
-	stroke-width: 4px;
-}
-
-.tp-playback-button path,
-.tp-button .tp-stroke {
-	stroke: var(--player-buttons-normal);
-}
-
-.tp-playback-button path,
-.tp-button .tp-fill {
+.tp-button path {
 	fill: var(--player-buttons-normal);
 }
 
-.tp-playback-button:hover path,
-.tp-button:hover .tp-stroke {
-	stroke: var(--player-buttons-hover);
-}
-
-.tp-playback-button:hover path,
-.tp-button:hover .tp-fill {
+.tp-button:hover path {
 	fill: var(--player-buttons-hover);
 }
 
-.tp-playback-button.tp-active path,
-.tp-button.tp-active .tp-stroke {
-	stroke: var(--player-buttons-active);
-}
-
-.tp-playback-button.tp-active path,
-.tp-button.tp-active .tp-fill {
+.tp-button.tp-active path {
 	fill: var(--player-buttons-active);
 }
 
@@ -630,25 +652,23 @@
 	width: 20px;
 	height: 20px;
 	margin-right: 20px;
-	fill: none;
-	stroke-width: 2px;
 	transition: transform 250ms var(--easeOutExpo);
 	flex: 0 0 auto;
 }
 
 .tp-playlist-item .tp-playlist-track-download path,
 .tp-playlist-item .tp-playlist-track-buy path {
-	stroke: var(--playlist-color);
+	fill: var(--playlist-color);
 }
 
 .tp-playlist-item:hover .tp-playlist-track-download path,
 .tp-playlist-item:hover .tp-playlist-track-buy path {
-	stroke: var(--playlist-hover-color);
+	fill: var(--playlist-hover-color);
 }
 
 .tp-playlist-item.tp-active .tp-playlist-track-download,
 .tp-playlist-item.tp-active .tp-playlist-track-buy path {
-	stroke: var(--playlist-active-color);
+	fill: var(--playlist-active-color);
 }
 
 .tp-playlist-item a:last-of-type {

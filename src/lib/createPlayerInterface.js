@@ -1,45 +1,3 @@
-createSvg(tag, className = "", attributes = null, children = null) {
-	const element = document.createElementNS("http://www.w3.org/2000/svg", tag);
-
-	// Add class to the element if provided
-	if (className) element.classList.add(className);
-
-	// Apply each attribute to the element
-	if (attributes) {
-		for (let attr in attributes) {
-			element.setAttribute(attr, attributes[attr]);
-		}
-	}
-
-	// Recursively add children if provided
-	if (children) {
-		for (let child of children) {
-			let childElement = this.createSvg("path", child.className, child.attributes, null);
-			element.appendChild(childElement);
-		}
-	}
-
-	return element;
-}
-
-// Method to create a custom link button (buy/download) with an SVG icon
-createCustomLink(type, href) {
-	const { addClass } = this;
-	const link = document.createElement("a");
-	addClass(link, ["tp-button", `tp-playlist-track-${type}`]);
-	link.href = href;
-	link.title = type === "buy" ? "Buy Now" : "Download Now";
-	link.target = "_blank";
-	if (type === "download") link.download = "";
-
-	// Create SVG icon based on button type
-	const icon = this.createSvg("svg", null, { viewBox: "0 0 20 20" }, [
-		{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons[type] } }
-	]);
-	link.appendChild(icon);
-	return link;
-}
-
 // Asynchronous method to initialize the player interface and structure its components
 async createPlayerInterface() {
 	this.playerState.log = "Create Player Interface";
@@ -53,381 +11,187 @@ async createPlayerInterface() {
 	// Apply classes to wrapper element based on player settings
 	addClass(wrapper, ["tp-wrapper", "tp-loading", rounded ? "tp-rounded" : "", skin === "vertical" ? "tp-vertical" : ""]);
 
-	// Set button icons based on "rounded" setting
+	// Determine button icon style based on "rounded" setting
 	this.buttonIcons = rounded ? this.buttonIcons.rounded : this.buttonIcons.default;
 
+	// Fragment
 	const fragment = document.createDocumentFragment();
+	// Player container
+	const playerContainer = this.createElement("div", "tp-player-container", fragment);
 
-	// Player container setup
-	const playerContainer = document.createElement("div");
-	addClass(playerContainer, "tp-player-container");
-	fragment.appendChild(playerContainer);
-
-	// Add cover section if cover display is enabled
+	// Add cover section if cover display is enabled in settings
 	if(showCover) {
-		const playerASide = document.createElement("div");
-		addClass(playerASide, "tp-aside-player");
-		playerContainer.appendChild(playerASide);
-
-		const coverLoadingSpinner = document.createElement("div");
-		addClass(coverLoadingSpinner, "tp-cover-loading-spinner");
+		const playerAside = this.createElement("div", "tp-aside-player", playerContainer);
+		const coverLoadingSpinner = this.createElement("div", "tp-cover-loading-spinner", playerAside);
 		coverLoadingSpinner.innerHTML = "<span></span><span></span><span></span>";
-		playerASide.appendChild(coverLoadingSpinner);
-
-		this.uiElements.coverContainer = document.createElement("div");
-		addClass(this.uiElements.coverContainer, "tp-cover");
-		playerASide.appendChild(this.uiElements.coverContainer);
+		this.uiElements.coverContainer = this.createElement("div", "tp-cover", playerAside);
+		this.uiElements.coverImage = this.createElement("img", "tp-cover-image", this.uiElements.coverContainer);
 	}
 
-	// Controls container and structure
-	const controlsContainer = document.createElement("div");
-	addClass(controlsContainer, "tp-controls-container");
-
-	// Header section with track title
-	const controlsHeader = document.createElement("div");
-	addClass(controlsHeader, "tp-controls-header");
-	controlsContainer.appendChild(controlsHeader);
-
-	this.uiElements.trackTitle = document.createElement("div");
-	addClass(this.uiElements.trackTitle, "tp-track-title");
-	this.uiElements.trackTitle.innerHTML = "Loading...";
-	controlsHeader.appendChild(this.uiElements.trackTitle);
-
-	// Controls body, including playback, seek bar, and buttons
-	const controlsBody = document.createElement("div");
-	addClass(controlsBody, "tp-controls-body");
-
-	// Playback button
-	this.uiElements.playbackButton = document.createElement("button");
-	addClass(this.uiElements.playbackButton, ["tp-button", "tp-playback-button"]);
-
-	// Playback Icon
-	const playbackIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-		{ tagName: "path", className: null, attributes: { d: this.buttonIcons.playback.play } }
-	]);
-	this.uiElements.playbackButton.appendChild(playbackIcon);
-	controlsBody.appendChild(this.uiElements.playbackButton);
-
-	// Seek bar (audio progress bar)
-	this.uiElements.audioSeekBar = document.createElement("div");
-	addClass(this.uiElements.audioSeekBar, "tp-audio-seek-bar");
-	controlsBody.appendChild(this.uiElements.audioSeekBar);
-
-	// Buffered progress in the seek bar
-	this.uiElements.audioBufferedProgress = document.createElement("div");
-	addClass(this.uiElements.audioBufferedProgress, "tp-audio-buffered-progress");
-	this.uiElements.audioSeekBar.appendChild(this.uiElements.audioBufferedProgress);
-
-	// Playback progress in the seek bar
-	this.uiElements.audioPlaybackProgress = document.createElement("div");
-	addClass(this.uiElements.audioPlaybackProgress, "tp-audio-playback-progress");
-	this.uiElements.audioSeekBar.appendChild(this.uiElements.audioPlaybackProgress);
-
-	// Current Time
-	this.uiElements.audioCurrentTime = document.createElement("div");
-	addClass(this.uiElements.audioCurrentTime, "tp-audio-current-time");
-	this.uiElements.audioSeekBar.appendChild(this.uiElements.audioCurrentTime);
-
-	// Duration
-	this.uiElements.audioDuration = document.createElement("div");
-	addClass(this.uiElements.audioDuration, "tp-audio-duration");
-	this.uiElements.audioSeekBar.appendChild(this.uiElements.audioDuration);
-
-	// Loading spinner for the player
-	const playerLoader = document.createElement("div");
-	addClass(playerLoader, "tp-player-loader");
+	// Main controls container
+	const controlsContainer = this.createElement("div", "tp-controls-container", playerContainer);
+	// Header
+	const controlsHeader = this.createElement("div", "tp-controls-header", controlsContainer);
+	this.uiElements.trackTitle = this.createElement("div", "tp-track-title", controlsHeader);
+	// Body
+	const controlsBody = this.createElement("div", "tp-controls-body", controlsContainer);
+	this.uiElements.playbackButton = this.createButtonWithIcon("playback", "play", controlsBody);
+	this.uiElements.audioSeekBar = this.createElement("div", "tp-audio-seek-bar", controlsBody);
+	this.uiElements.audioBufferedProgress = this.createElement("div", "tp-audio-buffered-progress", this.uiElements.audioSeekBar);
+	this.uiElements.audioPlaybackProgress = this.createElement("div", "tp-audio-playback-progress", this.uiElements.audioSeekBar);
+	this.uiElements.audioCurrentTime = this.createElement("div", "tp-audio-current-time", this.uiElements.audioSeekBar);
+	this.uiElements.audioDuration = this.createElement("div", "tp-audio-duration", this.uiElements.audioSeekBar);
+	const playerLoader = this.createElement("div", "tp-player-loader", this.uiElements.audioSeekBar);
 	playerLoader.innerHTML = "<span></span><span></span><span></span>";
-	this.uiElements.audioSeekBar.appendChild(playerLoader);
 
-	// Previous track button (only for playlists)
-	if(isPlaylist) {
-		this.uiElements.prevButton = document.createElement("button");
-		addClass(this.uiElements.prevButton, ["tp-button", "tp-prev-button"]);
-
-		// Prev Icon
-		const prevIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-			{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.prev.fill } },
-			{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.prev.stroke } }
-		]);
-
-		this.uiElements.prevButton.appendChild(prevIcon);
-		controlsBody.appendChild(this.uiElements.prevButton);
-	}
-
+	// Previous (only shown for playlists)
+	if(isPlaylist) this.uiElements.prevButton = this.createButtonWithIcon("prev", "prev", controlsBody);
 	// Repeat button, if enabled in settings
-	if(showRepeatButton) {
-		this.uiElements.repeatButton = document.createElement("button");
-		addClass(this.uiElements.repeatButton, ["tp-button", "tp-repeat-button"]);
+	if(showRepeatButton) this.uiElements.repeatButton = this.createButtonWithIcon("repeat", "repeat", controlsBody);
+	// Next (only shown for playlists)
+	if(isPlaylist) this.uiElements.nextButton = this.createButtonWithIcon("next", "next", controlsBody);
+	// Shuffle button, if enabled in settings and it's playlist
+	if(isPlaylist && showShuffleButton) this.uiElements.shuffleButton = this.createButtonWithIcon("shuffle", "shuffle", controlsBody);
+	// Share Button, if enabled in settings
+	if(showShareButton) this.uiElements.shareButton = this.createButtonWithIcon("share", "share", controlsBody);
 
-		// Repeat Icon
-		const repeatIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-			{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.repeat.fill } },
-			{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.repeat.stroke } }
-		]);
-
-		this.uiElements.repeatButton.appendChild(repeatIcon);
-		controlsBody.appendChild(this.uiElements.repeatButton);
-	}
-
-	// Next track button (only for playlists)
+	// Footer
+	const controlsFooter = this.createElement("div", "tp-controls-footer", controlsContainer);
+	// Playlist toggle button for playlists or buy/download buttons for individual tracks
 	if(isPlaylist) {
-		this.uiElements.nextButton = document.createElement("button");
-		addClass(this.uiElements.nextButton, ["tp-button", "tp-next-button"]);
-
-		// Next Icon
-		const nextIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-			{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.next.fill } },
-			{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.next.stroke } }
-		]);
-
-		this.uiElements.nextButton.appendChild(nextIcon);
-		controlsBody.appendChild(this.uiElements.nextButton);
-	}
-
-	// Shuffle button if shuffle is enabled in settings
-	if(showShuffleButton) {
-		this.uiElements.shuffleButton = document.createElement("button");
-		addClass(this.uiElements.shuffleButton, ["tp-button", "tp-shuffle-button"]);
-
-		// Shuffle Icon
-		const shuffleIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-			{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.shuffle.fill } },
-			{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.shuffle.stroke } }
-		]);
-
-		this.uiElements.shuffleButton.appendChild(shuffleIcon);
-		controlsBody.appendChild(this.uiElements.shuffleButton);
-	}
-
-	// Share Button, if share is enabled in settings
-	if(showShareButton){
-		this.uiElements.shareButton = document.createElement("button");
-		addClass(this.uiElements.shareButton, ["tp-button", "tp-share-button"]);
-
-		// Share Icon
-		const shuffleIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-			{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.share.closed.fill } },
-			{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.share.closed.stroke } }
-		]);
-
-		this.uiElements.shareButton.appendChild(shuffleIcon);
-		controlsBody.appendChild(this.uiElements.shareButton);
-	}
-
-	// Adds all controls to the main controls container
-	controlsContainer.appendChild(controlsBody);
-
-	// Controls Footer - Create a footer section within the player controls
-	const controlsFooter = document.createElement("div");
-	addClass(controlsFooter, "tp-controls-footer");
-	controlsContainer.appendChild(controlsFooter);
-
-	// If a playlist, add a button to toggle the playlist view
-	if(isPlaylist) {
-		// Toggle Playlist Button
-		this.uiElements.togglePlaylistButton = document.createElement("button");
-		addClass(this.uiElements.togglePlaylistButton, ["tp-button", "tp-toggle-playlist-button"]);
-
-		// Toggle Playlist Icons
-		const togglePlaylistIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-			{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.playlist.closed } }
-		]);
-
-		this.uiElements.togglePlaylistButton.appendChild(togglePlaylistIcon);
-		controlsFooter.appendChild(this.uiElements.togglePlaylistButton);
+		this.uiElements.togglePlaylistButton = this.createButtonWithIcon("toggle-playlis", "playlist", controlsFooter);
 	} else {
-		// If it's not playlist, add buttons for buying and downloading the current track if links are provided
 		// Buy Button
 		if(this.playlist[0].buy) {
-			const buyButton = this.createCustomLink('buy', this.playlist[0].buy) ;
+			const buyButton = this.createCustomLink('buy', this.playlist[0].buy, controlsFooter);
 			controlsFooter.appendChild(buyButton);
 		}
 		// Download Button
 		if(this.playlist[0].download) {
-			const downloadButton = this.createCustomLink('download', this.playlist[0].download) ;
+			const downloadButton = this.createCustomLink('download', this.playlist[0].download, controlsFooter);
 			controlsFooter.appendChild(downloadButton);
 		}
 	}
 
-	// Volume Control Section - Only added if user is not on a mobile device
+	// Volume Control for non-mobile devices
 	if(!isMobile) {
-		// Volume Control Container
-		const volumeControl = document.createElement("div");
-		addClass(volumeControl, "tp-volume-control");
-
-		// Volume Button
-		this.uiElements.volumeButton = document.createElement("button");
-		addClass(this.uiElements.volumeButton, ["tp-button", "tp-volume-button"]);
-
-		// Volume Icon
-		const volumeIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-			{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.volume.speaker } },
-			{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.volume.line_1 } },
-			{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.volume.line_2 } },
-			{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.volume.muted } }
-		]);
-
-		this.uiElements.volumeButton.appendChild(volumeIcon);
-		volumeControl.appendChild(this.uiElements.volumeButton);
-
-		// Volume Level Bar - Shows current volume level
-		this.uiElements.volumeLevelBar = document.createElement("div");
-		addClass(this.uiElements.volumeLevelBar, "tp-volume-level-bar");
-		volumeControl.appendChild(this.uiElements.volumeLevelBar);
-
-		// Volume Level Indicator - The actual level inside the bar
-		this.uiElements.volumeLevel = document.createElement("div");
-		addClass(this.uiElements.volumeLevel, "tp-volume-level");
-		this.uiElements.volumeLevelBar.appendChild(this.uiElements.volumeLevel);
-
-		// Add volume control to the controls footer
-		controlsFooter.appendChild(volumeControl);
+		const volumeControl = this.createElement("div", "tp-volume-control", controlsFooter);
+		this.uiElements.volumeButton = this.createButtonWithIcon("volume", "volume", volumeControl);
+		this.uiElements.volumeLevelBar = this.createElement("div", "tp-volume-level-bar", volumeControl);
+		this.uiElements.volumeLevel = this.createElement("div", "tp-volume-level", this.uiElements.volumeLevelBar);
 	}
 
-	// Append the fully constructed controls container (including footer) to the main player container
-	playerContainer.appendChild(controlsContainer);
-
-	// Social Media Section, if share is enabled in settings
-	if(this.settings.showShareButton) {
-		/* Social Media Section - Creates a container for social media buttons */
-		const sosialMediaContainer = document.createElement("div");
-		addClass(sosialMediaContainer, "tp-social-media-container");  // Add class to style the social media container
-		playerContainer.appendChild(sosialMediaContainer);  // Add the social media container to the controls footer
-
-		// Facebook Button
-		this.uiElements.facebookButton = document.createElement("button");
-		addClass(this.uiElements.facebookButton, ["tp-button", "tp-facebook-button"]);  // Add button classes for styling
-
-		// Facebook Icon
-		const facebookIcon = this.createSvg("svg", null, { viewBox: "0 0 20 20" }, [
-			{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.facebook } }  // Path for Facebook icon
-		]);
-		this.uiElements.facebookButton.appendChild(facebookIcon);  // Append icon to the button
-		sosialMediaContainer.appendChild(this.uiElements.facebookButton);  // Add Facebook button to the social media container
-
-		// Twitter Button
-		this.uiElements.twitterButton = document.createElement("button");
-		addClass(this.uiElements.twitterButton, ["tp-button", "tp-twitter-button"]);  // Add button classes for styling
-
-		// Twitter Icon
-		const twitterIcon = this.createSvg("svg", null, { viewBox: "0 0 20 20" }, [
-			{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.twitter } }  // Path for Twitter icon
-		]);
-		this.uiElements.twitterButton.appendChild(twitterIcon);  // Append icon to the button
-		sosialMediaContainer.appendChild(this.uiElements.twitterButton);  // Add Twitter button to the social media container
-
-		// Tumblr Button
-		this.uiElements.tumblrButton = document.createElement("button");
-		addClass(this.uiElements.tumblrButton, ["tp-button", "tp-tumblr-button"]);  // Add button classes for styling
-
-		// Tumblr Icon
-		const tumblrIcon = this.createSvg("svg", null, { viewBox: "0 0 20 20" }, [
-			{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.tumblr } }  // Path for Tumblr icon
-		]);
-		this.uiElements.tumblrButton.appendChild(tumblrIcon);  // Append icon to the button
-		sosialMediaContainer.appendChild(this.uiElements.tumblrButton);  // Add Tumblr button to the social media container
+	// Social media share buttons, if enabled in settings
+	if(showShareButton) {
+		const socialMediaContainer = this.createElement("div", "tp-social-media-container", playerContainer);
+		this.uiElements.facebookButton = this.createButtonWithIcon("facebook", "facebook", socialMediaContainer);
+		this.uiElements.twitterButton = this.createButtonWithIcon("twitter", "twitter", socialMediaContainer);
+		this.uiElements.tumblrButton = this.createButtonWithIcon("tumblr", "tumblr", socialMediaContainer);
 	}
 
-	/* Playlist */
-	/* Playlist Section - Creates and populates a playlist container if it's playlist */
+	// Playlist
 	if(isPlaylist) {
-		this.uiElements.playlistContainer = document.createElement("div");
-		addClass(this.uiElements.playlistContainer, "tp-playlist-container");
-
-		// Playlist Wrapper - Creates an unordered list element to hold playlist items
-		this.uiElements.playlist = document.createElement("ul");
-		addClass(this.uiElements.playlist, "tp-playlist");
-		this.uiElements.playlistContainer.appendChild(this.uiElements.playlist);
-
-		// Playlist Item Generation - Iterates through each track to create playlist items
+		this.uiElements.playlistContainer = this.createElement("div", "tp-playlist-container", fragment);
+		this.uiElements.playlist = this.createElement("ul", "tp-playlist", this.uiElements.playlistContainer);
+		// Generate playlist items for each track
 		this.playlist.map(track => {
 			// Determine the track name to display, including artist and title if available
 			const trackName = track.title ? `<b>${track.artist}</b> - ${track.title}` : `<b>${track.artist}</b>`;
 			// Determine the full track title for the tooltip, including artist and title if available
 			const trackTitle = track.title ? `${track.artist} - ${track.title}` : track.artist;
 
-			const playlistItem = document.createElement("li");
-			addClass(playlistItem, "tp-playlist-item");
+			const playlistItem = this.createElement("li", "tp-playlist-item", this.uiElements.playlist);
 			playlistItem.title = trackTitle;
-
-			// Play Indicator - Adds an animated visual to indicate track is playing
-			const playlistItemIndicator = document.createElement("div");
-			addClass(playlistItemIndicator, "tp-playlist-item-indicator");
+			const playlistItemIndicator = this.createElement("div", "tp-playlist-item-indicator", playlistItem);
 			playlistItemIndicator.innerHTML = "<span></span><span></span><span></span>";
-			playlistItem.appendChild(playlistItemIndicator);
-
-			// Track Title Display - Shows the track name in the playlist item
-			const playlistItemTrackTitle = document.createElement("div");
-			addClass(playlistItemTrackTitle, "tp-playlist-item-track-title");
+			const playlistItemTrackTitle = this.createElement("div", "tp-playlist-item-track-title", playlistItem);
 			playlistItemTrackTitle.innerHTML = trackName;
-			playlistItem.appendChild(playlistItemTrackTitle);
 
-			// Buy Button - Adds a button if the track has a buy link
 			if(track.buy) {
 				const buyButton = this.createCustomLink('buy', track.buy) ;
 				playlistItem.appendChild(buyButton);
 			}
 
-			// Download Button - Adds a button if the track has a download link
 			if(track.download) {
 				const downloadButton = this.createCustomLink('download', track.download) ;
 				playlistItem.appendChild(downloadButton);
 			}
 
-			// Add playlist item to playlist container
 			this.uiElements.playlist.appendChild(playlistItem);
 		});
 
-		// Append playlist container to fragment
-		fragment.appendChild(this.uiElements.playlistContainer);
 		// Update reference to playlist items
 		this.uiElements.playlistItem = this.uiElements.playlist.childNodes;
 
-		// Enable playlist scroll if allowed and the number of tracks exceeds the maximum visible tracks
+		// Enable playlist scroll if settings allow and track count exceeds visible max
 		if(this.settings.allowPlaylistScroll && this.playlist.length > this.settings.maxVisibleTracks) {
 			addClass(wrapper, "tp-scrollable");
-
-			// Scrollbar Track
-			this.uiElements.scrollbarTrack = document.createElement("div");
-			addClass(this.uiElements.scrollbarTrack, "tp-scrollbar-track");
-			this.uiElements.playlistContainer.appendChild(this.uiElements.scrollbarTrack);
-
-			// Scrollbar Thumb
-			this.uiElements.scrollbarThumb = document.createElement("div");
-			addClass(this.uiElements.scrollbarThumb, "tp-scrollbar-thumb");
-			this.uiElements.scrollbarTrack.appendChild(this.uiElements.scrollbarThumb);
-
+			this.uiElements.scrollbarTrack = this.createElement("div", "tp-scrollbar-track", this.uiElements.playlistContainer);
+			this.uiElements.scrollbarThumb = this.createElement("div", "tp-scrollbar-thumb", this.uiElements.scrollbarTrack);
 			// Set Playlist Height - Limits visible playlist height to max visible tracks, calculated by track height
 			this.uiElements.playlist.style.height = `${40 * this.settings.maxVisibleTracks}px`
 		}
 	}
 
-	/* Error */
-	// Create a container for displaying error messages
-	const errorContainer = document.createElement("div");
-	addClass(errorContainer, "tp-error-container");
-	fragment.appendChild(errorContainer);
+	// Error display container for any error messages
+	const errorContainer = this.createElement("div", "tp-error-container", fragment);
+	this.uiElements.errorMessage = this.createElement("div", "tp-error-container", errorContainer);
+	this.uiElements.errorCloseButton = this.createButtonWithIcon("close", "close", errorContainer)
 
-	// Create a div for the error message
-	const errorMessage = document.createElement("div");
-	addClass(errorMessage, "tp-error-message");
-	errorContainer.appendChild(errorMessage);
-
-	// Close Button
-	this.uiElements.errorCloseButton = document.createElement("button");
-	addClass(this.uiElements.errorCloseButton, ["tp-button", "tp-error-close-button"]);
-	errorContainer.appendChild(this.uiElements.errorCloseButton);
-
-	// Close Icon
-	const closeIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-		{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.playlist.opened } }
-	]);
-	this.uiElements.errorCloseButton.appendChild(closeIcon);
-
-	// Append Player
+	// Append all player components to the main wrapper
 	wrapper.appendChild(fragment);
 
 	const endTime = new Date().getTime();
 	const duration = (endTime - startTime);
 	this.playerState.log = `The Player Interface is Created in ${duration} ms`;
+}
+
+// Helper method to create a new HTML element with classes and optional parent
+createElement(tagName, classes, parent) {
+	const { addClass } = this;
+	const element = document.createElement(tagName);
+
+	if (classes && classes.length > 0) {
+		addClass(element, classes);
+	}
+	if (parent) parent.appendChild(element);
+	return element;
+}
+
+// Method to create a button with an SVG icon
+createButtonWithIcon(type, iconType, parent) {
+	const button = this.createElement("button", ["tp-button", `tp-${type}-button`]);
+	const icon = this.createSvgIcon(this.buttonIcons[iconType]);
+	button.appendChild(icon);
+	if (parent) parent.appendChild(button);
+	return button;
+}
+
+// Creates an SVG icon element based on provided path data
+createSvgIcon(path) {
+	const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+	const svgElement = document.createElementNS(SVG_NAMESPACE, "svg");
+	svgElement.setAttribute("viewBox", "0 0 24 24");
+
+	const pathElement = document.createElementNS(SVG_NAMESPACE, "path");
+	pathElement.setAttribute("d", path);
+	svgElement.appendChild(pathElement);
+
+	return svgElement;
+}
+
+// Method to create a custom link button (buy/download) with an SVG icon
+createCustomLink(type, href) {
+	const { addClass } = this;
+	const link = document.createElement("a");
+	addClass(link, ["tp-button", `tp-playlist-track-${type}`]);
+	link.href = href;
+	link.title = type === "buy" ? "Buy Now" : "Download Now";
+	link.target = "_blank";
+	if (type === "download") link.download = "";
+
+	// Create SVG icon based on button type
+	const icon = this.createSvgIcon(this.buttonIcons[type]);
+	link.appendChild(icon);
+	return link;
 }

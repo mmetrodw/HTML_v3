@@ -128,7 +128,7 @@ pause() {
 	// Remove the 'active' class from the playback button
 	removeClass(playbackButton, 'tp-active');
 	// Update the playback button icon to 'play'
-	playbackButton.querySelector('path').setAttribute('d', this.buttonIcons.playback.play);
+	playbackButton.querySelector('path').setAttribute('d', this.buttonIcons.play);
 	// Disable radio info updates
 	this.playerState.allowRadioInfoUpdate = false;
 	// Set Audio Event
@@ -149,7 +149,7 @@ play() {
 	// Add the 'active' class to the playback button
 	addClass(playbackButton, 'tp-active');
 	// Update the playback button icon to 'pause'
-	playbackButton.querySelector('path').setAttribute('d', this.buttonIcons.playback.pause);
+	playbackButton.querySelector('path').setAttribute('d', this.buttonIcons.pause);
 	// Allow Seeking
 	this.playerState.allowSeeking = true;
 	// Enable radio info updates
@@ -251,22 +251,20 @@ timeupdate() {
 
 volumechange() {
 	const { addClass, removeClass } = this;
-	const paths = this.uiElements.volumeButton.children[0].children;
+	const { volumeLevel, volumeButton } = this.uiElements;
 	this.settings.volume = this.audio.volume !== 0 ? this.audio.volume : this.settings.volume;
-	this.uiElements.volumeLevel.style.width = `${this.audio.volume * 100}%`;
+	volumeLevel.style.width = `${this.audio.volume * 100}%`;
 
-	// Update the visibility of volume level indicators
-	paths[1].style.transform = this.audio.volume < 0.25 ? "scale(0)" : "scale(1)";
-	paths[2].style.transform = this.audio.volume < 0.5 ? "scale(0)" : "scale(1)";
-	paths[3].style.transform = this.audio.volume === 0 ? "scale(1)" : "scale(0)";
 
 	// Update the mute state and button appearance
 	if(this.audio.volume === 0) {
 		this.playerState.isVolumeMuted = true;
-		addClass(this.uiElements.volumeButton, 'tp-active');
+		addClass(volumeButton, 'tp-active');
+		volumeButton.children[0].children[0].setAttribute('d', this.buttonIcons.muted);
 	} else {
 		this.playerState.isVolumeMuted = false;
-		removeClass(this.uiElements.volumeButton, 'tp-active');
+		removeClass(volumeButton, 'tp-active');
+		volumeButton.children[0].children[0].setAttribute('d', this.buttonIcons.volume);
 	}
 	// Set Audio Event
 	this.playerState.audioEvent = 'volumechange';

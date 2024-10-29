@@ -69,213 +69,6 @@ const defaultPlayerSettings = {
 	}
 };
 
-// Easings 
-const easingFunctions = {
-	linear: (time) => {
-		return time;
-	},
-	easeInSine: (time) => {
-		return -1 * Math.cos(time * (Math.PI / 2)) + 1;
-	},
-	easeOutSine: (time) => {
-		return Math.sin(time * (Math.PI / 2));
-	},
-	easeInOutSine: (time) => {
-		return -0.5 * (Math.cos(Math.PI * time) - 1);
-	},
-	easeInQuad: (time) => {
-		return time * time;
-	},
-	easeOutQuad: (time) => {
-		return time * (2 - time);
-	},
-	easeInOutQuad: (time) => {
-		return time < 0.5 ? 2 * time * time : -1 + (4 - 2 * time) * time;
-	},
-	easeInCubic: (time) => {
-		return time * time * time;
-	},
-	easeOutCubic: (time) => {
-		const time1 = time - 1;
-		return time1 * time1 * time1 + 1;
-	},
-	easeInOutCubic: (time) => {
-		return time < 0.5
-			? 4 * time * time * time
-			: (time - 1) * (2 * time - 2) * (2 * time - 2) + 1;
-	},
-	easeInQuart: (time) => {
-		return time * time * time * time;
-	},
-	easeOutQuart: (time) => {
-		const time1 = time - 1;
-		return 1 - time1 * time1 * time1 * time1;
-	},
-	easeInOutQuart: (time) => {
-		const time1 = time - 1;
-		return time < 0.5
-			? 8 * time * time * time * time
-			: 1 - 8 * time1 * time1 * time1 * time1;
-	},
-	easeInQuint: (time) => {
-		return time * time * time * time * time;
-	},
-	easeOutQuint: (time) => {
-		const time1 = time - 1;
-		return 1 + time1 * time1 * time1 * time1 * time1;
-	},
-	easeInOutQuint: (time) => {
-		const time1 = time - 1;
-		return time < 0.5
-			? 16 * time * time * time * time * time
-			: 1 + 16 * time1 * time1 * time1 * time1 * time1;
-	},
-	easeInExpo: (time) => {
-		if (time === 0) {
-			return 0;
-		}
-		return Math.pow(2, 10 * (time - 1));
-	},
-	easeOutExpo: (time) => {
-		if (time === 1) {
-			return 1;
-		}
-		return -Math.pow(2, -10 * time) + 1;
-	},
-	easeInOutExpo: (time) => {
-		if (time === 0 || time === 1) {
-			return time;
-		}
-
-		const scaledTime = time * 2;
-		const scaledTime1 = scaledTime - 1;
-
-		if (scaledTime < 1) {
-			return 0.5 * Math.pow(2, 10 * scaledTime1);
-		}
-
-		return 0.5 * (-Math.pow(2, -10 * scaledTime1) + 2);
-	},
-	easeInCirc: (time) => {
-		const scaledTime = time / 1;
-		return -1 * (Math.sqrt(1 - scaledTime * time) - 1);
-	},
-	easeOutCirc: (time) => {
-		const time1 = time - 1;
-		return Math.sqrt(1 - time1 * time1);
-	},
-	easeInOutCirc: (time) => {
-		const scaledTime = time * 2;
-		const scaledTime1 = scaledTime - 2;
-
-		if (scaledTime < 1) {
-			return -0.5 * (Math.sqrt(1 - scaledTime * scaledTime) - 1);
-		}
-
-		return 0.5 * (Math.sqrt(1 - scaledTime1 * scaledTime1) + 1);
-	},
-	easeInBack: (time, magnitude = 1.70158) => {
-		return time * time * ((magnitude + 1) * time - magnitude);
-	},
-	easeOutBack: (time, magnitude = 1.70158) => {
-		const scaledTime = time / 1 - 1;
-		return (
-			scaledTime * scaledTime * ((magnitude + 1) * scaledTime + magnitude) + 1
-		);
-	},
-	easeInOutBack: (time, magnitude = 1.70158) => {
-		const scaledTime = time * 2;
-		const scaledTime2 = scaledTime - 2;
-		const s = magnitude * 1.525;
-
-		if (scaledTime < 1) {
-			return 0.5 * scaledTime * scaledTime * ((s + 1) * scaledTime - s);
-		}
-
-		return 0.5 * (scaledTime2 * scaledTime2 * ((s + 1) * scaledTime2 + s) + 2);
-	},
-	easeInElastic: (time, magnitude = 0.7) => {
-		if (time === 0 || time === 1) {
-			return time;
-		}
-
-		const scaledTime = time / 1;
-		const scaledTime1 = scaledTime - 1;
-		const p = 1 - magnitude;
-		const s = (p / (2 * Math.PI)) * Math.asin(1);
-
-		return -(
-			Math.pow(2, 10 * scaledTime1) *
-			Math.sin(((scaledTime1 - s) * (2 * Math.PI)) / p)
-		);
-	},
-	easeOutElastic: (time, magnitude = 0.7) => {
-		if (time === 0 || time === 1) {
-			return time;
-		}
-
-		const p = 1 - magnitude;
-		const scaledTime = time * 2;
-		const s = (p / (2 * Math.PI)) * Math.asin(1);
-
-		return (
-			Math.pow(2, -10 * scaledTime) *
-				Math.sin(((scaledTime - s) * (2 * Math.PI)) / p) +
-			1
-		);
-	},
-	easeInOutElastic: (time, magnitude = 0.65) => {
-		if (time === 0 || time === 1) {
-			return time;
-		}
-
-		const p = 1 - magnitude;
-		const scaledTime = time * 2;
-		const scaledTime1 = scaledTime - 1;
-		const s = (p / (2 * Math.PI)) * Math.asin(1);
-
-		if (scaledTime < 1) {
-			return (
-				-0.5 *
-				(Math.pow(2, 10 * scaledTime1) *
-					Math.sin(((scaledTime1 - s) * (2 * Math.PI)) / p))
-			);
-		}
-
-		return (
-			Math.pow(2, -10 * scaledTime1) *
-				Math.sin(((scaledTime1 - s) * (2 * Math.PI)) / p) *
-				0.5 +
-			1
-		);
-	},
-	easeOutBounce: (time) => {
-		const scaledTime = time / 1;
-
-		if (scaledTime < 1 / 2.75) {
-			return 7.5625 * scaledTime * scaledTime;
-		} else if (scaledTime < 2 / 2.75) {
-			const scaledTime2 = scaledTime - 1.5 / 2.75;
-			return 7.5625 * scaledTime2 * scaledTime2 + 0.75;
-		} else if (scaledTime < 2.5 / 2.75) {
-			const scaledTime2 = scaledTime - 2.25 / 2.75;
-			return 7.5625 * scaledTime2 * scaledTime2 + 0.9375;
-		} else {
-			const scaledTime2 = scaledTime - 2.625 / 2.75;
-			return 7.5625 * scaledTime2 * scaledTime2 + 0.984375;
-		}
-	},
-	easeInBounce: (time) => {
-		return 1 - easingFunctions.easeOutBounce(1 - time);
-	},
-	easeInOutBounce: (time) => {
-		if (time < 0.5) {
-			return easingFunctions.easeInBounce(time * 2) * 0.5;
-		}
-		return easingFunctions.easeOutBounce(time * 2 - 1) * 0.5 + 0.5;
-	},
-};
-
 class tPlayerClass {
 	constructor(options) {
 		this.settings = this.deepObjectMerge(defaultPlayerSettings, options);
@@ -316,6 +109,7 @@ class tPlayerClass {
 			get titleAnimationInterval() { return this._titleAnimationInterval;	},
 			get volumeToggle() { return this._volumeToggle;	},
 			get isLoading() { return this._isLoading; },
+			get isMobile() { return this._isMobile; },
 			get isPlaylist() { return this._isPlaylist; },
 			get isPlaylistDisplayed() { return this._isPlaylistDisplayed; },
 			get isRadioInfoUpdatePending() { return this._isRadioInfoUpdatePending; },
@@ -350,6 +144,7 @@ class tPlayerClass {
 					this.handleIsLoadingChange(value);
 				}
 			},
+			set isMobile(value) { this._isMobile = value; },
 			set isPlaylist(value) { this._isPlaylist = value; },
 			set isPlaylistDisplayed(value) { this._isPlaylistDisplayed = value; },
 			set isRadioInfoUpdatePending(value) { this._isRadioInfoUpdatePending = value; },
@@ -395,25 +190,25 @@ class tPlayerClass {
 	
 		// Check if the 'id' property is missing or invalid
 		if (!this.settings.container) {
-			console.log("tPlayer Error: Please enter a valid container name.");
+			throw Error("tPlayer Error: Please enter a valid container name.");
 		}
 	
 		// Check if the 'wrapper' element associated with the given 'id' is missing
 		if (!playerContainerElement) {
-			console.log(`tPlayer Error: Element with id "${this.settings.container}" not found.`);
+			throw Error(`tPlayer Error: Element with id "${this.settings.container}" not found.`);
 		}
 	
 		this.uiElements.wrapper = playerContainerElement;
 	
 		// Check if the 'playlist' property is missing or not provided
 		if (!Array.isArray(this.playlist) || this.playlist.length === 0) {
-			console.log("tPlayer Error: Please, add a valid Playlist to tPlayer.");
+			throw Error("tPlayer Error: Please, add a valid Playlist to tPlayer.");
 		}
 	
 		// Check for audio link for each playlist item and update properties
 		for( const item of this.playlist) {
 			if(item.audio === undefined || item.audio === "") {
-				console.log("tPlayer Error: Not all tracks in the playlist have the audio property.");
+				throw Error("tPlayer Error: Not all tracks in the playlist have the audio property.");
 			}
 	
 			// Update artist if Album Artist is set
@@ -434,48 +229,6 @@ class tPlayerClass {
 	}
 
 	// Create Player Interface
-	createSvg(tag, className = "", attributes = null, children = null) {
-		const element = document.createElementNS("http://www.w3.org/2000/svg", tag);
-	
-		// Add class to the element if provided
-		if (className) element.classList.add(className);
-	
-		// Apply each attribute to the element
-		if (attributes) {
-			for (let attr in attributes) {
-				element.setAttribute(attr, attributes[attr]);
-			}
-		}
-	
-		// Recursively add children if provided
-		if (children) {
-			for (let child of children) {
-				let childElement = this.createSvg("path", child.className, child.attributes, null);
-				element.appendChild(childElement);
-			}
-		}
-	
-		return element;
-	}
-	
-	// Method to create a custom link button (buy/download) with an SVG icon
-	createCustomLink(type, href) {
-		const { addClass } = this;
-		const link = document.createElement("a");
-		addClass(link, ["tp-button", `tp-playlist-track-${type}`]);
-		link.href = href;
-		link.title = type === "buy" ? "Buy Now" : "Download Now";
-		link.target = "_blank";
-		if (type === "download") link.download = "";
-	
-		// Create SVG icon based on button type
-		const icon = this.createSvg("svg", null, { viewBox: "0 0 20 20" }, [
-			{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons[type] } }
-		]);
-		link.appendChild(icon);
-		return link;
-	}
-	
 	// Asynchronous method to initialize the player interface and structure its components
 	async createPlayerInterface() {
 		this.playerState.log = "Create Player Interface";
@@ -489,383 +242,189 @@ class tPlayerClass {
 		// Apply classes to wrapper element based on player settings
 		addClass(wrapper, ["tp-wrapper", "tp-loading", rounded ? "tp-rounded" : "", skin === "vertical" ? "tp-vertical" : ""]);
 	
-		// Set button icons based on "rounded" setting
+		// Determine button icon style based on "rounded" setting
 		this.buttonIcons = rounded ? this.buttonIcons.rounded : this.buttonIcons.default;
 	
+		// Fragment
 		const fragment = document.createDocumentFragment();
+		// Player container
+		const playerContainer = this.createElement("div", "tp-player-container", fragment);
 	
-		// Player container setup
-		const playerContainer = document.createElement("div");
-		addClass(playerContainer, "tp-player-container");
-		fragment.appendChild(playerContainer);
-	
-		// Add cover section if cover display is enabled
+		// Add cover section if cover display is enabled in settings
 		if(showCover) {
-			const playerASide = document.createElement("div");
-			addClass(playerASide, "tp-aside-player");
-			playerContainer.appendChild(playerASide);
-	
-			const coverLoadingSpinner = document.createElement("div");
-			addClass(coverLoadingSpinner, "tp-cover-loading-spinner");
+			const playerAside = this.createElement("div", "tp-aside-player", playerContainer);
+			const coverLoadingSpinner = this.createElement("div", "tp-cover-loading-spinner", playerAside);
 			coverLoadingSpinner.innerHTML = "<span></span><span></span><span></span>";
-			playerASide.appendChild(coverLoadingSpinner);
-	
-			this.uiElements.coverContainer = document.createElement("div");
-			addClass(this.uiElements.coverContainer, "tp-cover");
-			playerASide.appendChild(this.uiElements.coverContainer);
+			this.uiElements.coverContainer = this.createElement("div", "tp-cover", playerAside);
+			this.uiElements.coverImage = this.createElement("img", "tp-cover-image", this.uiElements.coverContainer);
 		}
 	
-		// Controls container and structure
-		const controlsContainer = document.createElement("div");
-		addClass(controlsContainer, "tp-controls-container");
-	
-		// Header section with track title
-		const controlsHeader = document.createElement("div");
-		addClass(controlsHeader, "tp-controls-header");
-		controlsContainer.appendChild(controlsHeader);
-	
-		this.uiElements.trackTitle = document.createElement("div");
-		addClass(this.uiElements.trackTitle, "tp-track-title");
-		this.uiElements.trackTitle.innerHTML = "Loading...";
-		controlsHeader.appendChild(this.uiElements.trackTitle);
-	
-		// Controls body, including playback, seek bar, and buttons
-		const controlsBody = document.createElement("div");
-		addClass(controlsBody, "tp-controls-body");
-	
-		// Playback button
-		this.uiElements.playbackButton = document.createElement("button");
-		addClass(this.uiElements.playbackButton, ["tp-button", "tp-playback-button"]);
-	
-		// Playback Icon
-		const playbackIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-			{ tagName: "path", className: null, attributes: { d: this.buttonIcons.playback.play } }
-		]);
-		this.uiElements.playbackButton.appendChild(playbackIcon);
-		controlsBody.appendChild(this.uiElements.playbackButton);
-	
-		// Seek bar (audio progress bar)
-		this.uiElements.audioSeekBar = document.createElement("div");
-		addClass(this.uiElements.audioSeekBar, "tp-audio-seek-bar");
-		controlsBody.appendChild(this.uiElements.audioSeekBar);
-	
-		// Buffered progress in the seek bar
-		this.uiElements.audioBufferedProgress = document.createElement("div");
-		addClass(this.uiElements.audioBufferedProgress, "tp-audio-buffered-progress");
-		this.uiElements.audioSeekBar.appendChild(this.uiElements.audioBufferedProgress);
-	
-		// Playback progress in the seek bar
-		this.uiElements.audioPlaybackProgress = document.createElement("div");
-		addClass(this.uiElements.audioPlaybackProgress, "tp-audio-playback-progress");
-		this.uiElements.audioSeekBar.appendChild(this.uiElements.audioPlaybackProgress);
-	
-		// Current Time
-		this.uiElements.audioCurrentTime = document.createElement("div");
-		addClass(this.uiElements.audioCurrentTime, "tp-audio-current-time");
-		this.uiElements.audioSeekBar.appendChild(this.uiElements.audioCurrentTime);
-	
-		// Duration
-		this.uiElements.audioDuration = document.createElement("div");
-		addClass(this.uiElements.audioDuration, "tp-audio-duration");
-		this.uiElements.audioSeekBar.appendChild(this.uiElements.audioDuration);
-	
-		// Loading spinner for the player
-		const playerLoader = document.createElement("div");
-		addClass(playerLoader, "tp-player-loader");
+		// Main controls container
+		const controlsContainer = this.createElement("div", "tp-controls-container", playerContainer);
+		// Header
+		const controlsHeader = this.createElement("div", "tp-controls-header", controlsContainer);
+		this.uiElements.trackTitle = this.createElement("div", "tp-track-title", controlsHeader);
+		// Body
+		const controlsBody = this.createElement("div", "tp-controls-body", controlsContainer);
+		this.uiElements.playbackButton = this.createButtonWithIcon("playback", "play", controlsBody);
+		this.uiElements.audioSeekBar = this.createElement("div", "tp-audio-seek-bar", controlsBody);
+		this.uiElements.audioBufferedProgress = this.createElement("div", "tp-audio-buffered-progress", this.uiElements.audioSeekBar);
+		this.uiElements.audioPlaybackProgress = this.createElement("div", "tp-audio-playback-progress", this.uiElements.audioSeekBar);
+		this.uiElements.audioCurrentTime = this.createElement("div", "tp-audio-current-time", this.uiElements.audioSeekBar);
+		this.uiElements.audioDuration = this.createElement("div", "tp-audio-duration", this.uiElements.audioSeekBar);
+		const playerLoader = this.createElement("div", "tp-player-loader", this.uiElements.audioSeekBar);
 		playerLoader.innerHTML = "<span></span><span></span><span></span>";
-		this.uiElements.audioSeekBar.appendChild(playerLoader);
 	
-		// Previous track button (only for playlists)
-		if(isPlaylist) {
-			this.uiElements.prevButton = document.createElement("button");
-			addClass(this.uiElements.prevButton, ["tp-button", "tp-prev-button"]);
-	
-			// Prev Icon
-			const prevIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-				{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.prev.fill } },
-				{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.prev.stroke } }
-			]);
-	
-			this.uiElements.prevButton.appendChild(prevIcon);
-			controlsBody.appendChild(this.uiElements.prevButton);
-		}
-	
+		// Previous (only shown for playlists)
+		if(isPlaylist) this.uiElements.prevButton = this.createButtonWithIcon("prev", "prev", controlsBody);
 		// Repeat button, if enabled in settings
-		if(showRepeatButton) {
-			this.uiElements.repeatButton = document.createElement("button");
-			addClass(this.uiElements.repeatButton, ["tp-button", "tp-repeat-button"]);
+		if(showRepeatButton) this.uiElements.repeatButton = this.createButtonWithIcon("repeat", "repeat", controlsBody);
+		// Next (only shown for playlists)
+		if(isPlaylist) this.uiElements.nextButton = this.createButtonWithIcon("next", "next", controlsBody);
+		// Shuffle button, if enabled in settings and it's playlist
+		if(isPlaylist && showShuffleButton) this.uiElements.shuffleButton = this.createButtonWithIcon("shuffle", "shuffle", controlsBody);
+		// Share Button, if enabled in settings
+		if(showShareButton) this.uiElements.shareButton = this.createButtonWithIcon("share", "share", controlsBody);
 	
-			// Repeat Icon
-			const repeatIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-				{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.repeat.fill } },
-				{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.repeat.stroke } }
-			]);
-	
-			this.uiElements.repeatButton.appendChild(repeatIcon);
-			controlsBody.appendChild(this.uiElements.repeatButton);
-		}
-	
-		// Next track button (only for playlists)
+		// Footer
+		const controlsFooter = this.createElement("div", "tp-controls-footer", controlsContainer);
+		// Playlist toggle button for playlists or buy/download buttons for individual tracks
 		if(isPlaylist) {
-			this.uiElements.nextButton = document.createElement("button");
-			addClass(this.uiElements.nextButton, ["tp-button", "tp-next-button"]);
-	
-			// Next Icon
-			const nextIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-				{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.next.fill } },
-				{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.next.stroke } }
-			]);
-	
-			this.uiElements.nextButton.appendChild(nextIcon);
-			controlsBody.appendChild(this.uiElements.nextButton);
-		}
-	
-		// Shuffle button if shuffle is enabled in settings
-		if(showShuffleButton) {
-			this.uiElements.shuffleButton = document.createElement("button");
-			addClass(this.uiElements.shuffleButton, ["tp-button", "tp-shuffle-button"]);
-	
-			// Shuffle Icon
-			const shuffleIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-				{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.shuffle.fill } },
-				{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.shuffle.stroke } }
-			]);
-	
-			this.uiElements.shuffleButton.appendChild(shuffleIcon);
-			controlsBody.appendChild(this.uiElements.shuffleButton);
-		}
-	
-		// Share Button, if share is enabled in settings
-		if(showShareButton){
-			this.uiElements.shareButton = document.createElement("button");
-			addClass(this.uiElements.shareButton, ["tp-button", "tp-share-button"]);
-	
-			// Share Icon
-			const shuffleIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-				{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.share.closed.fill } },
-				{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.share.closed.stroke } }
-			]);
-	
-			this.uiElements.shareButton.appendChild(shuffleIcon);
-			controlsBody.appendChild(this.uiElements.shareButton);
-		}
-	
-		// Adds all controls to the main controls container
-		controlsContainer.appendChild(controlsBody);
-	
-		// Controls Footer - Create a footer section within the player controls
-		const controlsFooter = document.createElement("div");
-		addClass(controlsFooter, "tp-controls-footer");
-		controlsContainer.appendChild(controlsFooter);
-	
-		// If a playlist, add a button to toggle the playlist view
-		if(isPlaylist) {
-			// Toggle Playlist Button
-			this.uiElements.togglePlaylistButton = document.createElement("button");
-			addClass(this.uiElements.togglePlaylistButton, ["tp-button", "tp-toggle-playlist-button"]);
-	
-			// Toggle Playlist Icons
-			const togglePlaylistIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-				{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.playlist.closed } }
-			]);
-	
-			this.uiElements.togglePlaylistButton.appendChild(togglePlaylistIcon);
-			controlsFooter.appendChild(this.uiElements.togglePlaylistButton);
+			this.uiElements.togglePlaylistButton = this.createButtonWithIcon("toggle-playlis", "playlist", controlsFooter);
 		} else {
-			// If it's not playlist, add buttons for buying and downloading the current track if links are provided
 			// Buy Button
 			if(this.playlist[0].buy) {
-				const buyButton = this.createCustomLink('buy', this.playlist[0].buy) ;
+				const buyButton = this.createCustomLink('buy', this.playlist[0].buy, controlsFooter);
 				controlsFooter.appendChild(buyButton);
 			}
 			// Download Button
 			if(this.playlist[0].download) {
-				const downloadButton = this.createCustomLink('download', this.playlist[0].download) ;
+				const downloadButton = this.createCustomLink('download', this.playlist[0].download, controlsFooter);
 				controlsFooter.appendChild(downloadButton);
 			}
 		}
 	
-		// Volume Control Section - Only added if user is not on a mobile device
+		// Volume Control for non-mobile devices
 		if(!isMobile) {
-			// Volume Control Container
-			const volumeControl = document.createElement("div");
-			addClass(volumeControl, "tp-volume-control");
-	
-			// Volume Button
-			this.uiElements.volumeButton = document.createElement("button");
-			addClass(this.uiElements.volumeButton, ["tp-button", "tp-volume-button"]);
-	
-			// Volume Icon
-			const volumeIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-				{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.volume.speaker } },
-				{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.volume.line_1 } },
-				{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.volume.line_2 } },
-				{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.volume.muted } }
-			]);
-	
-			this.uiElements.volumeButton.appendChild(volumeIcon);
-			volumeControl.appendChild(this.uiElements.volumeButton);
-	
-			// Volume Level Bar - Shows current volume level
-			this.uiElements.volumeLevelBar = document.createElement("div");
-			addClass(this.uiElements.volumeLevelBar, "tp-volume-level-bar");
-			volumeControl.appendChild(this.uiElements.volumeLevelBar);
-	
-			// Volume Level Indicator - The actual level inside the bar
-			this.uiElements.volumeLevel = document.createElement("div");
-			addClass(this.uiElements.volumeLevel, "tp-volume-level");
-			this.uiElements.volumeLevelBar.appendChild(this.uiElements.volumeLevel);
-	
-			// Add volume control to the controls footer
-			controlsFooter.appendChild(volumeControl);
+			const volumeControl = this.createElement("div", "tp-volume-control", controlsFooter);
+			this.uiElements.volumeButton = this.createButtonWithIcon("volume", "volume", volumeControl);
+			this.uiElements.volumeLevelBar = this.createElement("div", "tp-volume-level-bar", volumeControl);
+			this.uiElements.volumeLevel = this.createElement("div", "tp-volume-level", this.uiElements.volumeLevelBar);
 		}
 	
-		// Append the fully constructed controls container (including footer) to the main player container
-		playerContainer.appendChild(controlsContainer);
-	
-		// Social Media Section, if share is enabled in settings
-		if(this.settings.showShareButton) {
-			/* Social Media Section - Creates a container for social media buttons */
-			const sosialMediaContainer = document.createElement("div");
-			addClass(sosialMediaContainer, "tp-social-media-container");  // Add class to style the social media container
-			playerContainer.appendChild(sosialMediaContainer);  // Add the social media container to the controls footer
-	
-			// Facebook Button
-			this.uiElements.facebookButton = document.createElement("button");
-			addClass(this.uiElements.facebookButton, ["tp-button", "tp-facebook-button"]);  // Add button classes for styling
-	
-			// Facebook Icon
-			const facebookIcon = this.createSvg("svg", null, { viewBox: "0 0 20 20" }, [
-				{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.facebook } }  // Path for Facebook icon
-			]);
-			this.uiElements.facebookButton.appendChild(facebookIcon);  // Append icon to the button
-			sosialMediaContainer.appendChild(this.uiElements.facebookButton);  // Add Facebook button to the social media container
-	
-			// Twitter Button
-			this.uiElements.twitterButton = document.createElement("button");
-			addClass(this.uiElements.twitterButton, ["tp-button", "tp-twitter-button"]);  // Add button classes for styling
-	
-			// Twitter Icon
-			const twitterIcon = this.createSvg("svg", null, { viewBox: "0 0 20 20" }, [
-				{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.twitter } }  // Path for Twitter icon
-			]);
-			this.uiElements.twitterButton.appendChild(twitterIcon);  // Append icon to the button
-			sosialMediaContainer.appendChild(this.uiElements.twitterButton);  // Add Twitter button to the social media container
-	
-			// Tumblr Button
-			this.uiElements.tumblrButton = document.createElement("button");
-			addClass(this.uiElements.tumblrButton, ["tp-button", "tp-tumblr-button"]);  // Add button classes for styling
-	
-			// Tumblr Icon
-			const tumblrIcon = this.createSvg("svg", null, { viewBox: "0 0 20 20" }, [
-				{ tagName: "path", className: "tp-fill", attributes: { d: this.buttonIcons.tumblr } }  // Path for Tumblr icon
-			]);
-			this.uiElements.tumblrButton.appendChild(tumblrIcon);  // Append icon to the button
-			sosialMediaContainer.appendChild(this.uiElements.tumblrButton);  // Add Tumblr button to the social media container
+		// Social media share buttons, if enabled in settings
+		if(showShareButton) {
+			const socialMediaContainer = this.createElement("div", "tp-social-media-container", playerContainer);
+			this.uiElements.facebookButton = this.createButtonWithIcon("facebook", "facebook", socialMediaContainer);
+			this.uiElements.twitterButton = this.createButtonWithIcon("twitter", "twitter", socialMediaContainer);
+			this.uiElements.tumblrButton = this.createButtonWithIcon("tumblr", "tumblr", socialMediaContainer);
 		}
 	
-		/* Playlist */
-		/* Playlist Section - Creates and populates a playlist container if it's playlist */
+		// Playlist
 		if(isPlaylist) {
-			this.uiElements.playlistContainer = document.createElement("div");
-			addClass(this.uiElements.playlistContainer, "tp-playlist-container");
-	
-			// Playlist Wrapper - Creates an unordered list element to hold playlist items
-			this.uiElements.playlist = document.createElement("ul");
-			addClass(this.uiElements.playlist, "tp-playlist");
-			this.uiElements.playlistContainer.appendChild(this.uiElements.playlist);
-	
-			// Playlist Item Generation - Iterates through each track to create playlist items
+			this.uiElements.playlistContainer = this.createElement("div", "tp-playlist-container", fragment);
+			this.uiElements.playlist = this.createElement("ul", "tp-playlist", this.uiElements.playlistContainer);
+			// Generate playlist items for each track
 			this.playlist.map(track => {
 				// Determine the track name to display, including artist and title if available
 				const trackName = track.title ? `<b>${track.artist}</b> - ${track.title}` : `<b>${track.artist}</b>`;
 				// Determine the full track title for the tooltip, including artist and title if available
 				const trackTitle = track.title ? `${track.artist} - ${track.title}` : track.artist;
 	
-				const playlistItem = document.createElement("li");
-				addClass(playlistItem, "tp-playlist-item");
+				const playlistItem = this.createElement("li", "tp-playlist-item", this.uiElements.playlist);
 				playlistItem.title = trackTitle;
-	
-				// Play Indicator - Adds an animated visual to indicate track is playing
-				const playlistItemIndicator = document.createElement("div");
-				addClass(playlistItemIndicator, "tp-playlist-item-indicator");
+				const playlistItemIndicator = this.createElement("div", "tp-playlist-item-indicator", playlistItem);
 				playlistItemIndicator.innerHTML = "<span></span><span></span><span></span>";
-				playlistItem.appendChild(playlistItemIndicator);
-	
-				// Track Title Display - Shows the track name in the playlist item
-				const playlistItemTrackTitle = document.createElement("div");
-				addClass(playlistItemTrackTitle, "tp-playlist-item-track-title");
+				const playlistItemTrackTitle = this.createElement("div", "tp-playlist-item-track-title", playlistItem);
 				playlistItemTrackTitle.innerHTML = trackName;
-				playlistItem.appendChild(playlistItemTrackTitle);
 	
-				// Buy Button - Adds a button if the track has a buy link
 				if(track.buy) {
 					const buyButton = this.createCustomLink('buy', track.buy) ;
 					playlistItem.appendChild(buyButton);
 				}
 	
-				// Download Button - Adds a button if the track has a download link
 				if(track.download) {
 					const downloadButton = this.createCustomLink('download', track.download) ;
 					playlistItem.appendChild(downloadButton);
 				}
 	
-				// Add playlist item to playlist container
 				this.uiElements.playlist.appendChild(playlistItem);
 			});
 	
-			// Append playlist container to fragment
-			fragment.appendChild(this.uiElements.playlistContainer);
 			// Update reference to playlist items
 			this.uiElements.playlistItem = this.uiElements.playlist.childNodes;
 	
-			// Enable playlist scroll if allowed and the number of tracks exceeds the maximum visible tracks
+			// Enable playlist scroll if settings allow and track count exceeds visible max
 			if(this.settings.allowPlaylistScroll && this.playlist.length > this.settings.maxVisibleTracks) {
 				addClass(wrapper, "tp-scrollable");
-	
-				// Scrollbar Track
-				this.uiElements.scrollbarTrack = document.createElement("div");
-				addClass(this.uiElements.scrollbarTrack, "tp-scrollbar-track");
-				this.uiElements.playlistContainer.appendChild(this.uiElements.scrollbarTrack);
-	
-				// Scrollbar Thumb
-				this.uiElements.scrollbarThumb = document.createElement("div");
-				addClass(this.uiElements.scrollbarThumb, "tp-scrollbar-thumb");
-				this.uiElements.scrollbarTrack.appendChild(this.uiElements.scrollbarThumb);
-	
+				this.uiElements.scrollbarTrack = this.createElement("div", "tp-scrollbar-track", this.uiElements.playlistContainer);
+				this.uiElements.scrollbarThumb = this.createElement("div", "tp-scrollbar-thumb", this.uiElements.scrollbarTrack);
 				// Set Playlist Height - Limits visible playlist height to max visible tracks, calculated by track height
 				this.uiElements.playlist.style.height = `${40 * this.settings.maxVisibleTracks}px`
 			}
 		}
 	
-		/* Error */
-		// Create a container for displaying error messages
-		const errorContainer = document.createElement("div");
-		addClass(errorContainer, "tp-error-container");
-		fragment.appendChild(errorContainer);
+		// Error display container for any error messages
+		const errorContainer = this.createElement("div", "tp-error-container", fragment);
+		this.uiElements.errorMessage = this.createElement("div", "tp-error-container", errorContainer);
+		this.uiElements.errorCloseButton = this.createButtonWithIcon("close", "close", errorContainer)
 	
-		// Create a div for the error message
-		const errorMessage = document.createElement("div");
-		addClass(errorMessage, "tp-error-message");
-		errorContainer.appendChild(errorMessage);
-	
-		// Close Button
-		this.uiElements.errorCloseButton = document.createElement("button");
-		addClass(this.uiElements.errorCloseButton, ["tp-button", "tp-error-close-button"]);
-		errorContainer.appendChild(this.uiElements.errorCloseButton);
-	
-		// Close Icon
-		const closeIcon = this.createSvg("svg", null, {viewBox: "0 0 20 20"}, [
-			{ tagName: "path", className: "tp-stroke", attributes: { d: this.buttonIcons.playlist.opened } }
-		]);
-		this.uiElements.errorCloseButton.appendChild(closeIcon);
-	
-		// Append Player
+		// Append all player components to the main wrapper
 		wrapper.appendChild(fragment);
 	
 		const endTime = new Date().getTime();
 		const duration = (endTime - startTime);
 		this.playerState.log = `The Player Interface is Created in ${duration} ms`;
+	}
+	
+	// Helper method to create a new HTML element with classes and optional parent
+	createElement(tagName, classes, parent) {
+		const { addClass } = this;
+		const element = document.createElement(tagName);
+	
+		if (classes && classes.length > 0) {
+			addClass(element, classes);
+		}
+		if (parent) parent.appendChild(element);
+		return element;
+	}
+	
+	// Method to create a button with an SVG icon
+	createButtonWithIcon(type, iconType, parent) {
+		const button = this.createElement("button", ["tp-button", `tp-${type}-button`]);
+		const icon = this.createSvgIcon(this.buttonIcons[iconType]);
+		button.appendChild(icon);
+		if (parent) parent.appendChild(button);
+		return button;
+	}
+	
+	// Creates an SVG icon element based on provided path data
+	createSvgIcon(path) {
+		const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+		const svgElement = document.createElementNS(SVG_NAMESPACE, "svg");
+		svgElement.setAttribute("viewBox", "0 0 24 24");
+	
+		const pathElement = document.createElementNS(SVG_NAMESPACE, "path");
+		pathElement.setAttribute("d", path);
+		svgElement.appendChild(pathElement);
+	
+		return svgElement;
+	}
+	
+	// Method to create a custom link button (buy/download) with an SVG icon
+	createCustomLink(type, href) {
+		const { addClass } = this;
+		const link = document.createElement("a");
+		addClass(link, ["tp-button", `tp-playlist-track-${type}`]);
+		link.href = href;
+		link.title = type === "buy" ? "Buy Now" : "Download Now";
+		link.target = "_blank";
+		if (type === "download") link.download = "";
+	
+		// Create SVG icon based on button type
+		const icon = this.createSvgIcon(this.buttonIcons[type]);
+		link.appendChild(icon);
+		return link;
 	}
 
 	// Function to apply styles from the JSON object as CSS variables
@@ -962,7 +521,7 @@ class tPlayerClass {
 				if (buy) buy.addEventListener('click', preventClick);
 			});
 	
-			if(allowPlaylistScroll && maxVisibleTracks > this.playlist.length) {
+			if(allowPlaylistScroll && this.playlist.length > maxVisibleTracks) {
 				// Add event listeners for scrollbar interactions
 				playlistContainer.addEventListener('mouseenter', this.showScrollbar.bind(this)); // Show scrollbar on mouse enter
 				playlistContainer.addEventListener('mouseleave', this.hideScrollbar.bind(this)); // Hide scrollbar on mouse leave
@@ -994,6 +553,8 @@ class tPlayerClass {
 			volumeLevelBar.addEventListener('mousedown', this.startVolumeAdjustment.bind(this), false);
 			volumeButton.addEventListener('click', this.volumeToggle.bind(this));
 		}
+	
+		if(showCover) coverImage.addEventListener('load', this.coverLoaded.bind(this));
 	
 		// Add event listener for window resize
 		window.addEventListener("resize", this.playerResize.bind(this));
@@ -1137,7 +698,7 @@ class tPlayerClass {
 		// Remove the 'active' class from the playback button
 		removeClass(playbackButton, 'tp-active');
 		// Update the playback button icon to 'play'
-		playbackButton.querySelector('path').setAttribute('d', this.buttonIcons.playback.play);
+		playbackButton.querySelector('path').setAttribute('d', this.buttonIcons.play);
 		// Disable radio info updates
 		this.playerState.allowRadioInfoUpdate = false;
 		// Set Audio Event
@@ -1158,7 +719,7 @@ class tPlayerClass {
 		// Add the 'active' class to the playback button
 		addClass(playbackButton, 'tp-active');
 		// Update the playback button icon to 'pause'
-		playbackButton.querySelector('path').setAttribute('d', this.buttonIcons.playback.pause);
+		playbackButton.querySelector('path').setAttribute('d', this.buttonIcons.pause);
 		// Allow Seeking
 		this.playerState.allowSeeking = true;
 		// Enable radio info updates
@@ -1260,22 +821,20 @@ class tPlayerClass {
 	
 	volumechange() {
 		const { addClass, removeClass } = this;
-		const paths = this.uiElements.volumeButton.children[0].children;
+		const { volumeLevel, volumeButton } = this.uiElements;
 		this.settings.volume = this.audio.volume !== 0 ? this.audio.volume : this.settings.volume;
-		this.uiElements.volumeLevel.style.width = `${this.audio.volume * 100}%`;
+		volumeLevel.style.width = `${this.audio.volume * 100}%`;
 	
-		// Update the visibility of volume level indicators
-		paths[1].style.transform = this.audio.volume < 0.25 ? "scale(0)" : "scale(1)";
-		paths[2].style.transform = this.audio.volume < 0.5 ? "scale(0)" : "scale(1)";
-		paths[3].style.transform = this.audio.volume === 0 ? "scale(1)" : "scale(0)";
 	
 		// Update the mute state and button appearance
 		if(this.audio.volume === 0) {
 			this.playerState.isVolumeMuted = true;
-			addClass(this.uiElements.volumeButton, 'tp-active');
+			addClass(volumeButton, 'tp-active');
+			volumeButton.children[0].children[0].setAttribute('d', this.buttonIcons.muted);
 		} else {
 			this.playerState.isVolumeMuted = false;
-			removeClass(this.uiElements.volumeButton, 'tp-active');
+			removeClass(volumeButton, 'tp-active');
+			volumeButton.children[0].children[0].setAttribute('d', this.buttonIcons.volume);
 		}
 		// Set Audio Event
 		this.playerState.audioEvent = 'volumechange';
@@ -1443,36 +1002,9 @@ class tPlayerClass {
 	
 		if (this.playerState.isShareDisplayed) {
 			// Animate the button icon to the "opened" state
-			this.animatePathSvg(
-				shareButton.querySelector('.tp-stroke'),
-				this.buttonIcons.share.closed.stroke,
-				this.buttonIcons.share.opened.stroke,
-				250,
-				'easeOutExpo'
-			);
-			this.animatePathSvg(
-				shareButton.querySelector('.tp-fill'),
-				this.buttonIcons.share.closed.fill,
-				this.buttonIcons.share.opened.fill,
-				250,
-				'easeOutExpo'
-			);
+			shareButton.children[0].children[0].setAttribute('d', this.buttonIcons.close);
 		} else {
-			// Animate the button icon to the "closed" state
-			this.animatePathSvg(
-				shareButton.querySelector('.tp-stroke'),
-				this.buttonIcons.share.opened.stroke,
-				this.buttonIcons.share.closed.stroke,
-				250,
-				'easeOutExpo'
-			);
-			this.animatePathSvg(
-				shareButton.querySelector('.tp-fill'),
-				this.buttonIcons.share.opened.fill,
-				this.buttonIcons.share.closed.fill,
-				250,
-				'easeOutExpo'
-			);
+			shareButton.children[0].children[0].setAttribute('d', this.buttonIcons.share);
 		}
 	}
 	
@@ -1521,26 +1053,14 @@ class tPlayerClass {
 	
 		if (this.playerState.isPlaylistDisplayed && this.playerState.isPlaylist) {
 			// Animate the button icon to the "opened" state
-			this.animatePathSvg(
-				togglePlaylistButton.querySelector('path'),
-				this.buttonIcons.playlist.closed,
-				this.buttonIcons.playlist.opened,
-				250,
-				'easeOutExpo'
-			);
+			togglePlaylistButton.children[0].children[0].setAttribute('d', this.buttonIcons.close);
 			// Calculate the playlist height based on the number of tracks and settings
 			playlistHeight = (this.playlist.length > maxVisibleTracks && allowPlaylistScroll)
 			? maxVisibleTracks * 40 - 1
 			: this.playlist.length * 40;
 		} else {
 			// Animate the button icon to the "closed" state
-			this.animatePathSvg(
-				this.uiElements.togglePlaylistButton.querySelector('path'),
-				this.buttonIcons.playlist.opened,
-				this.buttonIcons.playlist.closed,
-				250,
-				'easeOutExpo'
-			);
+			togglePlaylistButton.children[0].children[0].setAttribute('d', this.buttonIcons.playlist);
 		}
 	
 		// Set the height of the playlist wrapper
@@ -1697,7 +1217,6 @@ class tPlayerClass {
 	
 	// Function to update the scrollbar thumb's size and position
 	updateScrollbarThumb() {
-		console.log('updtate');
 		var visibleRatio = this.uiElements.playlist.clientHeight / this.uiElements.playlist.scrollHeight;
 	
 		// Set thumb height relative to the visible portion of the playlist, with a minimum of 10%
@@ -1774,6 +1293,18 @@ class tPlayerClass {
 		document.addEventListener("mouseup", scrollbarTrackSeekingEnd);
 	}
 	
+	coverLoaded() {
+		const { addClass, removeClass } = this;
+		const { coverContainer } = this.uiElements;
+	
+		addClass(coverContainer, "tp-end-change-cover");
+		removeClass(coverContainer, 'tp-start-change-cover');
+		coverContainer.onanimationend = () => {
+			removeClass(coverContainer, 'tp-end-change-cover');
+			coverContainer.onanimationend = null;
+		}
+	}
+	
 	// Adjusts the player layout based on the wrapper's width.
 	playerResize() {
 		const { addClass, removeClass } = this;
@@ -1794,13 +1325,14 @@ class tPlayerClass {
 		this.playerState.log = 'Changing the Track';
 		let scrollDistance = 0;
 	
-		const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, trackTitle, coverContainer } = this.uiElements;
+		const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, trackTitle, coverContainer, coverImage } = this.uiElements;
 		const { allowPlaylistScroll, maxVisibleTracks, showCover } = this.settings;
 		const { addClass, removeClass } = this;
+		const { isPlaylist } = this.playerState;
 		const currentTrackIndex = this.currentTrack.index;
 	
 		// Disable radio info update
-		this.playerState.isRadioInfoUpdateAllowed = false;
+		this.playerState.allowRadioInfoUpdate = false;
 	
 		// Reset audio progress bars and pause audio
 		audioBufferedProgress.style.width = "0px";
@@ -1813,13 +1345,15 @@ class tPlayerClass {
 		this.audio.volume = this.playerState.isVolumeMuted ? 0 : this.settings.volume;
 	
 		// Update playlist item classes
-		removeClass(playlistItem, ['tp-active', 'tp-playing']);
-		addClass(playlistItem[currentTrackIndex], 'tp-active');
+		if(isPlaylist) {
+			removeClass(playlistItem, ['tp-active', 'tp-playing']);
+			addClass(playlistItem[currentTrackIndex], 'tp-active');
+		}
 	
 		// Handle autoplay
 		if(this.playerState.autoplay) {
 			this.audio.play();
-			this.playerState.isRadioInfoUpdateAllowed = true;
+			this.playerState.allowRadioInfoUpdate = true;
 		}
 	
 		// Handle playlist scrolling
@@ -1840,8 +1374,8 @@ class tPlayerClass {
 	
 		// Animate text change
 		this.animateTextChange({
-			artist: this.playlist[this.previousTrackIndex].artist,
-			title: this.playlist[this.previousTrackIndex].title
+			artist: this.previousTrackIndex === currentTrackIndex ? '' : this.playlist[this.previousTrackIndex].artist,
+			title: this.previousTrackIndex === currentTrackIndex ? '' : this.playlist[this.previousTrackIndex].title,
 		}, {
 			artist: this.currentTrack.artist,
 			title: this.currentTrack.title
@@ -1853,8 +1387,11 @@ class tPlayerClass {
 		const { cover } = this.playlist[currentTrackIndex];
 	
 		if(cover && cover !== "" && showCover) {
-			coverContainer.innerHTML = "";
-			this.loadCover(cover);
+			addClass(coverContainer, 'tp-start-change-cover');
+			coverContainer.onanimationend = () => {
+				coverContainer.onanimationend = null;
+				coverImage.src = cover;
+			}
 		}
 	
 		this.playerState.log = 'Track Changed';
@@ -1937,7 +1474,6 @@ class tPlayerClass {
 		// Load And Prepare The Initial Track For Playback
 		this.switchTrack();
 		console.log(this);
-		console.log(this.playerState.log);
 	}
 
 	/* UTILS */
@@ -2039,200 +1575,46 @@ class tPlayerClass {
 		}
 		return array;
 	}
-	// Animate Path Svg
-	animatePathSvg(pathElement, fromD, toD, duration = 1000, easing = 'linear', callback) {
-		let startTime = null;
-	
-		// Function to interpolate the 'd' attribute of the path element
-		function interpolateD(from, to, progress) {
-			// Split 'd' attribute values into commands and numbers
-			const fromCommands = from.match(/[a-zA-Z]+|[-.\d]+/g);
-			const toCommands = to.match(/[a-zA-Z]+|[-.\d]+/g);
-	
-			let result = '';
-			let isNumber = false;
-	
-			// Iterate over each command/number pair
-			for (let i = 0; i < fromCommands.length; i++) {
-				if (isNaN(fromCommands[i])) {
-					// If it's a command (e.g., M, L), append it to the result
-					result += (isNumber ? ' ' : '') + fromCommands[i];
-					isNumber = false; // The next value will be a number
-				} else {
-					// If it's a number, interpolate between 'from' and 'to' values
-					const fromValue = parseFloat(fromCommands[i]);
-					const toValue = parseFloat(toCommands[i]);
-					const interpolatedValue = fromValue + (toValue - fromValue) * progress;
-	
-					// Determine decimal places based on progress (more precise during animation)
-					result += (isNumber ? ',' : ' ') + interpolatedValue;
-	
-					isNumber = true; // The next value will be a number
-				}
-			}
-	
-			return result;
-		}
-	
-		// Function to handle the animation frame
-		const animate = (currentTime) => {
-			if (!startTime) startTime = currentTime; // Initialize start time on first frame
-			const elapsedTime = currentTime - startTime; // Calculate elapsed time
-			const progress = Math.min(elapsedTime / duration, 1); // Normalize progress to a value between 0 and 1
-	
-			// Apply easing function to smooth the progress
-			const easedProgress = easingFunctions[easing](progress);
-	
-			// Update the 'd' attribute of the path element with interpolated values
-			pathElement.setAttribute('d', interpolateD(fromD, toD, easedProgress));
-	
-			// Continue animating if progress is less than 1, otherwise call the callback function
-			if (progress < 1) {
-				requestAnimationFrame(animate); // Request next animation frame
-			} else if (callback) {
-				callback(); // Call the callback function when animation is complete
-			}
-		};
-	
-		requestAnimationFrame(animate); // Start the animation
-	}
-	// Load Cover
-	loadCover(url) {
-		// Create a new Image object
-		const img = new Image();
-		// Load the image source
-		img.src = url;
-		img.classList.add('tp-cover-image');
-	
-		// Add an event listener for when the image is loaded
-		img.onload = function() {
-			// Once loaded, set opacity to 1 to show the image
-			img.style.opacity = '1';
-		};
-	
-		// Optionally, handle loading errors
-		img.onerror = function() {
-			console.error("Failed to load image:", url);
-			// You might want to show an error placeholder or message
-		};
-	
-		this.uiElements.coverContainer.appendChild(img);
-	}
 
 	// Button Icons
 	buttonIcons = {
 	  default: {
-	    playback: {
-	      play: "M0,0 10,5 10,15 0,20z M10,5 20,10 20,10 10,15z",
-	      pause: "M0,0 3,0 3,20 0,20z M17,0 20,0 20,20, 17,20z",
-	    },
-	    prev: {
-	      stroke: "M1.5,0 1.5,20",
-	      fill: "M20,0 20,20 1,10z",
-	    },
-	    repeat: {
-	      stroke: "M1.5,12 1.5,3.5 14,3.5 M18.5,8 18.5,16 6,16.5",
-	      fill: "M13,0 20,3.5 13,7z M7,13 7,20 0,16.5z",
-	    },
-	    next: {
-	      stroke: "M18.5,0 18.5,20",
-	      fill: "M0,0 19,10 0,20z",
-	    },
-	    shuffle: {
-	      stroke: "M1,19 17,3 M1,1 8,8 M12,12 17,17",
-	      fill: "M12,0 20,0 20,8z M20,12 20,20 12,20z",
-	    },
-	    share: {
-	      opened: {
-	        fill: "M10,10 a 0,0 0 1,1 0,0 a0,0 0 1,1 -0,0 M18.5,1.5 a 0,0 0 1,1 0,0 a0,0 0 1,1 -0,0 M18.5,18.5 a 0,0 0 1,1 0,0 a0,0 0 1,1 -0,0",
-	        stroke: "M18.5,1.5 10,10 18.5,18.5 M1.5,1.5 10,10 1.5,18.5",
-	      },
-	      closed: {
-	        fill: "M0,10 a 4,4 0 1,1 8,0 a4,4 0 1,1 -8,0 M12,4 a 4,4 0 1,1 8,0 a4,4 0 1,1 -8,0 M12,16 a 4,4 0 1,1 8,0 a4,4 0 1,1 -8,0",
-	        stroke: "M16,4 4,10 16,16 M4,10 4,10 4,10",
-	      },
-	    },
-	    facebook:
-	      "M0,0v20h8.8v-7.1H6.5V9.4h2.3V7c0-1.9,1.6-3.5,3.5-3.5h3.6V7h-3.6v2.4h3.6l-0.6,3.5h-3V20H20V0H0z",
-	    twitter:
-	      "M0,0v20h20V0H0z M16,6.9c0,0.1,0,0.3,0,0.4c0,4.1-3.1,8.8-8.8,8.8c-1.7,0-3.3-0.5-4.7-1.4c0.2,0,0.5,0,0.7,0c1.4,0,2.7-0.5,3.8-1.3c-1.3,0-2.5-0.9-2.9-2.1c0.2,0,0.4,0.1,0.6,0.1c0.3,0,0.5,0,0.8-0.1c-1.4-0.3-2.5-1.6-2.5-3v0C3.5,8.4,4,8.6,4.5,8.6C3.1,7.7,2.7,5.9,3.5,4.5c1.6,1.9,3.9,3.1,6.3,3.2c0-0.2-0.1-0.5-0.1-0.7c0-0.9,0.4-1.7,1-2.2C12,3.6,14,3.6,15.1,4.9c0.7-0.1,1.3-0.4,2-0.7c-0.2,0.7-0.7,1.3-1.4,1.7c0.6-0.1,1.2-0.2,1.8-0.5C17.1,6,16.6,6.5,16,6.9z",
-	    tumblr:
-	      "M0,0v20h20V0H0z M11.6,17.5c-3.3,0-3.9-2.5-3.9-3.2V9.4h-2V6.8C7.4,6,8.6,4.4,9,2.5H11v4.3h2.7v2.6H11v4.3c0,0.8,0.4,1.3,1.2,1.3c0.5,0,0.9-0.2,1.3-0.5l0.8,1.8C14.3,16.3,13.5,17.5,11.6,17.5z",
-	    playlist: {
-	      closed: "M0,3 20,3 M0,10 20,10 M0,17 20,17",
-	      opened: "M1.5,1.5 18.5,18.5 M10,10 10,10 M1.5,18.5 18.5,1.5 ",
-	    },
-	    volume: {
-	      speaker: "M10,0 10,20 4,15 0,15 0,5 4,5z",
-	      line_1: "M14,14.5c1.2-1.1,2-2.7,2-4.5s-0.8-3.4-2-4.5",
-	      line_2: "M15,17.5c2.4-1.6,4-4.4,4-7.5s-1.6-5.9-4-7.5",
-	      muted: "M14,7.5 19,12.5 M14,12.5 19,7.5",
-	    },
-	    download: "M1,10v9h18v-9 M10,0v13 M8,11h4l-2,3L8,11z",
-	    buy: "M11,0v9 M9,7h4l-2,3L9,7z M0,5h3l2,8h13l1-5 M6,17c0-1.1,0.9-2,2-2s2,0.9,2,2s-0.9,2-2,2S6,18.1,6,17 M13,17c0-1.1,0.9-2,2-2c1.1,0,2,0.9,2,2s-0.9,2-2,2C13.9,19,13,18.1,13,17",
+			play: "M0 20 20 10 0 0 0 20z",
+			pause: "M0,0 3,0 3,20 0,20z M17,0 20,0 20,20, 17,20z",
+	    prev: "M20 0 3 8.5 3 0 0 0 0 20 3 20 3 11.5 20 20 20 0z",
+	    repeat: "M17 14.5 7 14.5 7 12 0 16 7 20 7 17.5 17 17.5 20 17.5 20 14.5 20 10 17 10 17 14.5z M3 5.5 13 5.5 13 8 20 4 13 0 13 2.5 3 2.5 0 2.5 0 5.5 0 10 3 10 3 5.5z",
+	    next: "M17 0 17 8.5 0 0 0 20 17 11.5 17 20 20 20 20 0 17 0z",
+	    shuffle: "M0,2L2,0l6.9,6.9-2,2L0,2ZM13.1,11.1l-2,2,3.9,3.9-3,3h8v-8l-3,3-3.9-3.9Z M12 0 15 3 0 18 2 20 17 5 20 8 20 0 12 0z",
+	    share: "M17 12 17 17 3 17 3 3 8 3 8 0 3 0 0 0 0 3 0 17 0 20 3 20 17 20 20 20 20 17 20 12 17 12z M12 0 15 3 9 9 11 11 17 5 20 8 20 0 12 0z",
+	    facebook: "M0,0v20h8.8v-7.1H6.5V9.4h2.3V7c0-1.9,1.6-3.5,3.5-3.5h3.6V7h-3.6v2.4h3.6l-0.6,3.5h-3V20H20V0H0z",
+	    twitter: "M0,0v20h20V0H0z M16,6.9c0,0.1,0,0.3,0,0.4c0,4.1-3.1,8.8-8.8,8.8c-1.7,0-3.3-0.5-4.7-1.4c0.2,0,0.5,0,0.7,0c1.4,0,2.7-0.5,3.8-1.3c-1.3,0-2.5-0.9-2.9-2.1c0.2,0,0.4,0.1,0.6,0.1c0.3,0,0.5,0,0.8-0.1c-1.4-0.3-2.5-1.6-2.5-3v0C3.5,8.4,4,8.6,4.5,8.6C3.1,7.7,2.7,5.9,3.5,4.5c1.6,1.9,3.9,3.1,6.3,3.2c0-0.2-0.1-0.5-0.1-0.7c0-0.9,0.4-1.7,1-2.2C12,3.6,14,3.6,15.1,4.9c0.7-0.1,1.3-0.4,2-0.7c-0.2,0.7-0.7,1.3-1.4,1.7c0.6-0.1,1.2-0.2,1.8-0.5C17.1,6,16.6,6.5,16,6.9z",
+	    tumblr: "M0,0v20h20V0H0z M11.6,17.5c-3.3,0-3.9-2.5-3.9-3.2V9.4h-2V6.8C7.4,6,8.6,4.4,9,2.5H11v4.3h2.7v2.6H11v4.3c0,0.8,0.4,1.3,1.2,1.3c0.5,0,0.9-0.2,1.3-0.5l0.8,1.8C14.3,16.3,13.5,17.5,11.6,17.5z",
+	    playlist: "M0,15.5h20v3H0v-3ZM0,8.5h20v3H0v-3ZM0,1.5h20v3H0V1.5Z",
+			volume: "M10,0v20l-6-5H0V5h4L10,0ZM14.7,15.2l-1.4-1.5c1.1-1,1.7-2.3,1.7-3.8s-.6-2.8-1.7-3.8l1.4-1.5c1.5,1.4,2.3,3.3,2.3,5.2s-.8,3.9-2.3,5.2v.2ZM15.6,18.3l-1.1-1.7c2.2-1.5,3.6-4,3.6-6.7s-1.4-5.2-3.6-6.7l1.1-1.7c2.7,1.8,4.4,5,4.4,8.3s-1.7,6.5-4.4,8.3v.2Z",
+			muted: "M10,0v20l-6-5H0V5h4L10,0ZM18.7,8.2l-1.4-1.4-1.8,1.8-1.8-1.8-1.4,1.4,1.8,1.8-1.8,1.8,1.4,1.4,1.8-1.8,1.8,1.8,1.4-1.4-1.8-1.8,1.8-1.8Z",
+	    download: "M17,10v7H3v-7H0v10h20v-10h-3ZM11.5,7V0h-3v7h-2.5l4,7,4-7h-2.5Z",
+	    buy: "M17.4,14.8H4L2,5.2H0v-2.4h4l2,9.4h9.6l2-5.6,2.4.8-2.6,7.4ZM4.5,17.5c0-1.4,1.1-2.5,2.5-2.5s2.5,1.1,2.5,2.5-1.1,2.5-2.5,2.5-2.5-1.1-2.5-2.5M12.5,17.5c0-1.4,1.1-2.5,2.5-2.5s2.5,1.1,2.5,2.5-1.1,2.5-2.5,2.5-2.5-1.1-2.5-2.5M12.5,6.5V0h-3v6.5h-2.5l4,5,4-5h-2.5Z",
+			close: "M20.06 2.06 17.94 -.06 10 7.88 2.06 -.06 -.06 2.06 7.88 10 -.06 17.94 2.06 20.06 10 12.12 17.94 20.06 20.06 17.94 12.12 10 20.06 2.06z"
 	  },
 	  rounded: {
-	    playback: {
-	      play: "M1.5,1.5 18.5,10 18.5,10 1.5,18.5z M18.5,10 18.5,10 18.5,10 18.5,10z",
-	      pause:
-	        "M1.5,1.5 2.5,1.5 2.5,18.5 1.5,18.5z M17.5,1.5 18.5,1.5 18.5,18.5 17.5,18.5z",
-	    },
-	    prev: {
-	      stroke: "M1.5,1.5 1.5,18.5",
-	      fill: "M20,2.1v15.9c0,1.6-1.6,2.5-3,1.8L2.1,11.8c-1.4-0.8-1.4-2.9,0-3.7L17,0.2C18.4-0.5,20,0.5,20,2.1z",
-	    },
-	    repeat: {
-	      stroke: "M1.5,11 1.5,3.5 14,3.5 M18.5,9 18.5,16.5 6,16.5",
-	      fill: "M7,18.8v-4.6c0-0.9-1-1.5-1.8-1.1l-4.6,2.3c-0.9,0.4-0.9,1.7,0,2.2l4.6,2.3C6,20.3,7,19.7,7,18.8z M13,1.2v4.6c0,0.9,1,1.5,1.8,1.1l4.6-2.3c0.9-0.4,0.9-1.7,0-2.2l-4.6-2.3C14-0.3,13,0.3,13,1.2z",
-	    },
-	    next: {
-	      stroke: "M18.5,1.5 18.5,18.5",
-	      fill: "M3,0.2l14.9,7.9c1.4,0.8,1.4,2.9,0,3.7L3,19.8c-1.4,0.7-3-0.3-3-1.8V2.1C0,0.5,1.6-0.5,3,0.2z",
-	    },
-	    shuffle: {
-	      stroke: "M1.5,18.5 17,3 M1.5,1.5 6.5,6.5 M13.5,13.5 16,16",
-	      fill: "M13.2,0h5.6C19.5,0,20,0.5,20,1.2v5.6c0,1.1-1.3,1.6-2.1,0.9l-5.6-5.6C11.6,1.3,12.1,0,13.2,0z M13.2,20h5.6c0.7,0,1.2-0.5,1.2-1.2v-5.6c0-1.1-1.3-1.6-2.1-0.9l-5.6,5.6C11.6,18.7,12.1,20,13.2,20z",
-	    },
-	    share: {
-	      opened: {
-	        fill: "M10,10 a 0,0 0 1,1 0,0 a0,0 0 1,1 -0,0 M18.5,1.5 a 0,0 0 1,1 0,0 a0,0 0 1,1 -0,0 M18.5,18.5 a 0,0 0 1,1 0,0 a0,0 0 1,1 -0,0",
-	        stroke: "M18.5,1.5 10,10 18.5,18.5 M1.5,1.5 10,10 1.5,18.5",
-	      },
-	      closed: {
-	        fill: "M0,10 a 4,4 0 1,1 8,0 a4,4 0 1,1 -8,0 M12,4 a 4,4 0 1,1 8,0 a4,4 0 1,1 -8,0 M12,16 a 4,4 0 1,1 8,0 a4,4 0 1,1 -8,0",
-	        stroke: "M16,4 4,10 16,16 M4,10 4,10 4,10",
-	      },
-	    },
-	    facebook:
-	      "M17,0H3C1.3,0,0,1.3,0,3v14c0,1.7,1.3,3,3,3h5.8v-7.1H6.5V9.4h2.3V7c0-1.9,1.6-3.5,3.5-3.5h3.6V7h-3.6v2.4h3.6l-0.6,3.5h-3V20H17c1.7,0,3-1.3,3-3V3C20,1.3,18.7,0,17,0z",
-	    twitter:
-	      "M17,0H3C1.3,0,0,1.3,0,3v14c0,1.7,1.3,3,3,3h14c1.7,0,3-1.3,3-3V3C20,1.3,18.7,0,17,0z M16,6.9c0,0.1,0,0.3,0,0.4c0,4.1-3.1,8.8-8.8,8.8c-1.7,0-3.3-0.5-4.7-1.4c0.2,0,0.5,0,0.7,0c1.4,0,2.7-0.5,3.8-1.3c-1.3,0-2.5-0.9-2.9-2.1c0.2,0,0.4,0.1,0.6,0.1c0.3,0,0.5,0,0.8-0.1c-1.4-0.3-2.5-1.6-2.5-3v0C3.5,8.4,4,8.6,4.5,8.6C3.1,7.7,2.7,5.9,3.5,4.5c1.6,1.9,3.9,3.1,6.3,3.2c0-0.2-0.1-0.5-0.1-0.7c0-0.9,0.4-1.7,1-2.2C12,3.6,14,3.6,15.1,4.9c0.7-0.1,1.3-0.4,2-0.7c-0.2,0.7-0.7,1.3-1.4,1.7c0.6-0.1,1.2-0.2,1.8-0.5C17.1,6,16.6,6.5,16,6.9z",
-	    tumblr:
-	      "M17,0H3C1.3,0,0,1.3,0,3v14c0,1.7,1.3,3,3,3h14c1.7,0,3-1.3,3-3V3C20,1.3,18.7,0,17,0z M11.6,17.5c-3.3,0-3.9-2.5-3.9-3.2V9.4h-2V6.8C7.4,6,8.6,4.4,9,2.5H11v4.3h2.7v2.6H11v4.3c0,0.8,0.4,1.3,1.2,1.3c0.5,0,0.9-0.2,1.3-0.5l0.8,1.8C14.3,16.3,13.5,17.5,11.6,17.5z",
-	    playlist: {
-	      closed: "M2,3 18,3 M2,10 18,10 M2,17 18,17",
-	      opened: "M2,2 18,18 M-2,10 -2,10 M2,18 18,2",
-	    },
-	    playlist: {
-	      closed: "M0,3 20,3 M0,10 20,10 M0,17 20,17",
-	      opened: "M1.5,1.5 18.5,18.5 M-2,10 -2,10 M1.5,18.5 18.5,1.5",
-	    },
-	    playlist: {
-	      closed: "M2,3 18,3 M2,10 18,10 M2,17 18,17",
-	      opened: "M2,2 18,18 M10,10 10,10 M2,18 18,2",
-	    },
-	    volume: {
-	      speaker:
-	        "M9.4,0.1C9-0.1,8.6,0,8.3,0.3L3.6,5H1C0.4,5,0,5.4,0,6v8c0,0.6,0.4,1,1,1h2.6l4.7,4.7C8.5,19.9,8.7,20,9,20  c0.1,0,0.3,0,0.4-0.1C9.8,19.8,10,19.4,10,19V1C10,0.6,9.8,0.2,9.4,0.1z",
-	      line_1: "M14,14.5c1.2-1.1,2-2.7,2-4.5s-0.8-3.4-2-4.5",
-	      line_2: "M15,17.5c2.4-1.6,4-4.4,4-7.5s-1.6-5.9-4-7.5",
-	      muted: "M14,7.5 19,12.5 M14,12.5 19,7.5",
-	    },
-	    download: "M1,10v9h18v-9 M10,1v12 M8,11h4l-2,3L8,11z",
-	    buy: "M11,1v7 M9,7h4l-2,3L9,7z M1,5h2l2,8h13l1-5 M6,17c0-1.1,0.9-2,2-2s2,0.9,2,2s-0.9,2-2,2S6,18.1,6,17 M13,17c0-1.1,0.9-2,2-2s2,0.9,2,2s-0.9,2-2,2S13,18.1,13,17",
+			play: "M19.45,9.11L1.45.11C1.14-.05.77-.03.47.15c-.29.18-.47.5-.47.85v18c0,.35.18.67.47.85.16.1.34.15.53.15.15,0,.31-.04.45-.11l18-9c.34-.17.55-.52.55-.89s-.21-.73-.55-.89Z",
+			pause: "M1.5,20h0C.7,20,0,19.3,0,18.5V1.5C0,.7.7,0,1.5,0h0c.8,0,1.5.7,1.5,1.5v17c0,.8-.7,1.5-1.5,1.5ZM20,18.5V1.5c0-.8-.7-1.5-1.5-1.5h0c-.8,0-1.5.7-1.5,1.5v17c0,.8.7,1.5,1.5,1.5h0c.8,0,1.5-.7,1.5-1.5Z",
+	    prev: "M19.53.15c-.29-.18-.66-.2-.97-.04L3,7.88V1.5c0-.83-.67-1.5-1.5-1.5S0,.67,0,1.5v17c0,.83.67,1.5,1.5,1.5s1.5-.67,1.5-1.5v-6.38l15.55,7.78c.14.07.29.11.45.11.18,0,.37-.05.53-.15.29-.18.47-.5.47-.85V1c0-.35-.18-.67-.47-.85Z",
+	    repeat: "M20,4c0,.18-.09.34-.25.43l-6,3.5c-.08.04-.17.07-.25.07s-.17-.02-.25-.07c-.16-.09-.25-.25-.25-.43v-2H3v3c0,.83-.67,1.5-1.5,1.5s-1.5-.67-1.5-1.5v-4.5c0-.83.67-1.5,1.5-1.5h11.5V.5c0-.18.1-.34.25-.43s.35-.09.5,0l6,3.5c.15.09.25.25.25.43ZM18.5,10c-.83,0-1.5.67-1.5,1.5v3H7v-2c0-.18-.1-.34-.25-.43-.15-.09-.35-.09-.5,0L.25,15.57c-.15.09-.25.25-.25.43s.09.34.25.43l6,3.5c.08.05.17.07.25.07s.17-.02.25-.07c.16-.09.25-.25.25-.43v-2h11.5c.83,0,1.5-.67,1.5-1.5v-4.5c0-.83-.67-1.5-1.5-1.5Z",
+	    next: "M18.5,0c-.83,0-1.5.67-1.5,1.5v6.38L1.45.11C1.14-.05.77-.03.47.15c-.29.18-.47.5-.47.85v18c0,.35.18.67.47.85.16.1.34.15.53.15.15,0,.31-.04.45-.11l15.55-7.78v6.38c0,.83.67,1.5,1.5,1.5s1.5-.67,1.5-1.5V1.5c0-.83-.67-1.5-1.5-1.5Z",
+	    shuffle: "M.44,2.56C-.15,1.98-.15,1.02.44.44,1.03-.15,1.97-.15,2.56.44l6.38,6.38-2.12,2.12L.44,2.56ZM19.5,0h-7c-.2,0-.38.12-.46.31s-.03.4.11.54l2.44,2.44L.44,17.44c-.59.59-.59,1.54,0,2.12.29.29.68.44,1.06.44s.77-.15,1.06-.44l14.15-14.15,2.44,2.44c.1.1.22.15.35.15.06,0,.13-.01.19-.04.19-.08.31-.26.31-.46V.5c0-.28-.22-.5-.5-.5ZM19.69,12.04c-.19-.08-.4-.04-.54.11l-2.44,2.44-3.53-3.53-2.12,2.12,3.53,3.53-2.44,2.44c-.14.14-.19.36-.11.54s.26.31.46.31h7c.28,0,.5-.22.5-.5v-7c0-.2-.12-.38-.31-.46Z",
+	    share: "M20,13.5v5c0,.83-.67,1.5-1.5,1.5H1.5c-.83,0-1.5-.67-1.5-1.5V1.5C0,.67.67,0,1.5,0h5c.83,0,1.5.67,1.5,1.5s-.67,1.5-1.5,1.5h-3.5v14h14v-3.5c0-.83.67-1.5,1.5-1.5s1.5.67,1.5,1.5ZM19.5,0h-7c-.2,0-.38.12-.46.31s-.03.4.11.54l2.44,2.44-5.65,5.65c-.59.59-.59,1.54,0,2.12.29.29.68.44,1.06.44s.77-.15,1.06-.44l5.65-5.65,2.44,2.44c.1.1.22.15.35.15.06,0,.13-.01.19-.04.19-.08.31-.26.31-.46V.5c0-.28-.22-.5-.5-.5Z",
+	    facebook: "M17,0H3C1.3,0,0,1.3,0,3v14c0,1.7,1.3,3,3,3h5.8v-7.1H6.5V9.4h2.3V7c0-1.9,1.6-3.5,3.5-3.5h3.6V7h-3.6v2.4h3.6l-0.6,3.5h-3V20H17c1.7,0,3-1.3,3-3V3C20,1.3,18.7,0,17,0z",
+	    twitter: "M17,0H3C1.3,0,0,1.3,0,3v14c0,1.7,1.3,3,3,3h14c1.7,0,3-1.3,3-3V3C20,1.3,18.7,0,17,0z M16,6.9c0,0.1,0,0.3,0,0.4c0,4.1-3.1,8.8-8.8,8.8c-1.7,0-3.3-0.5-4.7-1.4c0.2,0,0.5,0,0.7,0c1.4,0,2.7-0.5,3.8-1.3c-1.3,0-2.5-0.9-2.9-2.1c0.2,0,0.4,0.1,0.6,0.1c0.3,0,0.5,0,0.8-0.1c-1.4-0.3-2.5-1.6-2.5-3v0C3.5,8.4,4,8.6,4.5,8.6C3.1,7.7,2.7,5.9,3.5,4.5c1.6,1.9,3.9,3.1,6.3,3.2c0-0.2-0.1-0.5-0.1-0.7c0-0.9,0.4-1.7,1-2.2C12,3.6,14,3.6,15.1,4.9c0.7-0.1,1.3-0.4,2-0.7c-0.2,0.7-0.7,1.3-1.4,1.7c0.6-0.1,1.2-0.2,1.8-0.5C17.1,6,16.6,6.5,16,6.9z",
+	    tumblr: "M17,0H3C1.3,0,0,1.3,0,3v14c0,1.7,1.3,3,3,3h14c1.7,0,3-1.3,3-3V3C20,1.3,18.7,0,17,0z M11.6,17.5c-3.3,0-3.9-2.5-3.9-3.2V9.4h-2V6.8C7.4,6,8.6,4.4,9,2.5H11v4.3h2.7v2.6H11v4.3c0,0.8,0.4,1.3,1.2,1.3c0.5,0,0.9-0.2,1.3-0.5l0.8,1.8C14.3,16.3,13.5,17.5,11.6,17.5z",
+	    playlist: "M18.5,18.5H1.5c-.8,0-1.5-.7-1.5-1.5h0c0-.8.7-1.5,1.5-1.5h17c.8,0,1.5.7,1.5,1.5h0c0,.8-.7,1.5-1.5,1.5ZM20,10h0c0-.8-.7-1.5-1.5-1.5H1.5c-.8,0-1.5.7-1.5,1.5h0c0,.8.7,1.5,1.5,1.5h17c.8,0,1.5-.7,1.5-1.5ZM20,3h0c0-.8-.7-1.5-1.5-1.5H1.5c-.8,0-1.5.7-1.5,1.5h0c0,.8.7,1.5,1.5,1.5h17c.8,0,1.5-.7,1.5-1.5Z",
+			default: "M10,1v18c0,.4-.24.77-.62.92-.12.05-.25.08-.38.08-.26,0-.52-.1-.71-.29l-4.71-4.71H1c-.55,0-1-.45-1-1V6c0-.55.45-1,1-1h2.59L8.29.29c.29-.29.71-.37,1.09-.22.37.15.62.52.62.92ZM14.68,15.24c1.48-1.35,2.32-3.26,2.32-5.24s-.85-3.88-2.32-5.24c-.41-.37-1.04-.35-1.41.06-.37.41-.35,1.04.06,1.41,1.07.98,1.68,2.35,1.68,3.76s-.61,2.79-1.68,3.76c-.41.37-.43,1.01-.06,1.41.2.21.47.32.74.32.24,0,.48-.09.68-.26ZM15.55,18.33c2.74-1.83,4.45-5.02,4.45-8.33s-1.7-6.5-4.45-8.33c-.46-.31-1.08-.18-1.39.28-.31.46-.18,1.08.28,1.39,2.19,1.46,3.55,4.02,3.55,6.67s-1.36,5.21-3.55,6.67c-.46.31-.58.93-.28,1.39.19.29.51.45.83.45.19,0,.38-.05.55-.17Z",
+			muted: "M10,1v18c0,.4-.24.77-.62.92-.12.05-.25.08-.38.08-.26,0-.52-.1-.71-.29l-4.71-4.71H1c-.55,0-1-.45-1-1V6c0-.55.45-1,1-1h2.59L8.29.29c.29-.29.71-.37,1.09-.22.37.15.62.52.62.92ZM18.71,13.21c.39-.39.39-1.02,0-1.41l-1.79-1.79,1.79-1.79c.39-.39.39-1.02,0-1.41s-1.02-.39-1.41,0l-1.79,1.79-1.79-1.79c-.39-.39-1.02-.39-1.41,0s-.39,1.02,0,1.41l1.79,1.79-1.79,1.79c-.39.39-.39,1.02,0,1.41s1.02.39,1.41,0l1.79-1.79,1.79,1.79c.2.2.45.29.71.29s.51-.1.71-.29Z",
+	    download: "M20,11.5v7c0,.83-.67,1.5-1.5,1.5H1.5c-.83,0-1.5-.67-1.5-1.5v-7c0-.83.67-1.5,1.5-1.5s1.5.67,1.5,1.5v5.5h14v-5.5c0-.83.67-1.5,1.5-1.5s1.5.67,1.5,1.5ZM14.44,7.76c-.09-.16-.26-.26-.44-.26h-2.5V1.5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5,1.5v6h-2.5c-.18,0-.35.1-.44.26s-.08.36.02.51l4,6c.09.14.25.22.42.22s.32-.08.42-.22l4-6c.1-.15.11-.35.02-.51Z",
+	    buy: "M16.2,14.75H4.8c-.59,0-1.1-.41-1.22-.99L1.79,5.25h-.59C.51,5.25-.05,4.69-.05,4s.56-1.25,1.25-1.25h1.6c.59,0,1.1.41,1.22.99l1.79,8.51h9.54l2.29-5.71c.26-.64.99-.95,1.62-.7.64.26.95.98.7,1.62l-2.6,6.5c-.19.47-.65.79-1.16.79ZM4.2,17.5c0,1.4,1.1,2.5,2.5,2.5s2.5-1.1,2.5-2.5-1.1-2.5-2.5-2.5-2.5,1.1-2.5,2.5M12.2,17.5c0,1.4,1.1,2.5,2.5,2.5s2.5-1.1,2.5-2.5-1.1-2.5-2.5-2.5-2.5,1.1-2.5,2.5M15.25,5.78c-.08-.17-.26-.28-.45-.28h-2.6V1.5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5,1.5v4h-2.4c-.19,0-.37.11-.45.28-.08.17-.06.38.06.53l4,5c.09.12.24.19.39.19s.3-.07.39-.19l4-5c.12-.15.14-.36.06-.53Z",
+			close: "M12.12,10l7.44-7.44c.59-.59.59-1.54,0-2.12-.59-.59-1.54-.59-2.12,0l-7.44,7.44L2.56.44C1.97-.15,1.03-.15.44.44-.15,1.02-.15,1.98.44,2.56l7.44,7.44L.44,17.44c-.59.59-.59,1.54,0,2.12.29.29.68.44,1.06.44s.77-.15,1.06-.44l7.44-7.44,7.44,7.44c.29.29.68.44,1.06.44s.77-.15,1.06-.44c.59-.59.59-1.54,0-2.12l-7.44-7.44Z"
 	  },
 	};
-	
 }
 
 function tPlayer(options) {

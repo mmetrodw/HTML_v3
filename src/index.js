@@ -1,9 +1,6 @@
 var tPlayersCollection = [];
 // @include('data/defaultSettings.js')
 
-// Easings 
-// @include('data/easingFunctions.js')
-
 class tPlayerClass {
 	constructor(options) {
 		this.settings = this.deepObjectMerge(defaultPlayerSettings, options);
@@ -74,7 +71,6 @@ class tPlayerClass {
 		// Load And Prepare The Initial Track For Playback
 		this.switchTrack();
 		console.log(this);
-		console.log(this.playerState.log);
 	}
 
 	/* UTILS */
@@ -94,10 +90,6 @@ class tPlayerClass {
 	// @include('utils/secondsToTimecode.js')
 	// Shuffle Array
 	// @include('utils/getShuffledPlaylistOrder.js')
-	// Animate Path Svg
-	// @include('utils/animatePathSvg.js')
-	// Load Cover
-	// @include('utils/loadCover.js')
 
 	// Button Icons
 	// @include('data/buttonIcons.js')

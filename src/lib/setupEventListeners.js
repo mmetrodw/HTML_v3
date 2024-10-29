@@ -58,7 +58,7 @@ async setupEventListeners() {
 			if (buy) buy.addEventListener('click', preventClick);
 		});
 
-		if(allowPlaylistScroll && maxVisibleTracks > this.playlist.length) {
+		if(allowPlaylistScroll && this.playlist.length > maxVisibleTracks) {
 			// Add event listeners for scrollbar interactions
 			playlistContainer.addEventListener('mouseenter', this.showScrollbar.bind(this)); // Show scrollbar on mouse enter
 			playlistContainer.addEventListener('mouseleave', this.hideScrollbar.bind(this)); // Hide scrollbar on mouse leave
@@ -90,6 +90,8 @@ async setupEventListeners() {
 		volumeLevelBar.addEventListener('mousedown', this.startVolumeAdjustment.bind(this), false);
 		volumeButton.addEventListener('click', this.volumeToggle.bind(this));
 	}
+
+	if(showCover) coverImage.addEventListener('load', this.coverLoaded.bind(this));
 
 	// Add event listener for window resize
 	window.addEventListener("resize", this.playerResize.bind(this));

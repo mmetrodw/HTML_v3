@@ -148,36 +148,9 @@ shareToggle() {
 
 	if (this.playerState.isShareDisplayed) {
 		// Animate the button icon to the "opened" state
-		this.animatePathSvg(
-			shareButton.querySelector('.tp-stroke'),
-			this.buttonIcons.share.closed.stroke,
-			this.buttonIcons.share.opened.stroke,
-			250,
-			'easeOutExpo'
-		);
-		this.animatePathSvg(
-			shareButton.querySelector('.tp-fill'),
-			this.buttonIcons.share.closed.fill,
-			this.buttonIcons.share.opened.fill,
-			250,
-			'easeOutExpo'
-		);
+		shareButton.children[0].children[0].setAttribute('d', this.buttonIcons.close);
 	} else {
-		// Animate the button icon to the "closed" state
-		this.animatePathSvg(
-			shareButton.querySelector('.tp-stroke'),
-			this.buttonIcons.share.opened.stroke,
-			this.buttonIcons.share.closed.stroke,
-			250,
-			'easeOutExpo'
-		);
-		this.animatePathSvg(
-			shareButton.querySelector('.tp-fill'),
-			this.buttonIcons.share.opened.fill,
-			this.buttonIcons.share.closed.fill,
-			250,
-			'easeOutExpo'
-		);
+		shareButton.children[0].children[0].setAttribute('d', this.buttonIcons.share);
 	}
 }
 
@@ -226,26 +199,14 @@ togglePlaylist() {
 
 	if (this.playerState.isPlaylistDisplayed && this.playerState.isPlaylist) {
 		// Animate the button icon to the "opened" state
-		this.animatePathSvg(
-			togglePlaylistButton.querySelector('path'),
-			this.buttonIcons.playlist.closed,
-			this.buttonIcons.playlist.opened,
-			250,
-			'easeOutExpo'
-		);
+		togglePlaylistButton.children[0].children[0].setAttribute('d', this.buttonIcons.close);
 		// Calculate the playlist height based on the number of tracks and settings
 		playlistHeight = (this.playlist.length > maxVisibleTracks && allowPlaylistScroll) 
 		? maxVisibleTracks * 40 - 1 
 		: this.playlist.length * 40;
 	} else {
 		// Animate the button icon to the "closed" state
-		this.animatePathSvg(
-			this.uiElements.togglePlaylistButton.querySelector('path'),
-			this.buttonIcons.playlist.opened,
-			this.buttonIcons.playlist.closed,
-			250,
-			'easeOutExpo'
-		);
+		togglePlaylistButton.children[0].children[0].setAttribute('d', this.buttonIcons.playlist);
 	}
 
 	// Set the height of the playlist wrapper
@@ -402,7 +363,6 @@ finalizeVolumeAdjustment() {
 
 // Function to update the scrollbar thumb's size and position
 updateScrollbarThumb() {
-	console.log('updtate');
 	var visibleRatio = this.uiElements.playlist.clientHeight / this.uiElements.playlist.scrollHeight;
 
 	// Set thumb height relative to the visible portion of the playlist, with a minimum of 10%
@@ -477,6 +437,18 @@ scrollbarTrackSeekingStart(event) {
 	// Add event listeners for dragging and releasing the mouse
 	document.addEventListener("mousemove", scrollbarTrackSeeking);
 	document.addEventListener("mouseup", scrollbarTrackSeekingEnd);
+}
+
+coverLoaded() {
+	const { addClass, removeClass } = this;
+	const { coverContainer } = this.uiElements;
+
+	addClass(coverContainer, "tp-end-change-cover");
+	removeClass(coverContainer, 'tp-start-change-cover');
+	coverContainer.onanimationend = () => {
+		removeClass(coverContainer, 'tp-end-change-cover');
+		coverContainer.onanimationend = null;
+	}
 }
 
 // Adjusts the player layout based on the wrapper's width.

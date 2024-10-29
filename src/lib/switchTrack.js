@@ -2,13 +2,14 @@ switchTrack() {
 	this.playerState.log = 'Changing the Track';
 	let scrollDistance = 0;
 
-	const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, trackTitle, coverContainer } = this.uiElements;
+	const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, trackTitle, coverContainer, coverImage } = this.uiElements;
 	const { allowPlaylistScroll, maxVisibleTracks, showCover } = this.settings;
 	const { addClass, removeClass } = this;
+	const { isPlaylist } = this.playerState;
 	const currentTrackIndex = this.currentTrack.index;
 
 	// Disable radio info update
-	this.playerState.isRadioInfoUpdateAllowed = false;
+	this.playerState.allowRadioInfoUpdate = false;
 
 	// Reset audio progress bars and pause audio
 	audioBufferedProgress.style.width = "0px";
@@ -21,13 +22,15 @@ switchTrack() {
 	this.audio.volume = this.playerState.isVolumeMuted ? 0 : this.settings.volume;
 
 	// Update playlist item classes
-	removeClass(playlistItem, ['tp-active', 'tp-playing']);
-	addClass(playlistItem[currentTrackIndex], 'tp-active');
+	if(isPlaylist) {
+		removeClass(playlistItem, ['tp-active', 'tp-playing']);
+		addClass(playlistItem[currentTrackIndex], 'tp-active');
+	}
 
 	// Handle autoplay
 	if(this.playerState.autoplay) {
 		this.audio.play();
-		this.playerState.isRadioInfoUpdateAllowed = true;
+		this.playerState.allowRadioInfoUpdate = true;
 	}
 
 	// Handle playlist scrolling
@@ -48,8 +51,8 @@ switchTrack() {
 
 	// Animate text change
 	this.animateTextChange({
-		artist: this.playlist[this.previousTrackIndex].artist,
-		title: this.playlist[this.previousTrackIndex].title
+		artist: this.previousTrackIndex === currentTrackIndex ? '' : this.playlist[this.previousTrackIndex].artist,
+		title: this.previousTrackIndex === currentTrackIndex ? '' : this.playlist[this.previousTrackIndex].title,
 	}, {
 		artist: this.currentTrack.artist,
 		title: this.currentTrack.title
@@ -61,8 +64,11 @@ switchTrack() {
 	const { cover } = this.playlist[currentTrackIndex];
 
 	if(cover && cover !== "" && showCover) {
-		coverContainer.innerHTML = "";
-		this.loadCover(cover);
+		addClass(coverContainer, 'tp-start-change-cover');
+		coverContainer.onanimationend = () => {
+			coverContainer.onanimationend = null;
+			coverImage.src = cover;
+		}
 	}
 	
 	this.playerState.log = 'Track Changed';

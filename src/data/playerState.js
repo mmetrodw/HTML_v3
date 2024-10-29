@@ -30,6 +30,7 @@ this.playerState = {
 	get titleAnimationInterval() { return this._titleAnimationInterval;	},
 	get volumeToggle() { return this._volumeToggle;	},
 	get isLoading() { return this._isLoading; },
+	get isMobile() { return this._isMobile; },
 	get isPlaylist() { return this._isPlaylist; },
 	get isPlaylistDisplayed() { return this._isPlaylistDisplayed; },
 	get isRadioInfoUpdatePending() { return this._isRadioInfoUpdatePending; },
@@ -64,6 +65,7 @@ this.playerState = {
 			this.handleIsLoadingChange(value);
 		}
 	},
+	set isMobile(value) { this._isMobile = value; },
 	set isPlaylist(value) { this._isPlaylist = value; },
 	set isPlaylistDisplayed(value) { this._isPlaylistDisplayed = value; },
 	set isRadioInfoUpdatePending(value) { this._isRadioInfoUpdatePending = value; },
