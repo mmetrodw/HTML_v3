@@ -9,7 +9,7 @@ async createPlayerInterface() {
 	const { isMobile, isPlaylist } = this.playerState;
 
 	// Apply classes to wrapper element based on player settings
-	addClass(wrapper, ["tp-wrapper", "tp-loading", rounded ? "tp-rounded" : "", skin === "vertical" ? "tp-vertical" : ""]);
+	addClass(wrapper, ["tp-wrapper", "tp-loading", rounded ? "tp-rounded" : "", skin === "vertical" || isMobile ? "tp-vertical" : "", isMobile ? "tp-mobile" : ""]); ;
 
 	// Determine button icon style based on "rounded" setting
 	this.buttonIcons = rounded ? this.buttonIcons.rounded : this.buttonIcons.default;
@@ -40,7 +40,9 @@ async createPlayerInterface() {
 	this.uiElements.audioBufferedProgress = this.createElement("div", "tp-audio-buffered-progress", this.uiElements.audioSeekBar);
 	this.uiElements.audioPlaybackProgress = this.createElement("div", "tp-audio-playback-progress", this.uiElements.audioSeekBar);
 	this.uiElements.audioCurrentTime = this.createElement("div", "tp-audio-current-time", this.uiElements.audioSeekBar);
+	this.uiElements.audioCurrentTime.textContent = '00:00';
 	this.uiElements.audioDuration = this.createElement("div", "tp-audio-duration", this.uiElements.audioSeekBar);
+	this.uiElements.audioDuration.textContent = '00:00';
 	const playerLoader = this.createElement("div", "tp-player-loader", this.uiElements.audioSeekBar);
 	playerLoader.innerHTML = "<span></span><span></span><span></span>";
 
@@ -125,9 +127,11 @@ async createPlayerInterface() {
 
 		// Enable playlist scroll if settings allow and track count exceeds visible max
 		if(this.settings.allowPlaylistScroll && this.playlist.length > this.settings.maxVisibleTracks) {
-			addClass(wrapper, "tp-scrollable");
-			this.uiElements.scrollbarTrack = this.createElement("div", "tp-scrollbar-track", this.uiElements.playlistContainer);
-			this.uiElements.scrollbarThumb = this.createElement("div", "tp-scrollbar-thumb", this.uiElements.scrollbarTrack);
+			if(!isMobile) {
+				addClass(wrapper, "tp-scrollable");
+				this.uiElements.scrollbarTrack = this.createElement("div", "tp-scrollbar-track", this.uiElements.playlistContainer);
+				this.uiElements.scrollbarThumb = this.createElement("div", "tp-scrollbar-thumb", this.uiElements.scrollbarTrack);
+			}
 			// Set Playlist Height - Limits visible playlist height to max visible tracks, calculated by track height
 			this.uiElements.playlist.style.height = `${40 * this.settings.maxVisibleTracks}px`
 		}
@@ -171,7 +175,7 @@ createButtonWithIcon(type, iconType, parent) {
 createSvgIcon(path) {
 	const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 	const svgElement = document.createElementNS(SVG_NAMESPACE, "svg");
-	svgElement.setAttribute("viewBox", "0 0 24 24");
+	svgElement.setAttribute("viewBox", "0 0 20 20");
 
 	const pathElement = document.createElementNS(SVG_NAMESPACE, "path");
 	pathElement.setAttribute("d", path);

@@ -240,7 +240,7 @@ class tPlayerClass {
 		const { isMobile, isPlaylist } = this.playerState;
 	
 		// Apply classes to wrapper element based on player settings
-		addClass(wrapper, ["tp-wrapper", "tp-loading", rounded ? "tp-rounded" : "", skin === "vertical" ? "tp-vertical" : ""]);
+		addClass(wrapper, ["tp-wrapper", "tp-loading", rounded ? "tp-rounded" : "", skin === "vertical" || isMobile ? "tp-vertical" : "", isMobile ? "tp-mobile" : ""]); ;
 	
 		// Determine button icon style based on "rounded" setting
 		this.buttonIcons = rounded ? this.buttonIcons.rounded : this.buttonIcons.default;
@@ -271,7 +271,9 @@ class tPlayerClass {
 		this.uiElements.audioBufferedProgress = this.createElement("div", "tp-audio-buffered-progress", this.uiElements.audioSeekBar);
 		this.uiElements.audioPlaybackProgress = this.createElement("div", "tp-audio-playback-progress", this.uiElements.audioSeekBar);
 		this.uiElements.audioCurrentTime = this.createElement("div", "tp-audio-current-time", this.uiElements.audioSeekBar);
+		this.uiElements.audioCurrentTime.textContent = '00:00';
 		this.uiElements.audioDuration = this.createElement("div", "tp-audio-duration", this.uiElements.audioSeekBar);
+		this.uiElements.audioDuration.textContent = '00:00';
 		const playerLoader = this.createElement("div", "tp-player-loader", this.uiElements.audioSeekBar);
 		playerLoader.innerHTML = "<span></span><span></span><span></span>";
 	
@@ -356,9 +358,11 @@ class tPlayerClass {
 	
 			// Enable playlist scroll if settings allow and track count exceeds visible max
 			if(this.settings.allowPlaylistScroll && this.playlist.length > this.settings.maxVisibleTracks) {
-				addClass(wrapper, "tp-scrollable");
-				this.uiElements.scrollbarTrack = this.createElement("div", "tp-scrollbar-track", this.uiElements.playlistContainer);
-				this.uiElements.scrollbarThumb = this.createElement("div", "tp-scrollbar-thumb", this.uiElements.scrollbarTrack);
+				if(!isMobile) {
+					addClass(wrapper, "tp-scrollable");
+					this.uiElements.scrollbarTrack = this.createElement("div", "tp-scrollbar-track", this.uiElements.playlistContainer);
+					this.uiElements.scrollbarThumb = this.createElement("div", "tp-scrollbar-thumb", this.uiElements.scrollbarTrack);
+				}
 				// Set Playlist Height - Limits visible playlist height to max visible tracks, calculated by track height
 				this.uiElements.playlist.style.height = `${40 * this.settings.maxVisibleTracks}px`
 			}
@@ -402,7 +406,7 @@ class tPlayerClass {
 	createSvgIcon(path) {
 		const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 		const svgElement = document.createElementNS(SVG_NAMESPACE, "svg");
-		svgElement.setAttribute("viewBox", "0 0 24 24");
+		svgElement.setAttribute("viewBox", "0 0 20 20");
 	
 		const pathElement = document.createElementNS(SVG_NAMESPACE, "path");
 		pathElement.setAttribute("d", path);
@@ -521,7 +525,7 @@ class tPlayerClass {
 				if (buy) buy.addEventListener('click', preventClick);
 			});
 	
-			if(allowPlaylistScroll && this.playlist.length > maxVisibleTracks) {
+			if(allowPlaylistScroll && this.playlist.length > maxVisibleTracks && !isMobile) {
 				// Add event listeners for scrollbar interactions
 				playlistContainer.addEventListener('mouseenter', this.showScrollbar.bind(this)); // Show scrollbar on mouse enter
 				playlistContainer.addEventListener('mouseleave', this.hideScrollbar.bind(this)); // Hide scrollbar on mouse leave
@@ -546,12 +550,30 @@ class tPlayerClass {
 		}
 	
 		// Add event listeners for seeking audio and Volume
-		if (isMobile) {
-			audioSeekBar.addEventListener('touchstart', this.startAudioSeeking.bind(this), { passive: true });
-		} else {
-			audioSeekBar.addEventListener('mousedown', this.startAudioSeeking.bind(this), false);
-			volumeLevelBar.addEventListener('mousedown', this.startVolumeAdjustment.bind(this), false);
+		const eventsSeekbar = isMobile ?
+			{
+				startEvent: 'touchstart',
+				moveEvent: 'touchmove',
+				endEvent: 'touchend',
+				options: { passive: true }
+			}
+			:
+			{
+				startEvent: 'mousedown',
+				moveEvent: 'mousemove',
+				endEvent: 'mouseup',
+				options: false
+			};
+	
+			audioSeekBar.addEventListener(eventsSeekbar.startEvent, this.startAudioSeeking.bind(this), eventsSeekbar.options);
+			document.addEventListener(eventsSeekbar.moveEvent, this.updateAudioSeekPosition.bind(this), eventsSeekbar.options);
+			document.addEventListener(eventsSeekbar.endEvent, this.finalizeAudioSeeking.bind(this), eventsSeekbar.options);
+	
+		if (!isMobile) {
 			volumeButton.addEventListener('click', this.volumeToggle.bind(this));
+			volumeLevelBar.addEventListener('mousedown', this.startVolumeAdjustment.bind(this), false);
+			document.addEventListener('mousemove', this.updateVolumeAdjustment.bind(this), false);
+			document.addEventListener('mouseup', this.finalizeVolumeAdjustment.bind(this), false);
 		}
 	
 		if(showCover) coverImage.addEventListener('load', this.coverLoaded.bind(this));
@@ -822,20 +844,24 @@ class tPlayerClass {
 	volumechange() {
 		const { addClass, removeClass } = this;
 		const { volumeLevel, volumeButton } = this.uiElements;
+		const { isMobile } = this.playerState;
 		this.settings.volume = this.audio.volume !== 0 ? this.audio.volume : this.settings.volume;
-		volumeLevel.style.width = `${this.audio.volume * 100}%`;
 	
+		if(!isMobile) {
+			volumeLevel.style.width = `${this.audio.volume * 100}%`;
 	
-		// Update the mute state and button appearance
-		if(this.audio.volume === 0) {
-			this.playerState.isVolumeMuted = true;
-			addClass(volumeButton, 'tp-active');
-			volumeButton.children[0].children[0].setAttribute('d', this.buttonIcons.muted);
-		} else {
-			this.playerState.isVolumeMuted = false;
-			removeClass(volumeButton, 'tp-active');
-			volumeButton.children[0].children[0].setAttribute('d', this.buttonIcons.volume);
+			// Update the mute state and button appearance
+			if(this.audio.volume === 0) {
+				this.playerState.isVolumeMuted = true;
+				addClass(volumeButton, 'tp-active');
+				volumeButton.children[0].children[0].setAttribute('d', this.buttonIcons.muted);
+			} else {
+				this.playerState.isVolumeMuted = false;
+				removeClass(volumeButton, 'tp-active');
+				volumeButton.children[0].children[0].setAttribute('d', this.buttonIcons.volume);
+			}
 		}
+	
 		// Set Audio Event
 		this.playerState.audioEvent = 'volumechange';
 	}
@@ -1086,22 +1112,15 @@ class tPlayerClass {
 	
 	// Initiates the audio seeking process.
 	startAudioSeeking(event) {
-		event.preventDefault();
+		const { isMobile } = this.playerState;
+		if(!isMobile) event.preventDefault();
 	
 		// Check if the event is from a non-primary mouse button on non-mobile devices
-		if(!this.playerState.isMobile && event.button !== 0) return false;
+		if(!isMobile && event.button !== 0) return false;
+	
 		// Set the user seeking state to true
 		this.playerState.isUserSeekingAudio = true;
-		// Update the audio seek position based on the event
-		this.updateAudioSeekPosition(event); // If No MouseMove, Set Value From Start
-		// Determine the appropriate pointer events based on the device type
-		const pointerMoveEvent = this.playerState.isMobile ? 'touchmove' : 'mousemove';
-		const pointerUpEvent = this.playerState.isMobile ? 'touchend' : 'mouseup';
-	
-		// Add event listeners for pointer movements and pointer release
-		document.addEventListener(pointerMoveEvent, this.updateAudioSeekPosition.bind(this), false);
-		document.addEventListener(pointerUpEvent, this.finalizeAudioSeeking.bind(this), false);
-	
+		this.updateAudioSeekPosition(event, this);
 		// Remove transitions for smooth seeking
 		this.uiElements.audioCurrentTime.style.transition = "";
 		this.uiElements.audioDuration.style.transition = "";
@@ -1109,13 +1128,11 @@ class tPlayerClass {
 	
 	// Updates the audio seek position based on the user's input.
 	updateAudioSeekPosition(event) {
-		const { audioSeekBar, audioPlaybackProgress, audioCurrentTime, audioDuration } = this.uiElements;
-		const { secondsToTimecode } = this;
-	
 		// Return if the user is not seeking audio
 		if(!this.playerState.isUserSeekingAudio) return;
 	
-		// Get the bounds of the seek bar
+		const { audioSeekBar, audioPlaybackProgress, audioCurrentTime, audioDuration } = this.uiElements;
+		const { secondsToTimecode } = this;// Get the bounds of the seek bar
 		const seekBarBounds = audioSeekBar.getBoundingClientRect();
 		// Determine the mouse position based on the device type
 		const mousePosition = this.playerState.isMobile ? event.touches[0].clientX : event.clientX;
@@ -1144,18 +1161,10 @@ class tPlayerClass {
 	// Finalizes the audio seeking process.
 	finalizeAudioSeeking() {
 		const { audioCurrentTime, audioDuration } = this.uiElements;
-	
+		// Return if the user is not seeking audio
+		if(!this.playerState.isUserSeekingAudio) return;
 		// Set the user seeking state to false
 		this.playerState.isUserSeekingAudio = false;
-	
-		// Determine the appropriate pointer events based on the device type
-		const moveEvent = this.playerState.isMobile ? 'touchmove' : 'mousemove';
-		const upEvent = this.playerState.isMobile ? 'touchend' : 'mouseup';
-	
-		// Remove event listeners for pointer movements and pointer release
-		document.removeEventListener(moveEvent, this.updateAudioSeekPosition.bind(this), false);
-		document.removeEventListener(upEvent, this.finalizeAudioSeeking.bind(this), false);
-	
 		// Update the audio current time to match the current track time
 		this.audio.currentTime = this.currentTrack.currentTime;
 	
@@ -1177,22 +1186,16 @@ class tPlayerClass {
 	
 		// Check if the event is from a non-primary mouse button
 		if(event.button !== 0) return false;
-	
 		// Set the user adjusting volume state to true
 		this.playerState.isUserAdjustingVolume = true;
 		// Update the volume based on the event
-		this.updateVolumeAdjustment(event); // If No MouseMove, Set Value From Start
-	
-		// Add event listeners for pointer movements and pointer release
-		document.addEventListener('mousemove', this.updateVolumeAdjustment.bind(this), false);
-		document.addEventListener('mouseup', this.finalizeVolumeAdjustment.bind(this), false);
+		this.updateVolumeAdjustment(event, this); // If No MouseMove, Set Value From Start
 	}
 	
 	// Updates the volume based on the user's input.
 	updateVolumeAdjustment(event) {
 		// Return if the user is not adjusting the volume
 		if(!this.playerState.isUserAdjustingVolume) return;
-	
 		// Get the bounds of the volume bar
 		const volumeBarBounds = this.uiElements.volumeLevelBar.getBoundingClientRect();
 		// Determine the mouse position
@@ -1200,7 +1203,6 @@ class tPlayerClass {
 		// Calculate the percentage of the volume bar that has been traversed
 		let percent = (mousePosition - volumeBarBounds.left) / volumeBarBounds.width;
 		percent = Math.max(0, Math.min(1, percent));
-	
 		// Update the audio volume based on the percentage
 		this.audio.volume = percent;
 	}
@@ -1209,10 +1211,6 @@ class tPlayerClass {
 	finalizeVolumeAdjustment() {
 		// Set the user adjusting volume state to false
 		this.playerState.isUserAdjustingVolume = false;
-	
-		// Remove event listeners for pointer movements and pointer release
-		document.removeEventListener('mousemove', this.updateVolumeAdjustment.bind(this), false);
-		document.removeEventListener('mouseup', this.finalizeVolumeAdjustment.bind(this), false);
 	}
 	
 	// Function to update the scrollbar thumb's size and position
@@ -1450,6 +1448,7 @@ class tPlayerClass {
 		// If both texts are of the same length, return the current text
 		return currentText; // Texts are the same length
 	}
+
 
 	async init() {
 		this.playerState.log = 'Initializing';

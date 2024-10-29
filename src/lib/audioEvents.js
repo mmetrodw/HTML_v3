@@ -252,20 +252,24 @@ timeupdate() {
 volumechange() {
 	const { addClass, removeClass } = this;
 	const { volumeLevel, volumeButton } = this.uiElements;
+	const { isMobile } = this.playerState;
 	this.settings.volume = this.audio.volume !== 0 ? this.audio.volume : this.settings.volume;
-	volumeLevel.style.width = `${this.audio.volume * 100}%`;
+	
+	if(!isMobile) {
+		volumeLevel.style.width = `${this.audio.volume * 100}%`;
 
-
-	// Update the mute state and button appearance
-	if(this.audio.volume === 0) {
-		this.playerState.isVolumeMuted = true;
-		addClass(volumeButton, 'tp-active');
-		volumeButton.children[0].children[0].setAttribute('d', this.buttonIcons.muted);
-	} else {
-		this.playerState.isVolumeMuted = false;
-		removeClass(volumeButton, 'tp-active');
-		volumeButton.children[0].children[0].setAttribute('d', this.buttonIcons.volume);
+		// Update the mute state and button appearance
+		if(this.audio.volume === 0) {
+			this.playerState.isVolumeMuted = true;
+			addClass(volumeButton, 'tp-active');
+			volumeButton.children[0].children[0].setAttribute('d', this.buttonIcons.muted);
+		} else {
+			this.playerState.isVolumeMuted = false;
+			removeClass(volumeButton, 'tp-active');
+			volumeButton.children[0].children[0].setAttribute('d', this.buttonIcons.volume);
+		}
 	}
+
 	// Set Audio Event
 	this.playerState.audioEvent = 'volumechange';
 }

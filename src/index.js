@@ -48,6 +48,7 @@ class tPlayerClass {
 	// Function to animate the text change for the track title and artist
 	// @include('lib/animateTextChange.js')
 
+
 	async init() {
 		this.playerState.log = 'Initializing';
 		// Validate Player Config

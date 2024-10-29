@@ -58,7 +58,7 @@ async setupEventListeners() {
 			if (buy) buy.addEventListener('click', preventClick);
 		});
 
-		if(allowPlaylistScroll && this.playlist.length > maxVisibleTracks) {
+		if(allowPlaylistScroll && this.playlist.length > maxVisibleTracks && !isMobile) {
 			// Add event listeners for scrollbar interactions
 			playlistContainer.addEventListener('mouseenter', this.showScrollbar.bind(this)); // Show scrollbar on mouse enter
 			playlistContainer.addEventListener('mouseleave', this.hideScrollbar.bind(this)); // Hide scrollbar on mouse leave
@@ -83,12 +83,30 @@ async setupEventListeners() {
 	}
 
 	// Add event listeners for seeking audio and Volume
-	if (isMobile) {
-		audioSeekBar.addEventListener('touchstart', this.startAudioSeeking.bind(this), { passive: true });
-	} else {
-		audioSeekBar.addEventListener('mousedown', this.startAudioSeeking.bind(this), false);
-		volumeLevelBar.addEventListener('mousedown', this.startVolumeAdjustment.bind(this), false);
+	const eventsSeekbar = isMobile ? 
+		{
+			startEvent: 'touchstart',
+			moveEvent: 'touchmove',
+			endEvent: 'touchend',
+			options: { passive: true } 
+		} 
+		: 
+		{
+			startEvent: 'mousedown',
+			moveEvent: 'mousemove',
+			endEvent: 'mouseup',
+			options: false
+		};
+
+		audioSeekBar.addEventListener(eventsSeekbar.startEvent, this.startAudioSeeking.bind(this), eventsSeekbar.options);
+		document.addEventListener(eventsSeekbar.moveEvent, this.updateAudioSeekPosition.bind(this), eventsSeekbar.options);
+		document.addEventListener(eventsSeekbar.endEvent, this.finalizeAudioSeeking.bind(this), eventsSeekbar.options);
+	
+	if (!isMobile) {
 		volumeButton.addEventListener('click', this.volumeToggle.bind(this));
+		volumeLevelBar.addEventListener('mousedown', this.startVolumeAdjustment.bind(this), false);
+		document.addEventListener('mousemove', this.updateVolumeAdjustment.bind(this), false);
+		document.addEventListener('mouseup', this.finalizeVolumeAdjustment.bind(this), false);
 	}
 
 	if(showCover) coverImage.addEventListener('load', this.coverLoaded.bind(this));
