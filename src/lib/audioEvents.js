@@ -225,8 +225,6 @@ stalled() {
 }
 
 suspend() {
-	// Disable radio info updates
-	this.playerState.allowRadioInfoUpdate = false;
 	// Set Audio Event
 	this.playerState.audioEvent = 'suspend';
 }
@@ -242,8 +240,6 @@ timeupdate() {
 		this.uiElements.audioPlaybackProgress.style.width = percent + '%';
 		// Update the displayed current time in the player
 		this.uiElements.audioCurrentTime.textContent = secondsToTimecode(this.audio.currentTime);
-		// Call the progress function to update the buffered progress bar
-		this.progress();
 	}
 	// Set Audio Event
 	this.playerState.audioEvent = 'timeupdate';

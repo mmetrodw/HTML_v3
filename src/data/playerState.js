@@ -3,7 +3,7 @@ this.playerState = {
 	_allowSeeking: false,
 	_audioEvent: null,
 	_autoplay: false,
-	_log: [],
+	_log: null,
 	_repeat: false,
 	_scrollbarTimeOutId: null,
 	_shuffle: false,
@@ -49,11 +49,17 @@ this.playerState = {
 	set audioEvent(value) {
 		if(this._audioEvent !== value) {
 			this._audioEvent = value;
-			this._log.push(`Audio Event: ${this._audioEvent}`);
+			this._log = `Audio Event: ${this._audioEvent}`;
+			this.handlePlayerLog(this._log)
 		}
 	},
 	set autoplay(value) { this._autoplay = value;	},
-	set log(value) {	this._log.push(value);	},
+	set log(value) {
+		if(this._log !== value) {
+			this._log = value;
+			this.handlePlayerLog(value);
+		}
+	},
 	set repeat(value) { this._repeat = value; },
 	set scrollbarTimeOutId(value) { this._scrollbarTimeOutId = value; },
 	set shuffle(value) { this._shuffle = value; },
@@ -74,6 +80,14 @@ this.playerState = {
 	set isUserSeekingAudio(value) { this._isUserSeekingAudio = value; },
 	set isVolumeMuted(value) { this._isVolumeMuted = value; },
 
+	handlePlayerLog: (log) => {
+		const enable = false;
+		if(this.uiElements.playerLog && enable) {
+			const newLog = document.createTextNode(log);
+			this.uiElements.playerLog.appendChild(newLog);
+			this.uiElements.playerLog.appendChild(document.createElement("br"));
+		}
+	},
 	handleAllowSeekingChange: (state) => {
 		this.uiElements.audioSeekBar.style.pointerEvents = state && this.audio.duration !== Infinity ? "all" : "none";
 	},

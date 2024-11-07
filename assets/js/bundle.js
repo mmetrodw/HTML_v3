@@ -6,7 +6,7 @@ const defaultPlayerSettings = {
 		artist: null,
 		cover: null
 	},
-	skin: "default",
+	skin: 'default',
 	rounded: false,
 	showCover: true,
 	showPlaylist: true,
@@ -22,48 +22,48 @@ const defaultPlayerSettings = {
 	updateRadioInterval: 10000,
 	style: {
 		player: {
-			background: "#FFF",
+			background: '#FFF',
 			cover: {
-				background: "#3EC3D5",
-				loader: "#FFF"
+				background: '#3EC3D5',
+				loader: '#FFF'
 			},
-			tracktitle: "#555",
+			tracktitle: '#555',
 			buttons: {
-				wave: "#3EC3D5",
-				normal: "#555",
-				hover: "#3EC3D5",
-				active: "#3EC3D5",
+				wave: '#3EC3D5',
+				normal: '#555',
+				hover: '#3EC3D5',
+				active: '#3EC3D5',
 			},
-			seekbar: "#555",
-			buffered: "rgba(255, 255, 255, 0.15)",
-			progress: "#3EC3D5",
-			timestamps: "#FFF",
+			seekbar: '#555',
+			buffered: 'rgba(255, 255, 255, 0.15)',
+			progress: '#3EC3D5',
+			timestamps: '#FFF',
 			loader: {
-				background: "#555",
-				color: "#3EC3D5"
+				background: '#555',
+				color: '#3EC3D5'
 			},
 			volume: {
-				levelbar: "#555",
-				level: "#3EC3D5"
+				levelbar: '#555',
+				level: '#3EC3D5'
 			}
 		},
 		playlist: {
 			scrollbar: {
-				track: "rgba(255, 255, 255, 0.5)",
-				thumb: "rgba(255, 255, 255, 0.75)"
+				track: 'rgba(255, 255, 255, 0.5)',
+				thumb: 'rgba(255, 255, 255, 0.75)'
 			},
-			background: "#3EC3D5",
-			color: "#FFF",
-			separator: "rgba(255, 255, 255, 0.25)",
+			background: '#3EC3D5',
+			color: '#FFF',
+			separator: 'rgba(255, 255, 255, 0.25)',
 			hover: {
-				background: "#42CFE2",
-				color: "#FFF",
-				separator: "rgba(255, 255, 255, 0.25)",
+				background: '#42CFE2',
+				color: '#FFF',
+				separator: 'rgba(255, 255, 255, 0.25)',
 			},
 			active: {
-				background: "#42CFE2",
-				color: "#FFF",
-				separator: "rgba(255, 255, 255, 0.25)",
+				background: '#42CFE2',
+				color: '#FFF',
+				separator: 'rgba(255, 255, 255, 0.25)',
 			}
 		}
 	}
@@ -82,7 +82,7 @@ class tPlayerClass {
 			_allowSeeking: false,
 			_audioEvent: null,
 			_autoplay: false,
-			_log: [],
+			_log: null,
 			_repeat: false,
 			_scrollbarTimeOutId: null,
 			_shuffle: false,
@@ -128,11 +128,17 @@ class tPlayerClass {
 			set audioEvent(value) {
 				if(this._audioEvent !== value) {
 					this._audioEvent = value;
-					this._log.push(`Audio Event: ${this._audioEvent}`);
+					this._log = `Audio Event: ${this._audioEvent}`;
+					this.handlePlayerLog(this._log)
 				}
 			},
 			set autoplay(value) { this._autoplay = value;	},
-			set log(value) {	this._log.push(value);	},
+			set log(value) {
+				if(this._log !== value) {
+					this._log = value;
+					this.handlePlayerLog(value);
+				}
+			},
 			set repeat(value) { this._repeat = value; },
 			set scrollbarTimeOutId(value) { this._scrollbarTimeOutId = value; },
 			set shuffle(value) { this._shuffle = value; },
@@ -153,6 +159,14 @@ class tPlayerClass {
 			set isUserSeekingAudio(value) { this._isUserSeekingAudio = value; },
 			set isVolumeMuted(value) { this._isVolumeMuted = value; },
 		
+			handlePlayerLog: (log) => {
+				const enable = false;
+				if(this.uiElements.playerLog && enable) {
+					const newLog = document.createTextNode(log);
+					this.uiElements.playerLog.appendChild(newLog);
+					this.uiElements.playerLog.appendChild(document.createElement("br"));
+				}
+			},
 			handleAllowSeekingChange: (state) => {
 				this.uiElements.audioSeekBar.style.pointerEvents = state && this.audio.duration !== Infinity ? "all" : "none";
 			},
@@ -181,9 +195,6 @@ class tPlayerClass {
 
 	// Validate Player Config
 	async validatePlayerConfig() {
-		this.playerState.log = "Validating Player Configuration";
-		const startTime = new Date().getTime();
-	
 		const playerContainerElement = document.getElementById(this.settings.container);
 	
 		// Check if the 'id' property is missing or invalid
@@ -220,10 +231,6 @@ class tPlayerClass {
 		}
 	
 		this.playerState.isPlaylist = this.playlist.length > 1 ? true : false;
-	
-		const endTime = new Date().getTime();
-		const duration = (endTime - startTime);
-		this.playerState.log = `The Configuration Has Been Validated ${duration} ms.`;
 	}
 
 	// Create Player Interface
@@ -238,7 +245,13 @@ class tPlayerClass {
 		const { isMobile, isPlaylist } = this.playerState;
 	
 		// Apply classes to wrapper element based on player settings
-		addClass(wrapper, ["tp-wrapper", "tp-loading", rounded ? "tp-rounded" : "", skin === "vertical" || isMobile ? "tp-vertical" : "", isMobile ? "tp-mobile" : ""]); ;
+		addClass(wrapper, [
+			"tp-wrapper",
+			"tp-loading",
+			rounded ? "tp-rounded" : "",
+			(skin === "vertical" || isMobile) ? "tp-vertical" : "",
+			isMobile ? "tp-mobile" : ""
+		]);
 	
 		// Determine button icon style based on "rounded" setting
 		this.buttonIcons = rounded ? this.buttonIcons.rounded : this.buttonIcons.default;
@@ -247,22 +260,48 @@ class tPlayerClass {
 		const fragment = document.createDocumentFragment();
 		// Player container
 		const playerContainer = this.createElement("div", "tp-player-container", fragment);
-	
 		// Add cover section if cover display is enabled in settings
-		if(showCover) {
-			const playerAside = this.createElement("div", "tp-aside-player", playerContainer);
-			const coverLoadingSpinner = this.createElement("div", "tp-cover-loading-spinner", playerAside);
-			coverLoadingSpinner.innerHTML = "<span></span><span></span><span></span>";
-			this.uiElements.coverContainer = this.createElement("div", "tp-cover", playerAside);
-			this.uiElements.coverImage = this.createElement("img", "tp-cover-image", this.uiElements.coverContainer);
-		}
-	
+		if(showCover) this.createCoverSection(playerContainer);
 		// Main controls container
 		const controlsContainer = this.createElement("div", "tp-controls-container", playerContainer);
-		// Header
+		this.createControlsHeader(controlsContainer);
+		this.createControlsBody(controlsContainer)
+		this.createControlsFooter(controlsContainer);
+		// Social media share buttons, if enabled in settings
+		if(showShareButton) this.createSocialMediaButtons(playerContainer);
+		// Playlist
+		if(isPlaylist) this.createPlaylist(fragment);
+		// Error display container for any error messages
+		const errorContainer = this.createElement("div", "tp-error-container", fragment);
+		this.uiElements.errorMessage = this.createElement("div", "tp-error-message", errorContainer);
+		this.uiElements.errorCloseButton = this.createButtonWithIcon("error-close", "close", errorContainer)
+		// Player Debug
+		// this.uiElements.playerLog = this.createElement("div", "tp-player-log", fragment);
+		// Append all player components to the main wrapper
+		wrapper.appendChild(fragment);
+	
+		const endTime = new Date().getTime();
+		const duration = (endTime - startTime);
+		this.playerState.log = `The Player Interface is Created in ${duration} ms`;
+	}
+	
+	createCoverSection(playerContainer) {
+		const playerAside = this.createElement("div", "tp-aside-player", playerContainer);
+		const coverLoadingSpinner = this.createElement("div", "tp-cover-loading-spinner", playerAside);
+		coverLoadingSpinner.innerHTML = "<span></span><span></span><span></span>";
+		this.uiElements.coverContainer = this.createElement("div", "tp-cover", playerAside);
+		this.uiElements.coverImage = this.createElement("img", "tp-cover-image", this.uiElements.coverContainer);
+	}
+	
+	createControlsHeader(controlsContainer) {
 		const controlsHeader = this.createElement("div", "tp-controls-header", controlsContainer);
 		this.uiElements.trackTitle = this.createElement("div", "tp-track-title", controlsHeader);
-		// Body
+	}
+	
+	createControlsBody(controlsContainer) {
+		const { isPlaylist } = this.playerState;
+		const { showRepeatButton, showShuffleButton, showShareButton } = this.settings;
+	
 		const controlsBody = this.createElement("div", "tp-controls-body", controlsContainer);
 		this.uiElements.playbackButton = this.createButtonWithIcon("playback", "play", controlsBody);
 		this.uiElements.audioSeekBar = this.createElement("div", "tp-audio-seek-bar", controlsBody);
@@ -285,23 +324,17 @@ class tPlayerClass {
 		if(isPlaylist && showShuffleButton) this.uiElements.shuffleButton = this.createButtonWithIcon("shuffle", "shuffle", controlsBody);
 		// Share Button, if enabled in settings
 		if(showShareButton) this.uiElements.shareButton = this.createButtonWithIcon("share", "share", controlsBody);
+	}
 	
-		// Footer
+	createControlsFooter(controlsContainer) {
+		const { isPlaylist, isMobile } = this.playerState;
+	
 		const controlsFooter = this.createElement("div", "tp-controls-footer", controlsContainer);
 		// Playlist toggle button for playlists or buy/download buttons for individual tracks
 		if(isPlaylist) {
 			this.uiElements.togglePlaylistButton = this.createButtonWithIcon("toggle-playlis", "playlist", controlsFooter);
 		} else {
-			// Buy Button
-			if(this.playlist[0].buy) {
-				const buyButton = this.createCustomLink('buy', this.playlist[0].buy, controlsFooter);
-				controlsFooter.appendChild(buyButton);
-			}
-			// Download Button
-			if(this.playlist[0].download) {
-				const downloadButton = this.createCustomLink('download', this.playlist[0].download, controlsFooter);
-				controlsFooter.appendChild(downloadButton);
-			}
+			this.createBuyDownloadButtons(controlsFooter);
 		}
 	
 		// Volume Control for non-mobile devices
@@ -311,72 +344,75 @@ class tPlayerClass {
 			this.uiElements.volumeLevelBar = this.createElement("div", "tp-volume-level-bar", volumeControl);
 			this.uiElements.volumeLevel = this.createElement("div", "tp-volume-level", this.uiElements.volumeLevelBar);
 		}
+	}
 	
-		// Social media share buttons, if enabled in settings
-		if(showShareButton) {
-			const socialMediaContainer = this.createElement("div", "tp-social-media-container", playerContainer);
-			this.uiElements.facebookButton = this.createButtonWithIcon("facebook", "facebook", socialMediaContainer);
-			this.uiElements.twitterButton = this.createButtonWithIcon("twitter", "twitter", socialMediaContainer);
-			this.uiElements.tumblrButton = this.createButtonWithIcon("tumblr", "tumblr", socialMediaContainer);
+	createBuyDownloadButtons(controlsFooter) {
+		const track = this.playlist[0];
+		// Buy Button
+		if(track.buy) {
+			const buyButton = this.createCustomLink('buy', track.buy, controlsFooter);
+			controlsFooter.appendChild(buyButton);
+		}
+		// Download Button
+		if(track.download) {
+			const downloadButton = this.createCustomLink('download', track.download, controlsFooter);
+			controlsFooter.appendChild(downloadButton);
 		}
 	
-		// Playlist
-		if(isPlaylist) {
-			this.uiElements.playlistContainer = this.createElement("div", "tp-playlist-container", fragment);
-			this.uiElements.playlist = this.createElement("ul", "tp-playlist", this.uiElements.playlistContainer);
-			// Generate playlist items for each track
-			this.playlist.map(track => {
-				// Determine the track name to display, including artist and title if available
-				const trackName = track.title ? `<b>${track.artist}</b> - ${track.title}` : `<b>${track.artist}</b>`;
-				// Determine the full track title for the tooltip, including artist and title if available
-				const trackTitle = track.title ? `${track.artist} - ${track.title}` : track.artist;
+	}
 	
-				const playlistItem = this.createElement("li", "tp-playlist-item", this.uiElements.playlist);
-				playlistItem.title = trackTitle;
-				const playlistItemIndicator = this.createElement("div", "tp-playlist-item-indicator", playlistItem);
-				playlistItemIndicator.innerHTML = "<span></span><span></span><span></span>";
-				const playlistItemTrackTitle = this.createElement("div", "tp-playlist-item-track-title", playlistItem);
-				playlistItemTrackTitle.innerHTML = trackName;
+	createSocialMediaButtons(playerContainer) {
+		const socialMediaContainer = this.createElement("div", "tp-social-media-container", playerContainer);
+		this.uiElements.facebookButton = this.createButtonWithIcon("facebook", "facebook", socialMediaContainer);
+		this.uiElements.twitterButton = this.createButtonWithIcon("twitter", "twitter", socialMediaContainer);
+		this.uiElements.tumblrButton = this.createButtonWithIcon("tumblr", "tumblr", socialMediaContainer);
+	}
 	
-				if(track.buy) {
-					const buyButton = this.createCustomLink('buy', track.buy) ;
-					playlistItem.appendChild(buyButton);
-				}
+	createPlaylist(fragment) {
+		const { isMobile } = this.playerState;
+		const { wrapper } = this.uiElements;
+		const { addClass } = this;
 	
-				if(track.download) {
-					const downloadButton = this.createCustomLink('download', track.download) ;
-					playlistItem.appendChild(downloadButton);
-				}
+		this.uiElements.playlistContainer = this.createElement("div", "tp-playlist-container", fragment);
+		this.uiElements.playlist = this.createElement("ul", "tp-playlist", this.uiElements.playlistContainer);
 	
-				this.uiElements.playlist.appendChild(playlistItem);
-			});
+		// Generate playlist items for each track
+		this.playlist.forEach(track => {
+			const playlistItem = this.createElement("li", "tp-playlist-item", this.uiElements.playlist);
+			playlistItem.title =  track.title ? `${track.artist} - ${track.title}` : track.artist;
 	
-			// Update reference to playlist items
-			this.uiElements.playlistItem = this.uiElements.playlist.childNodes;
+			const playlistItemIndicator = this.createElement("div", "tp-playlist-item-indicator", playlistItem);
+			playlistItemIndicator.innerHTML = "<span></span><span></span><span></span>";
 	
-			// Enable playlist scroll if settings allow and track count exceeds visible max
-			if(this.settings.allowPlaylistScroll && this.playlist.length > this.settings.maxVisibleTracks) {
-				if(!isMobile) {
-					addClass(wrapper, "tp-scrollable");
-					this.uiElements.scrollbarTrack = this.createElement("div", "tp-scrollbar-track", this.uiElements.playlistContainer);
-					this.uiElements.scrollbarThumb = this.createElement("div", "tp-scrollbar-thumb", this.uiElements.scrollbarTrack);
-				}
-				// Set Playlist Height - Limits visible playlist height to max visible tracks, calculated by track height
-				this.uiElements.playlist.style.height = `${40 * this.settings.maxVisibleTracks}px`
+			const playlistItemTrackTitle = this.createElement("div", "tp-playlist-item-track-title", playlistItem);
+			playlistItemTrackTitle.innerHTML = track.title ? `<b>${track.artist}</b> - ${track.title}` : `<b>${track.artist}</b>`;
+	
+			if(track.buy) {
+				const buyButton = this.createCustomLink('buy', track.buy) ;
+				playlistItem.appendChild(buyButton);
 			}
+	
+			if(track.download) {
+				const downloadButton = this.createCustomLink('download', track.download) ;
+				playlistItem.appendChild(downloadButton);
+			}
+	
+			this.uiElements.playlist.appendChild(playlistItem);
+		});
+	
+		// Update reference to playlist items
+		this.uiElements.playlistItem = this.uiElements.playlist.childNodes;
+	
+		// Enable playlist scroll if settings allow and track count exceeds visible max
+		if(this.settings.allowPlaylistScroll && this.playlist.length > this.settings.maxVisibleTracks) {
+			if(!isMobile) {
+				addClass(wrapper, "tp-scrollable");
+				this.uiElements.scrollbarTrack = this.createElement("div", "tp-scrollbar-track", this.uiElements.playlistContainer);
+				this.uiElements.scrollbarThumb = this.createElement("div", "tp-scrollbar-thumb", this.uiElements.scrollbarTrack);
+			}
+			// Set Playlist Height - Limits visible playlist height to max visible tracks, calculated by track height
+			this.uiElements.playlist.style.height = `${40 * this.settings.maxVisibleTracks}px`
 		}
-	
-		// Error display container for any error messages
-		const errorContainer = this.createElement("div", "tp-error-container", fragment);
-		this.uiElements.errorMessage = this.createElement("div", "tp-error-container", errorContainer);
-		this.uiElements.errorCloseButton = this.createButtonWithIcon("close", "close", errorContainer)
-	
-		// Append all player components to the main wrapper
-		wrapper.appendChild(fragment);
-	
-		const endTime = new Date().getTime();
-		const duration = (endTime - startTime);
-		this.playerState.log = `The Player Interface is Created in ${duration} ms`;
 	}
 	
 	// Helper method to create a new HTML element with classes and optional parent
@@ -466,106 +502,133 @@ class tPlayerClass {
 	async setupEventListeners() {
 		this.playerState.log = 'Setting Up Event Listeners';
 		const { isPlaylist, isMobile } = this.playerState;
-		const { showRepeatButton, showShuffleButton, showShareButton, showCover, allowPlaylistScroll, maxVisibleTracks } = this.settings;
-		const { removeClass } = this;
+		const { showCover, allowPlaylistScroll, maxVisibleTracks } = this.settings;
+		const { coverImage } = this.uiElements;
 	
-		// List of audio events to listen for
+		// Add listeners for all audio events
+		this.setupAudioEventListeners();
+		// Add listeners for playback control elements
+		this.setupButtonsEventListeners();
+		// Add listeners for playlist items
+		if(isPlaylist) {
+			this.setupPlaylistEventListeners();
+			if(allowPlaylistScroll && this.playlist.length > maxVisibleTracks && !isMobile) {
+				this.setupScrollbarEventListeners();
+			}
+		}
+		// Add listeners for seek and volume bars
+		this.setupSeekingEventListeners();
+		// Add listener for Cover Loading
+		if(showCover) coverImage.addEventListener('load', this.coverLoaded.bind(this));
+	
+		// Add listener for window resize
+		window.addEventListener("resize", this.playerResize.bind(this));
+		this.playerState.log = 'Event Listeners Are Set';
+	}
+	
+	// Method to add audio event listeners
+	setupAudioEventListeners() {
 		const audioEvents = [
 			'abort', 'canplay', 'canplaythrough', 'durationchange', 'emptied', 'ended', 'error',
 			'loadeddata', 'loadedmetadata', 'loadstart', 'pause', 'play', 'playing', 'progress',
 			'ratechange', 'seeked', 'seeking', 'stalled', 'suspend', 'timeupdate', 'volumechange', 'waiting'
 		];
 	
-		// Add event listeners for all audio events
-		audioEvents.forEach((event) => {
+		audioEvents.forEach(event => {
 			if (typeof this[event] === 'function') {
 				this.audio.addEventListener(event, this[event].bind(this));
 			} else {
 				console.log(`No handler found for event: ${event}`);
 			}
 		});
+	}
 	
-		// Reference to UI elements
-		const {
-			wrapper, playbackButton, prevButton, nextButton, volumeButton, repeatButton, shuffleButton, shareButton,
-			facebookButton, twitterButton, tumblrButton, togglePlaylistButton, playlistItem, audioSeekBar,
-			volumeLevelBar, playlistContainer, playlist, scrollbarTrack, coverImage, errorCloseButton
+	// Method to add listeners for all buttons
+	setupButtonsEventListeners() {
+		const { removeClass } = this;
+		const { isPlaylist, isMobile } = this.playerState;
+		const { showRepeatButton, showShuffleButton, showShareButton } = this.settings;
+		const { wrapper, playbackButton, prevButton, nextButton, volumeButton, repeatButton, shuffleButton, shareButton,
+			facebookButton, twitterButton, tumblrButton, togglePlaylistButton, errorCloseButton
 		} = this.uiElements;
-	
+		// Playback Button
 		playbackButton.addEventListener('click', this.playback.bind(this));
-	
+		// Prev, Next, Shuffle, Toggle Playlist Button
 		if(isPlaylist) {
 			prevButton.addEventListener('click', this.prevTrack.bind(this));
 			nextButton.addEventListener('click', this.nextTrack.bind(this));
 			if(showShuffleButton) shuffleButton.addEventListener('click', this.shuffleToggle.bind(this));
 			togglePlaylistButton.addEventListener('click', this.togglePlaylist.bind(this));
-	
-			// Add event listeners for playlist items
-			playlistItem.forEach((item, index) => {
-				const download = item.querySelector('.tp-playlist-track-download');
-				const buy = item.querySelector('.tp-playlist-track-buy');
-	
-				// Select Track From Playlist
-				item.addEventListener('click', () => {
-					if (this.currentTrack.index !== index) {
-						this.previousTrackIndex = this.currentTrack.index;
-						this.currentTrack.index = index;
-						this.playerState.autoplay = true;
-						this.switchTrack();
-					} else if (this.audio.paused) {
-						this.playback();
-					}
-				});
-	
-				// Prevent click events on download and buy links from propagating
-				const preventClick = event => event.stopPropagation();
-				if (download) download.addEventListener('click', preventClick);
-				if (buy) buy.addEventListener('click', preventClick);
-			});
-	
-			if(allowPlaylistScroll && this.playlist.length > maxVisibleTracks && !isMobile) {
-				// Add event listeners for scrollbar interactions
-				playlistContainer.addEventListener('mouseenter', this.showScrollbar.bind(this)); // Show scrollbar on mouse enter
-				playlistContainer.addEventListener('mouseleave', this.hideScrollbar.bind(this)); // Hide scrollbar on mouse leave
-				playlist.addEventListener('scroll', this.updateScrollbarThumb.bind(this)); // Update scrollbar thumb position on scroll
-				// Update The Position And Size Of The Scrollbar
-				this.updateScrollbarThumb();
-				scrollbarTrack.addEventListener('wheel', event => { // Handle mouse wheel scrolling
-					event.preventDefault();
-					playlist.scrollTop += event.deltaY;
-				}, { passive: false });
-				scrollbarTrack.addEventListener('mousedown', this.scrollbarTrackSeekingStart.bind(this)); // Handle mouse down for scrollbar dragging
-			}
 		}
-	
+		// Repeat Button
 		if(showRepeatButton) repeatButton.addEventListener('click', this.repeatToggle.bind(this));
-	
+		// Share Buttons
 		if(showShareButton) {
 			shareButton.addEventListener('click', this.shareToggle.bind(this));
 			facebookButton.addEventListener('click', this.shareFacebook.bind(this));
 			twitterButton.addEventListener('click', this.shareTwitter.bind(this));
 			tumblrButton.addEventListener('click', this.shareTumblr.bind(this));
 		}
+		// Volume Button
+		if(!isMobile) volumeButton.addEventListener('click', this.volumeToggle.bind(this));
+		// Error Close
+		errorCloseButton.addEventListener('click', () => removeClass(wrapper, "tp-error"));
+	}
+	
+	// Method to add listeners for playlist items
+	setupPlaylistEventListeners() {
+		const { playlistItem } = this.uiElements;
+		// Add event listeners for playlist items
+		playlistItem.forEach((item, index) => {
+			const download = item.querySelector('.tp-playlist-track-download');
+			const buy = item.querySelector('.tp-playlist-track-buy');
+	
+			// Select Track From Playlist
+			item.addEventListener('click', () => {
+				if (this.currentTrack.index !== index) {
+					this.previousTrackIndex = this.currentTrack.index;
+					this.currentTrack.index = index;
+					this.playerState.autoplay = true;
+					this.switchTrack();
+				} else if (this.audio.paused) {
+					this.playback();
+				}
+			});
+	
+			// Prevent click events on download and buy links from propagating
+			const preventClick = event => event.stopPropagation();
+			if (download) download.addEventListener('click', preventClick);
+			if (buy) buy.addEventListener('click', preventClick);
+		});
+	}
+	
+	// Method to add listeners for the playlist scrollbar
+	setupScrollbarEventListeners() {
+		const { playlistContainer, playlist, scrollbarTrack } = this.uiElements;
+		// Add event listeners for scrollbar interactions
+		playlistContainer.addEventListener('mouseenter', this.showScrollbar.bind(this)); // Show scrollbar on mouse enter
+		playlistContainer.addEventListener('mouseleave', this.hideScrollbar.bind(this)); // Hide scrollbar on mouse leave
+		playlist.addEventListener('scroll', this.updateScrollbarThumb.bind(this)); // Update scrollbar thumb position on scroll
+		scrollbarTrack.addEventListener('wheel', event => { // Handle mouse wheel scrolling
+			event.preventDefault();
+			playlist.scrollTop += event.deltaY;
+		}, { passive: false });
+		scrollbarTrack.addEventListener('mousedown', this.scrollbarTrackSeekingStart.bind(this)); // Handle mouse down for scrollbar dragging
+		// Update The Position And Size Of The Scrollbar
+		this.updateScrollbarThumb();
+	}
+	
+	// Method to add listeners for seeking
+	setupSeekingEventListeners() {
+		const { audioSeekBar, volumeLevelBar } = this.uiElements;
+		const { isMobile } = this.playerState;
 	
 		if (!isMobile) {
 			audioSeekBar.addEventListener('mousedown', this.audioSeeking.bind(this));
-			volumeButton.addEventListener('click', this.volumeToggle.bind(this));
 			volumeLevelBar.addEventListener('mousedown', this.volumeAdjustment.bind(this));
 		} else {
 			audioSeekBar.addEventListener('touchstart', this.audioSeeking.bind(this), {passive: true});
 		}
-	
-		if(showCover) coverImage.addEventListener('load', this.coverLoaded.bind(this));
-	
-		// Add event listener for window resize
-		window.addEventListener("resize", this.playerResize.bind(this));
-	
-		// Error Close
-		errorCloseButton.addEventListener('click', () => {
-			removeClass(wrapper, "tp-error");
-		});
-	
-		this.playerState.log = 'Event Listeners Are Set';
 	}
 
 	/* AUDIO EVENTS */ 
@@ -796,8 +859,6 @@ class tPlayerClass {
 	}
 	
 	suspend() {
-		// Disable radio info updates
-		this.playerState.allowRadioInfoUpdate = false;
 		// Set Audio Event
 		this.playerState.audioEvent = 'suspend';
 	}
@@ -813,8 +874,6 @@ class tPlayerClass {
 			this.uiElements.audioPlaybackProgress.style.width = percent + '%';
 			// Update the displayed current time in the player
 			this.uiElements.audioCurrentTime.textContent = secondsToTimecode(this.audio.currentTime);
-			// Call the progress function to update the buffered progress bar
-			this.progress();
 		}
 		// Set Audio Event
 		this.playerState.audioEvent = 'timeupdate';
@@ -868,7 +927,6 @@ class tPlayerClass {
 			};
 		}
 	}
-	
 	
 	// Toggles playback of the audio element and updates the player state.
 	playback() {
@@ -964,24 +1022,24 @@ class tPlayerClass {
 	repeatToggle() {
 		const { repeatButton } = this.uiElements;
 		const { toggleClass } = this;
-		// Toggle the repeat state
-		this.playerState.repeat = !this.playerState.repeat;
 		// Toggle the "tp-active" class on the repeat button
 		toggleClass(repeatButton, "tp-active");
 		// Simulate the click effect on the repeat button
 		this.simulateClickEffect(repeatButton);
+		// Toggle the repeat state
+		this.playerState.repeat = !this.playerState.repeat;
 	}
 	
 	// Toggles the shuffle state of the player.
 	shuffleToggle() {
 		const { shuffleButton } = this.uiElements;
 		const { toggleClass } = this;
-		// Toggle the shuffle state
-		this.playerState.shuffle = !this.playerState.shuffle;
 		// Toggle the "tp-active" class on the shuffle button
 		toggleClass(shuffleButton, "tp-active");
 		// Simulate the click effect on the shuffle button
 		this.simulateClickEffect(shuffleButton);
+		// Toggle the shuffle state
+		this.playerState.shuffle = !this.playerState.shuffle;
 		// Regenerate the shuffled playlist order if shuffle is enabled, otherwise set to null
 		this.orderList = (this.playerState.shuffle) ? this.getShuffledPlaylistOrder() : null;
 	}
@@ -989,14 +1047,14 @@ class tPlayerClass {
 	// Toggles the share state of the player.
 	shareToggle() {
 		const { shareButton, wrapper } = this.uiElements;
-		// Toggle the shera display state
-		this.playerState.isShareDisplayed = !this.playerState.isShareDisplayed;
 		// Toggle the "tp-sharing" class on the player
 		this.toggleClass(wrapper, "tp-sharing");
 		// Toggle the "tp-active" class on the share button
 		this.toggleClass(shareButton, "tp-active");
 		// Simulate the click effect on the share button
 		this.simulateClickEffect(shareButton);
+		// Toggle the shera display state
+		this.playerState.isShareDisplayed = !this.playerState.isShareDisplayed;
 		if (this.playerState.isShareDisplayed) {
 			// Animate the button icon to the "opened" state
 			shareButton.children[0].children[0].setAttribute('d', this.buttonIcons.close);
@@ -1036,18 +1094,18 @@ class tPlayerClass {
 	}
 	
 	// Toggle Playlist
-	togglePlaylist() {
+	togglePlaylist(isClick = true) {
 		let playlistHeight = 0;
 		const { togglePlaylistButton, playlistContainer } = this.uiElements;
 		const { maxVisibleTracks, allowPlaylistScroll } = this.settings;
 		const { toggleClass } = this;
 	
-		// Toggle the playlist display state
-		this.playerState.isPlaylistDisplayed = !this.playerState.isPlaylistDisplayed;
 		// Toggle the "tp-active" class on the toggle playlist button
 		toggleClass(togglePlaylistButton, "tp-active");
 		// Simulate the click effect on the toggle playlist button
-		this.simulateClickEffect(togglePlaylistButton);
+		if(isClick) this.simulateClickEffect(togglePlaylistButton);
+		// Toggle the playlist display state
+		this.playerState.isPlaylistDisplayed = !this.playerState.isPlaylistDisplayed;
 	
 		if (this.playerState.isPlaylistDisplayed) {
 			// Animate the button icon to the "opened" state
@@ -1070,12 +1128,12 @@ class tPlayerClass {
 		const { volumeButton, volumeLevel } = this.uiElements;
 		const { toggleClass } = this;
 	
-		// Toggle the mute state
-		this.playerState.isVolumeMuted = !this.playerState.isVolumeMuted;
 		// Toggle the "tp-active" class on the volume button
 		toggleClass(volumeButton, "tp-active");
 		// Simulate the click effect on the volume button
 		this.simulateClickEffect(volumeButton);
+		// Toggle the mute state
+		this.playerState.isVolumeMuted = !this.playerState.isVolumeMuted;
 		// Adjust the audio volume based on the mute state
 		this.audio.volume = this.playerState.isVolumeMuted ? 0 : this.settings.volume;
 		// Update the volume level display width
@@ -1294,8 +1352,8 @@ class tPlayerClass {
 		this.playerState.log = 'Changing the Track';
 		let scrollDistance = 0;
 	
-		const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, trackTitle, coverContainer, coverImage } = this.uiElements;
-		const { allowPlaylistScroll, maxVisibleTracks, showCover } = this.settings;
+		const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, trackTitle } = this.uiElements;
+		const { allowPlaylistScroll, maxVisibleTracks } = this.settings;
 		const { addClass, removeClass } = this;
 		const { isPlaylist } = this.playerState;
 		const currentTrackIndex = this.currentTrack.index;
@@ -1354,14 +1412,7 @@ class tPlayerClass {
 	
 		// Handle cover display
 		const { cover } = this.playlist[currentTrackIndex];
-	
-		if(cover && cover !== "" && showCover) {
-			addClass(coverContainer, 'tp-start-change-cover');
-			coverContainer.onanimationend = () => {
-				coverContainer.onanimationend = null;
-				coverImage.src = cover;
-			}
-		}
+		this.updateCovers(cover);
 	
 		this.playerState.log = 'Track Changed';
 	}
@@ -1419,8 +1470,116 @@ class tPlayerClass {
 		// If both texts are of the same length, return the current text
 		return currentText; // Texts are the same length
 	}
+	
+	updateCovers(cover) {
+		const { addClass, removeClass } = this;
+		const { coverContainer, coverImage, wrapper } = this.uiElements;
+		const { showCover } = this.settings;
+	
+		if(cover && cover !== "" && showCover) {
+			removeClass(wrapper, 'tp-no-cover');
+			addClass(coverContainer, 'tp-start-change-cover');
+			coverContainer.onanimationend = () => {
+				coverContainer.onanimationend = null;
+				coverImage.src = cover;
+			}
+		} else {
+			addClass(wrapper, 'tp-no-cover');
+		}
+	}
+	
+	// Fetches and updates the radio information by making a request to the server.
+	async updateRadioInfo() {
+		const { showCover, autoUpdateRadioCovers, pluginDirectoryPath } = this.settings;
+		const { allowRadioInfoUpdate, isRadioInfoUpdatePending } = this.playerState;
+		const { index: currentIndex, artist: currentArtist, title: currentTitle, cover: currentCover } = this.currentTrack;
+		const { trackTitle } = this.uiElements;
+	
+		// Exit if updates are not allowed or if an update is already in progress
+		if (!allowRadioInfoUpdate || isRadioInfoUpdatePending) return;
+	
+		// Retrieve the audio URL for the current track
+		const currentAudioUrl = this.playlist[currentIndex].audio;
+	
+		// Determine if cover images should be updated based on settings
+		const shouldUpdateCovers = showCover && autoUpdateRadioCovers;
+	
+		// Prepare fetch parameters for the POST request
+		const requestParams = {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ url: currentAudioUrl, cover: shouldUpdateCovers })
+		};
+	
+		// Set the update state to pending to prevent duplicate requests
+		this.playerState.isRadioInfoUpdatePending = true;
+	
+		try {
+			// Send the request to fetch new radio information
+			const response = await fetch(`${pluginDirectoryPath}/assets/tp-radio-info.php`, requestParams);
+			const fetchedData = await response.json();
+	
+			// Reset the pending state for the update
+			this.playerState.isRadioInfoUpdatePending = false;
+	
+			// Abort the update if the track has changed since the request started
+			if (currentIndex !== this.currentTrack.index) return;
+	
+			console.log(fetchedData);
+	
+			if (fetchedData) {
+				const { artist: fetchedArtist, title: fetchedTitle, cover: fetchedCover } = fetchedData;
+	
+				// Update artist and title if they have changed
+				if (currentArtist !== fetchedArtist || currentTitle !== fetchedTitle) {
+					this.animateTextChange(
+						{ artist: currentArtist, title: currentTitle },
+						{ artist: fetchedArtist, title: fetchedTitle }
+					);
+					this.currentTrack.artist = fetchedArtist;
+					this.currentTrack.title = fetchedTitle;
+					trackTitle.setAttribute('title', `${fetchedArtist} - ${fetchedTitle}`);
+				}
+	
+				// Update cover if fetchedCover is different, or use playlist cover if not provided
+				if (fetchedCover) {
+					if (fetchedCover !== currentCover) {
+						this.currentTrack.cover = fetchedCover;
+						this.updateCovers(fetchedCover);
+					}
+				} else {
+					if (currentCover !== this.playlist[currentIndex].cover) {
+						this.currentTrack.cover = this.playlist[currentIndex].cover;
+						this.updateCovers(this.playlist[currentIndex].cover);
+					}
+				}
+	
+			} else {
+				// If no data received, reset artist, title, and cover to playlist values if different
+				if (currentArtist !== this.playlist[currentIndex].artist || currentTitle !== this.playlist[currentIndex].title) {
+					this.animateTextChange(
+						{ artist: currentArtist, title: currentTitle },
+						{ artist: this.playlist[currentIndex].artist, title: this.playlist[currentIndex].title }
+					);
+					this.currentTrack.artist = this.playlist[currentIndex].artist;
+					this.currentTrack.title = this.playlist[currentIndex].title;
+				}
+				if (currentCover !== this.playlist[currentIndex].cover) {
+					this.currentTrack.cover = this.playlist[currentIndex].cover;
+					this.updateCovers(this.playlist[currentIndex].cover);
+				}
+			}
+		} catch (error) {
+			// Log any errors encountered during the fetch operation
+			console.error("Error fetching radio info:", error);
+		} finally {
+			// Ensure the pending state is reset after the operation
+			this.playerState.isRadioInfoUpdatePending = false;
+		}
+	}
 
 	async init() {
+		const { showPlaylist, isRadio, pluginDirectoryPath, updateRadioInterval } = this.settings;
 		this.playerState.log = 'Initializing';
 		// Validate Player Config
 		await this.validatePlayerConfig();
@@ -1435,13 +1594,17 @@ class tPlayerClass {
 		// Add to List of Players
 		tPlayersCollection[this.playerId] = this.audio;
 		// Show playlist if the setting is enabled and its Playlist
-		if(this.settings.showPlaylist && this.playerState.isPlaylist) {
-			this.togglePlaylist();
-		}
+		if(showPlaylist && this.playerState.isPlaylist) this.togglePlaylist(false);
 		// Setup Event Listeners
 		this.setupEventListeners();
 		// Load And Prepare The Initial Track For Playback
 		this.switchTrack();
+		// Adjust The Player Size To Fit It's Container Or Screen
+		this.playerResize();
+		// If In Radio Mode And A Plugin Path Is Specified, Set Up Periodic Info Updates
+		if(isRadio && pluginDirectoryPath) {
+			setInterval(this.updateRadioInfo.bind(this), updateRadioInterval);
+		}
 		console.log(this);
 	}
 
@@ -1586,6 +1749,79 @@ class tPlayerClass {
 	};
 }
 
+function migrationFromOldVersion(oldOptions) {
+	return {
+		container: oldOptions.container ?? null,
+		playlist: oldOptions.playlist ?? null,
+		album: {
+			artist: oldOptions.artist ?? oldOptions.albumArtist ?? null,
+			cover: oldOptions.cover ?? oldOptions.albumCover ?? null,
+		},
+		skin: oldOptions.skin ?? oldOptions.options?.skin ?? 'default',
+		rounded: oldOptions.rounded ?? oldOptions.options?.rounded ?? false,
+		showCover: oldOptions.showCover ?? oldOptions.options?.cover ?? true,
+		showPlaylist: oldOptions.showPlaylist ? oldOptions.showPlaylist : oldOptions.options?.playlist ? oldOptions.options?.playlist : true,
+		showRepeatButton: oldOptions.showRepeatButton ?? oldOptions.options?.repeat ?? true,
+		showShuffleButton: oldOptions.showShuffleButton ?? oldOptions.options?.shuffle ?? true,
+		showShareButton: oldOptions.showShareButton ?? oldOptions.options?.share ?? true,
+		allowPlaylistScroll: oldOptions.allowPlaylistScroll ?? (oldOptions.options?.scrollAfter !== null),
+		maxVisibleTracks: oldOptions.maxVisibleTracks ?? oldOptions.options?.scrollAfter ?? oldOptions.options?.scrollAfter > 0 ? oldOptions.options?.scrollAfter : 5,
+		volume: oldOptions.volume ?? oldOptions.options?.volume ?? 1,
+		isRadio: oldOptions.isRadio ?? oldOptions.options?.radio ?? false,
+		pluginDirectoryPath: oldOptions.pluginDirectoryPath ?? oldOptions.options?.pluginPath ?? null,
+		autoUpdateRadioCovers: oldOptions.autoUpdateRadioCovers ?? oldOptions.options?.coverUpdate ?? true,
+		updateRadioInterval: oldOptions.updateRadioInterval ?? oldOptions.options?.updateRadioInterval ?? 10000,
+		style: {
+			player: {
+				background: oldOptions.style?.player?.background ?? "#FFF",
+				cover: {
+					background: oldOptions.style?.player?.cover?.background ?? "#3EC3D5",
+					loader: oldOptions.style?.player?.cover?.loader ?? "#FFF"
+				},
+				tracktitle: oldOptions.style?.player?.tracktitle ?? oldOptions.style?.player?.songtitle ?? "#555",
+				buttons: {
+					wave: oldOptions.style?.player?.buttons?.wave ?? "#3EC3D5",
+					normal: oldOptions.style?.player?.buttons?.normal ?? "#555",
+					hover: oldOptions.style?.player?.buttons?.hover ?? "#3EC3D5",
+					active: oldOptions.style?.player?.buttons?.active ?? "#3EC3D5",
+				},
+				seekbar: oldOptions.style?.player?.seekbar ?? oldOptions.style?.player?.seek ?? "#555",
+				buffered: oldOptions.style?.player?.buffered ?? "rgba(255, 255, 255, 0.15)",
+				progress: oldOptions.style?.player?.progress ?? "#3EC3D5",
+				timestamps: oldOptions.style?.player?.timestamps ?? "#FFF",
+				loader: {
+					background: oldOptions.style?.player?.loader?.background ?? "#555",
+					color: oldOptions.style?.player?.loader?.color ?? "#3EC3D5"
+				},
+				volume: {
+					levelbar: oldOptions.style?.player?.volume?.levelbar ?? oldOptions.style?.player?.volume?.seek ?? "#555",
+					level: oldOptions.style?.player?.volume?.level ?? oldOptions.style?.player?.volume?.value ?? "#3EC3D5"
+				}
+			},
+				playlist: {
+				scrollbar: {
+					track: oldOptions.style?.playlist?.scrollbar?.track ?? oldOptions.style?.playlist?.scroll?.track ?? "rgba(255, 255, 255, 0.5)",
+					thumb: oldOptions.style?.playlist?.scrollbar?.thumb ?? oldOptions.style?.playlist?.scroll?.thumb ?? "rgba(255, 255, 255, 0.75)"
+				},
+				background: oldOptions.style?.playlist?.background ?? "#3EC3D5",
+				color: oldOptions.style?.playlist?.color ?? "#FFF",
+				separator: oldOptions.style?.playlist?.separator ?? "rgba(255, 255, 255, 0.25)",
+				hover: {
+					background: oldOptions.style?.playlist?.hover?.background ?? "#42CFE2",
+					color: oldOptions.style?.playlist?.hover?.color ?? "#FFF",
+					separator: oldOptions.style?.playlist?.hover?.separator ?? "rgba(255, 255, 255, 0.25)"
+				},
+				active: {
+					background: oldOptions.style?.playlist?.active?.background ?? "#42CFE2",
+					color: oldOptions.style?.playlist?.active?.color ?? "#FFF",
+					separator: oldOptions.style?.playlist?.active?.separator ?? "rgba(255, 255, 255, 0.25)"
+				}
+			}
+		}
+	}
+}
+
 function tPlayer(options) {
-	return new tPlayerClass(options);
+	const newOptions = migrationFromOldVersion(options);
+	return new tPlayerClass(newOptions);
 }

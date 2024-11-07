@@ -18,6 +18,7 @@
 	</style>
 </head>
 <body>
+	тести <br>
 	документація <br>
 
 	<div id="playlist_01"></div>
@@ -101,11 +102,28 @@ var playlist_01 = [{
 		artist: "Soulconnexion Radio (Icecast)",
 		audio: "http://live.soulconnexionradio.com:1590/stream",
 		cover: "https://png.pngtree.com/png-vector/20190115/ourlarge/pngtree-isolated-old-radio-icon-flat-style-vector-illustration-png-image_315248.jpg"
+	}, {
+		artist: "BANANRADION",
+		audio: "https://lyssna.bananradion.se/lyssna",
+		cover: "https://cdn-profiles.tunein.com/s304768/images/logod.jpg?t=638055344980000000"
+	}, {
+		artist: "AkroRadio",
+		audio: "https://stream.akroradio.com/listen/akroradio/AkroRadio",
+		cover: "https://www.akroradio.com/wp-content/uploads/2024/01/cropped-test-logo2-6.png"
+	}, {
+		artist: "musicstation.hu",
+		audio: "https://s01.diazol.hu:9050/autodj",
+		cover: "https://www.musicstation.hu/wp-content/uploads/2023/02/aditya-chinchure-ZhQCZjr9fHo-unsplash.jpg"
 	}];
-
+	
 	tPlayer({
 		container: "playlist_01",
-		playlist: playlist_01,
+		playlist: _radio,
+		isRadio: true,
+		pluginDirectoryPath: 'http://localhost/radio-test/tp-radio-info.php',
+		autoUpdateRadioCovers: true,
+		updateRadioInterval: 10000,
+		
 	});
 
 

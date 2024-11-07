@@ -259,7 +259,6 @@ class tPlayerClass {
 		wrapper.appendChild(fragment);
 	}
 
-
 	createButtonIcon(parent, pathClasses = [], paths = []) {
 		let buttonIcon = this.utils.createElementSVG('svg', [], parent);
 
@@ -268,7 +267,6 @@ class tPlayerClass {
 			this.utils.createElementSVG('path', currentPathClass, buttonIcon, [{'d': path}], false);
 		});
 	}
-
 
 	createSeekBar(parent) {
 		this.uiElements.audioSeekBar = this.utils.createElement('div', 'tp-audio-seekbar', parent);
@@ -279,7 +277,6 @@ class tPlayerClass {
 		this.utils.createElement('div', 'tp-player-loader', this.uiElements.audioSeekBar, '<span></span><span></span><span></span>');
 	}
 
-
 	createLink(type, href, parent) {
 		let link = this.utils.createElement('a', ['tp-playlist-track-' + type, 'tp-button'], parent);
 		link.setAttribute('href', href);
@@ -288,7 +285,6 @@ class tPlayerClass {
 		if (type === 'download') link.setAttribute('download', '');
 		this.createButtonIcon(link, ['tp-stroke'], [this.buttonIcons[type]]);
 	}
-
 
 	createPlaylist() {
 		const { createElement } = this.utils;
@@ -311,7 +307,6 @@ class tPlayerClass {
 		return items;
 	}
 
-	
 	// Function to apply styles from the JSON object as CSS variables
 	applyPlayerStyles(styles, element, prefix = '') {
 		// Iterate over the keys of the styles object

@@ -16,7 +16,6 @@
 }
 
 .tp-wrapper * {
-	font-family: 'Roboto', sans-serif;
 	box-sizing: border-box;
 }
 
@@ -763,6 +762,7 @@
 /* Errors */
 .tp-wrapper .tp-error-container {
 	position: absolute;
+	min-width: 300px;
 	width: auto;
 	height: auto;
 	padding: 20px;
@@ -799,13 +799,13 @@
 
 .tp-wrapper .tp-error-close-button svg {
 	display: block;
-	width: 20px;
-	height: 20px;
+	width: 10px;
+	height: 10px;
 }
 
-.tp-wrapper .tp-error-close-button svg path {
-	stroke: #fff;
-	stroke-width: 4px;
+.tp-wrapper .tp-error-close-button:hover path,
+.tp-wrapper .tp-error-close-button path {
+	fill: #fff !important;
 }
 
 .tp-wrapper.tp-error .tp-error-container {
@@ -815,6 +815,11 @@
 	pointer-events: all;
 }
 
+
+/* No Cover */
+.tp-no-cover .tp-aside-player {
+	width: 0px;
+}
 
 /* Skin Vertical */
 
@@ -890,18 +895,6 @@
 	overflow: hidden;
 }
 
-.tp-wrapper.tp-rounded .tp-playback-button path,
-.tp-button .tp-stroke {
-	fill: none;
-	stroke-width: 3px;
-}
-
-.tp-wrapper.tp-rounded .tp-playback-button path,
-.tp-wrapper.tp-rounded .tp-stroke {
-	stroke-linecap: round;
-	stroke-linejoin: round;
-}
-
 .tp-wrapper.tp-rounded .tp-audio-seek-bar {
 	border-radius: 5px;
 	overflow: hidden;
@@ -916,8 +909,14 @@
 	border-radius: 10px;
 }
 
-.tp-wrapper.tp-rounded .tp-playlist-track-download,
-.tp-wrapper.tp-rounded .tp-playlist-track-buy {
-	stroke-linecap: round;
-	stroke-linejoin: round;
+
+.tp-player-log {
+	position: relative;
+	width: 100%;
+	padding: 20px;
+	background: #555;
+	font-size: 12px;
+	line-height: 20px;
+	font-weight: 400;
+	color: #fff;
 }

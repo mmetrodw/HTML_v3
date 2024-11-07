@@ -1,7 +1,4 @@
 async validatePlayerConfig() {
-	this.playerState.log = "Validating Player Configuration";
-	const startTime = new Date().getTime();
-
 	const playerContainerElement = document.getElementById(this.settings.container);
 
 	// Check if the 'id' property is missing or invalid
@@ -38,8 +35,4 @@ async validatePlayerConfig() {
 	}
 	
 	this.playerState.isPlaylist = this.playlist.length > 1 ? true : false;
-	
-	const endTime = new Date().getTime();
-	const duration = (endTime - startTime);
-	this.playerState.log = `The Configuration Has Been Validated ${duration} ms.`;
 }

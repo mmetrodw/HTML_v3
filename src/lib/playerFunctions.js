@@ -10,7 +10,6 @@ simulateClickEffect(element) {
 	}
 }
 
-
 // Toggles playback of the audio element and updates the player state.
 playback() {
 	// Simulate button click effect
@@ -105,24 +104,24 @@ handleShuffleMode() {
 repeatToggle() {
 	const { repeatButton } = this.uiElements;
 	const { toggleClass } = this;
-	// Toggle the repeat state
-	this.playerState.repeat = !this.playerState.repeat;
 	// Toggle the "tp-active" class on the repeat button
 	toggleClass(repeatButton, "tp-active");
 	// Simulate the click effect on the repeat button
 	this.simulateClickEffect(repeatButton);
+	// Toggle the repeat state
+	this.playerState.repeat = !this.playerState.repeat;
 }
 
 // Toggles the shuffle state of the player.
 shuffleToggle() {
 	const { shuffleButton } = this.uiElements;
 	const { toggleClass } = this;
-	// Toggle the shuffle state
-	this.playerState.shuffle = !this.playerState.shuffle;
 	// Toggle the "tp-active" class on the shuffle button
 	toggleClass(shuffleButton, "tp-active");
 	// Simulate the click effect on the shuffle button
 	this.simulateClickEffect(shuffleButton);
+	// Toggle the shuffle state
+	this.playerState.shuffle = !this.playerState.shuffle;
 	// Regenerate the shuffled playlist order if shuffle is enabled, otherwise set to null
 	this.orderList = (this.playerState.shuffle) ? this.getShuffledPlaylistOrder() : null;
 }
@@ -130,14 +129,14 @@ shuffleToggle() {
 // Toggles the share state of the player.
 shareToggle() {
 	const { shareButton, wrapper } = this.uiElements;
-	// Toggle the shera display state
-	this.playerState.isShareDisplayed = !this.playerState.isShareDisplayed;
 	// Toggle the "tp-sharing" class on the player
 	this.toggleClass(wrapper, "tp-sharing");
 	// Toggle the "tp-active" class on the share button
 	this.toggleClass(shareButton, "tp-active");
 	// Simulate the click effect on the share button
 	this.simulateClickEffect(shareButton);
+	// Toggle the shera display state
+	this.playerState.isShareDisplayed = !this.playerState.isShareDisplayed;
 	if (this.playerState.isShareDisplayed) {
 		// Animate the button icon to the "opened" state
 		shareButton.children[0].children[0].setAttribute('d', this.buttonIcons.close);
@@ -177,18 +176,18 @@ openPopup(url) {
 }
 
 // Toggle Playlist
-togglePlaylist() {
+togglePlaylist(isClick = true) {
 	let playlistHeight = 0;
 	const { togglePlaylistButton, playlistContainer } = this.uiElements;
 	const { maxVisibleTracks, allowPlaylistScroll } = this.settings;
 	const { toggleClass } = this;
 
-	// Toggle the playlist display state
-	this.playerState.isPlaylistDisplayed = !this.playerState.isPlaylistDisplayed;
 	// Toggle the "tp-active" class on the toggle playlist button
 	toggleClass(togglePlaylistButton, "tp-active");
 	// Simulate the click effect on the toggle playlist button
-	this.simulateClickEffect(togglePlaylistButton);
+	if(isClick) this.simulateClickEffect(togglePlaylistButton);
+	// Toggle the playlist display state
+	this.playerState.isPlaylistDisplayed = !this.playerState.isPlaylistDisplayed;
 
 	if (this.playerState.isPlaylistDisplayed) {
 		// Animate the button icon to the "opened" state
@@ -211,12 +210,12 @@ volumeToggle() {
 	const { volumeButton, volumeLevel } = this.uiElements;
 	const { toggleClass } = this;
 
-	// Toggle the mute state
-	this.playerState.isVolumeMuted = !this.playerState.isVolumeMuted;
 	// Toggle the "tp-active" class on the volume button
 	toggleClass(volumeButton, "tp-active");
 	// Simulate the click effect on the volume button
 	this.simulateClickEffect(volumeButton);
+	// Toggle the mute state
+	this.playerState.isVolumeMuted = !this.playerState.isVolumeMuted;
 	// Adjust the audio volume based on the mute state
 	this.audio.volume = this.playerState.isVolumeMuted ? 0 : this.settings.volume;
 	// Update the volume level display width
@@ -435,8 +434,8 @@ switchTrack() {
 	this.playerState.log = 'Changing the Track';
 	let scrollDistance = 0;
 
-	const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, trackTitle, coverContainer, coverImage } = this.uiElements;
-	const { allowPlaylistScroll, maxVisibleTracks, showCover } = this.settings;
+	const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, trackTitle } = this.uiElements;
+	const { allowPlaylistScroll, maxVisibleTracks } = this.settings;
 	const { addClass, removeClass } = this;
 	const { isPlaylist } = this.playerState;
 	const currentTrackIndex = this.currentTrack.index;
@@ -495,14 +494,7 @@ switchTrack() {
 
 	// Handle cover display
 	const { cover } = this.playlist[currentTrackIndex];
-
-	if(cover && cover !== "" && showCover) {
-		addClass(coverContainer, 'tp-start-change-cover');
-		coverContainer.onanimationend = () => {
-			coverContainer.onanimationend = null;
-			coverImage.src = cover;
-		}
-	}
+	this.updateCovers(cover);
 	
 	this.playerState.log = 'Track Changed';
 }
@@ -559,4 +551,111 @@ adjustText(previousText, currentText) {
 	}
 	// If both texts are of the same length, return the current text
 	return currentText; // Texts are the same length
+}
+
+updateCovers(cover) {
+	const { addClass, removeClass } = this;
+	const { coverContainer, coverImage, wrapper } = this.uiElements;
+	const { showCover } = this.settings;
+
+	if(cover && cover !== "" && showCover) {
+		removeClass(wrapper, 'tp-no-cover');
+		addClass(coverContainer, 'tp-start-change-cover');
+		coverContainer.onanimationend = () => {
+			coverContainer.onanimationend = null;
+			coverImage.src = cover;
+		}
+	} else {
+		addClass(wrapper, 'tp-no-cover');
+	}
+}
+
+// Fetches and updates the radio information by making a request to the server.
+async updateRadioInfo() {
+	const { showCover, autoUpdateRadioCovers, pluginDirectoryPath } = this.settings;
+	const { allowRadioInfoUpdate, isRadioInfoUpdatePending } = this.playerState;
+	const { index: currentIndex, artist: currentArtist, title: currentTitle, cover: currentCover } = this.currentTrack;
+	const { trackTitle } = this.uiElements;
+
+	// Exit if updates are not allowed or if an update is already in progress
+	if (!allowRadioInfoUpdate || isRadioInfoUpdatePending) return;
+
+	// Retrieve the audio URL for the current track
+	const currentAudioUrl = this.playlist[currentIndex].audio;
+
+	// Determine if cover images should be updated based on settings
+	const shouldUpdateCovers = showCover && autoUpdateRadioCovers;
+
+	// Prepare fetch parameters for the POST request
+	const requestParams = {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ url: currentAudioUrl, cover: shouldUpdateCovers })
+	};
+
+	// Set the update state to pending to prevent duplicate requests
+	this.playerState.isRadioInfoUpdatePending = true;
+
+	try {
+		// Send the request to fetch new radio information
+		const response = await fetch(`${pluginDirectoryPath}/assets/tp-radio-info.php`, requestParams);
+		const fetchedData = await response.json();
+
+		// Reset the pending state for the update
+		this.playerState.isRadioInfoUpdatePending = false;
+
+		// Abort the update if the track has changed since the request started
+		if (currentIndex !== this.currentTrack.index) return;
+
+		console.log(fetchedData);
+
+		if (fetchedData) {
+			const { artist: fetchedArtist, title: fetchedTitle, cover: fetchedCover } = fetchedData;
+
+			// Update artist and title if they have changed
+			if (currentArtist !== fetchedArtist || currentTitle !== fetchedTitle) {
+				this.animateTextChange(
+					{ artist: currentArtist, title: currentTitle },
+					{ artist: fetchedArtist, title: fetchedTitle }
+				);
+				this.currentTrack.artist = fetchedArtist;
+				this.currentTrack.title = fetchedTitle;
+				trackTitle.setAttribute('title', `${fetchedArtist} - ${fetchedTitle}`);
+			}
+
+			// Update cover if fetchedCover is different, or use playlist cover if not provided
+			if (fetchedCover) {
+				if (fetchedCover !== currentCover) {
+					this.currentTrack.cover = fetchedCover;
+					this.updateCovers(fetchedCover);
+				}
+			} else {
+				if (currentCover !== this.playlist[currentIndex].cover) {
+					this.currentTrack.cover = this.playlist[currentIndex].cover;
+					this.updateCovers(this.playlist[currentIndex].cover);
+				}
+			}
+			
+		} else {
+			// If no data received, reset artist, title, and cover to playlist values if different
+			if (currentArtist !== this.playlist[currentIndex].artist || currentTitle !== this.playlist[currentIndex].title) {
+				this.animateTextChange(
+					{ artist: currentArtist, title: currentTitle },
+					{ artist: this.playlist[currentIndex].artist, title: this.playlist[currentIndex].title }
+				);
+				this.currentTrack.artist = this.playlist[currentIndex].artist;
+				this.currentTrack.title = this.playlist[currentIndex].title;
+			}
+			if (currentCover !== this.playlist[currentIndex].cover) {
+				this.currentTrack.cover = this.playlist[currentIndex].cover;
+				this.updateCovers(this.playlist[currentIndex].cover);
+			}
+		}
+	} catch (error) {
+		// Log any errors encountered during the fetch operation
+		console.error("Error fetching radio info:", error);
+	} finally {
+		// Ensure the pending state is reset after the operation
+		this.playerState.isRadioInfoUpdatePending = false;
+	}
 }
