@@ -13,7 +13,7 @@ const defaultPlayerSettings = {
 	showShuffleButton: true,
 	showShareButton: true,
 	allowPlaylistScroll: true,
-	maxVisibleTracks: 5,
+	maxVisibleSongs: 5,
 	volume: 1,
 	isRadio: false,
 	pluginDirectoryPath: null,
@@ -26,7 +26,7 @@ const defaultPlayerSettings = {
 				background: '#3EC3D5',
 				loader: '#FFF'
 			},
-			tracktitle: '#555',
+			songtitle: '#555',
 			buttons: {
 				wave: '#3EC3D5',
 				normal: '#555',

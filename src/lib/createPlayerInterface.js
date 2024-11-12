@@ -13,8 +13,7 @@ async createPlayerInterface() {
 		"tp-wrapper",
 		"tp-loading",
 		rounded ? "tp-rounded" : "",
-		(skin === "vertical" || isMobile) ? "tp-vertical" : "",
-		isMobile ? "tp-mobile" : ""
+		(skin === "vertical" || isMobile) ? "tp-vertical" : ""
 	]);
 
 	// Determine button icon style based on "rounded" setting
@@ -59,7 +58,7 @@ createCoverSection(playerContainer) {
 
 createControlsHeader(controlsContainer) {
 	const controlsHeader = this.createElement("div", "tp-controls-header", controlsContainer);
-	this.uiElements.trackTitle = this.createElement("div", "tp-track-title", controlsHeader);
+	this.uiElements.songTitle = this.createElement("div", "tp-song-title", controlsHeader);
 }
 
 createControlsBody(controlsContainer) {
@@ -94,7 +93,7 @@ createControlsFooter(controlsContainer) {
 	const { isPlaylist, isMobile } = this.playerState;
 
 	const controlsFooter = this.createElement("div", "tp-controls-footer", controlsContainer);
-	// Playlist toggle button for playlists or buy/download buttons for individual tracks
+	// Playlist toggle button for playlists or buy/download buttons for individual songs
 	if(isPlaylist) {
 		this.uiElements.togglePlaylistButton = this.createButtonWithIcon("toggle-playlis", "playlist", controlsFooter);
 	} else {
@@ -111,15 +110,15 @@ createControlsFooter(controlsContainer) {
 }
 
 createBuyDownloadButtons(controlsFooter) {
-	const track = this.playlist[0];
+	const song = this.playlist[0];
 	// Buy Button
-	if(track.buy) {
-		const buyButton = this.createCustomLink('buy', track.buy, controlsFooter);
+	if(song.buy) {
+		const buyButton = this.createCustomLink('buy', song.buy, controlsFooter);
 		controlsFooter.appendChild(buyButton);
 	}
 	// Download Button
-	if(track.download) {
-		const downloadButton = this.createCustomLink('download', track.download, controlsFooter);
+	if(song.download) {
+		const downloadButton = this.createCustomLink('download', song.download, controlsFooter);
 		controlsFooter.appendChild(downloadButton);
 	}
 
@@ -128,7 +127,7 @@ createBuyDownloadButtons(controlsFooter) {
 createSocialMediaButtons(playerContainer) {
 	const socialMediaContainer = this.createElement("div", "tp-social-media-container", playerContainer);
 	this.uiElements.facebookButton = this.createButtonWithIcon("facebook", "facebook", socialMediaContainer);
-	this.uiElements.twitterButton = this.createButtonWithIcon("twitter", "twitter", socialMediaContainer);
+	this.uiElements.xButton = this.createButtonWithIcon("x", "x", socialMediaContainer);
 	this.uiElements.tumblrButton = this.createButtonWithIcon("tumblr", "tumblr", socialMediaContainer);
 }
 
@@ -140,24 +139,24 @@ createPlaylist(fragment) {
 	this.uiElements.playlistContainer = this.createElement("div", "tp-playlist-container", fragment);
 	this.uiElements.playlist = this.createElement("ul", "tp-playlist", this.uiElements.playlistContainer);
 	
-	// Generate playlist items for each track
-	this.playlist.forEach(track => {
+	// Generate playlist items for each song
+	this.playlist.forEach(song => {
 		const playlistItem = this.createElement("li", "tp-playlist-item", this.uiElements.playlist);
-		playlistItem.title =  track.title ? `${track.artist} - ${track.title}` : track.artist;
+		playlistItem.title =  song.title ? `${song.artist} - ${song.title}` : song.artist;
 
 		const playlistItemIndicator = this.createElement("div", "tp-playlist-item-indicator", playlistItem);
 		playlistItemIndicator.innerHTML = "<span></span><span></span><span></span>";
 	
-		const playlistItemTrackTitle = this.createElement("div", "tp-playlist-item-track-title", playlistItem);
-		playlistItemTrackTitle.innerHTML = track.title ? `<b>${track.artist}</b> - ${track.title}` : `<b>${track.artist}</b>`;
+		const playlistItemSongTitle = this.createElement("div", "tp-playlist-item-song-title", playlistItem);
+		playlistItemSongTitle.innerHTML = song.title ? `<b>${song.artist}</b> - ${song.title}` : `<b>${song.artist}</b>`;
 
-		if(track.buy) {
-			const buyButton = this.createCustomLink('buy', track.buy) ;
+		if(song.buy) {
+			const buyButton = this.createCustomLink('buy', song.buy) ;
 			playlistItem.appendChild(buyButton);
 		}
 
-		if(track.download) {
-			const downloadButton = this.createCustomLink('download', track.download) ;
+		if(song.download) {
+			const downloadButton = this.createCustomLink('download', song.download) ;
 			playlistItem.appendChild(downloadButton);
 		}
 
@@ -167,15 +166,17 @@ createPlaylist(fragment) {
 	// Update reference to playlist items
 	this.uiElements.playlistItem = this.uiElements.playlist.childNodes;
 
-	// Enable playlist scroll if settings allow and track count exceeds visible max
-	if(this.settings.allowPlaylistScroll && this.playlist.length > this.settings.maxVisibleTracks) {
+	// Enable playlist scroll if settings allow and song count exceeds visible max
+	if(this.settings.allowPlaylistScroll && this.playlist.length > this.settings.maxVisibleSongs) {
 		if(!isMobile) {
 			addClass(wrapper, "tp-scrollable");
 			this.uiElements.scrollbarTrack = this.createElement("div", "tp-scrollbar-track", this.uiElements.playlistContainer);
 			this.uiElements.scrollbarThumb = this.createElement("div", "tp-scrollbar-thumb", this.uiElements.scrollbarTrack);
+		} else {
+			addClass(wrapper, "tp-mobile");
 		}
-		// Set Playlist Height - Limits visible playlist height to max visible tracks, calculated by track height
-		this.uiElements.playlist.style.height = `${40 * this.settings.maxVisibleTracks}px`
+		// Set Playlist Height - Limits visible playlist height to max visible songs, calculated by song height
+		this.uiElements.playlist.style.height = `${40 * this.settings.maxVisibleSongs}px`
 	}
 }
 
@@ -217,7 +218,7 @@ createSvgIcon(path) {
 createCustomLink(type, href) {
 	const { addClass } = this;
 	const link = document.createElement("a");
-	addClass(link, ["tp-button", `tp-playlist-track-${type}`]);
+	addClass(link, ["tp-button", `tp-playlist-song-${type}`]);
 	link.href = href;
 	link.title = type === "buy" ? "Buy Now" : "Download Now";
 	link.target = "_blank";

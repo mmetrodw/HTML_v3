@@ -51,7 +51,7 @@ emptied() {
 // Ended
 ended() {
 	// Play Next
-	this.nextTrack();
+	this.nextSong();
 	// Set Audio Event
 	this.playerState.audioEvent = 'ended';
 }
@@ -145,7 +145,7 @@ play() {
 		}
 	}
 	// Add the 'playing' class to the current playlist item, if it's Playlist
-	if(this.playerState.isPlaylist) addClass(playlistItem[this.currentTrack.index], 'tp-playing');
+	if(this.playerState.isPlaylist) addClass(playlistItem[this.currentSong.index], 'tp-playing');
 	// Add the 'active' class to the playback button
 	addClass(playbackButton, 'tp-active');
 	// Update the playback button icon to 'pause'
@@ -232,10 +232,10 @@ suspend() {
 timeupdate() {
 	const { secondsToTimecode } = this;
 	if (!this.playerState.isUserSeekingAudio) {
-		// Set the current time of the track to match the audio's current time
-		this.currentTrack.currentTime = this.audio.currentTime;
-		// Calculate the percentage of the track that has been played
-		const percent = (this.currentTrack.currentTime / this.audio.duration) * 100;
+		// Set the current time of the song to match the audio's current time
+		this.currentSong.currentTime = this.audio.currentTime;
+		// Calculate the percentage of the song that has been played
+		const percent = (this.currentSong.currentTime / this.audio.duration) * 100;
 		// Update the width of the playback progress bar
 		this.uiElements.audioPlaybackProgress.style.width = percent + '%';
 		// Update the displayed current time in the player

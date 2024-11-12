@@ -49,7 +49,7 @@ function bundleFiles() {
   mainFile = processIncludes(mainFile);
 
   // Записуємо об'єднаний файл у bundle.js
-  fs.writeFileSync('./assets/js/bundle.js', mainFile);
+  fs.writeFileSync('./assets/js/tPlayer-script.js', mainFile);
 
   // Додаємо час створення бандлу
   const creationTime = new Date().toLocaleString();

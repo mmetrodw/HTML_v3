@@ -11,13 +11,13 @@ class tPlayerClass {
 		// Player State
 		// @include('data/playerState.js')
 
-		this.currentTrack = {
+		this.currentSong = {
 			index: 0,
 			title: null,
 			artist: null,
 			cover: null,
 		};
-		this.previousTrackIndex = 0;
+		this.previousSongIndex = 0;
 		// Init
 		this.init();
 	}
@@ -59,8 +59,8 @@ class tPlayerClass {
 		if(showPlaylist && this.playerState.isPlaylist) this.togglePlaylist(false);
 		// Setup Event Listeners
 		this.setupEventListeners();
-		// Load And Prepare The Initial Track For Playback
-		this.switchTrack();
+		// Load And Prepare The Initial Song For Playback
+		this.switchSong();
 		// Adjust The Player Size To Fit It's Container Or Screen
 		this.playerResize();
 		// If In Radio Mode And A Plugin Path Is Specified, Set Up Periodic Info Updates
@@ -97,18 +97,18 @@ function migrationFromOldVersion(oldOptions) {
 		container: oldOptions.container ?? null,
 		playlist: oldOptions.playlist ?? null,
 		album: {
-			artist: oldOptions.artist ?? oldOptions.albumArtist ?? null,
-			cover: oldOptions.cover ?? oldOptions.albumCover ?? null,
+			artist: oldOptions.album?.artist ?? oldOptions.albumArtist ?? null,
+			cover: oldOptions.album?.cover ?? oldOptions.albumCover ?? null,
 		},
 		skin: oldOptions.skin ?? oldOptions.options?.skin ?? 'default',
 		rounded: oldOptions.rounded ?? oldOptions.options?.rounded ?? false,
 		showCover: oldOptions.showCover ?? oldOptions.options?.cover ?? true,
-		showPlaylist: oldOptions.showPlaylist ? oldOptions.showPlaylist : oldOptions.options?.playlist ? oldOptions.options?.playlist : true,
+		showPlaylist: oldOptions.showPlaylist ?? oldOptions.options?.playlist ?? true,
 		showRepeatButton: oldOptions.showRepeatButton ?? oldOptions.options?.repeat ?? true,
 		showShuffleButton: oldOptions.showShuffleButton ?? oldOptions.options?.shuffle ?? true,
 		showShareButton: oldOptions.showShareButton ?? oldOptions.options?.share ?? true,
 		allowPlaylistScroll: oldOptions.allowPlaylistScroll ?? (oldOptions.options?.scrollAfter !== null),
-		maxVisibleTracks: oldOptions.maxVisibleTracks ?? oldOptions.options?.scrollAfter ?? oldOptions.options?.scrollAfter > 0 ? oldOptions.options?.scrollAfter : 5,
+		maxVisibleSongs: oldOptions.maxVisibleSongs ? oldOptions.maxVisibleSongs : oldOptions.options?.scrollAfter > 0 ? oldOptions.options.scrollAfter : 5,
 		volume: oldOptions.volume ?? oldOptions.options?.volume ?? 1,
 		isRadio: oldOptions.isRadio ?? oldOptions.options?.radio ?? false,
 		pluginDirectoryPath: oldOptions.pluginDirectoryPath ?? oldOptions.options?.pluginPath ?? null,
@@ -121,7 +121,7 @@ function migrationFromOldVersion(oldOptions) {
 					background: oldOptions.style?.player?.cover?.background ?? "#3EC3D5",
 					loader: oldOptions.style?.player?.cover?.loader ?? "#FFF"
 				},
-				tracktitle: oldOptions.style?.player?.tracktitle ?? oldOptions.style?.player?.songtitle ?? "#555",
+				songtitle: oldOptions.style?.player?.songtitle ?? oldOptions.style?.player?.songtitle ?? "#555",
 				buttons: {
 					wave: oldOptions.style?.player?.buttons?.wave ?? "#3EC3D5",
 					normal: oldOptions.style?.player?.buttons?.normal ?? "#555",

@@ -1,7 +1,7 @@
 async setupEventListeners() {
 	this.playerState.log = 'Setting Up Event Listeners';
 	const { isPlaylist, isMobile } = this.playerState;
-	const { showCover, allowPlaylistScroll, maxVisibleTracks } = this.settings;
+	const { showCover, allowPlaylistScroll, maxVisibleSongs } = this.settings;
 	const { coverImage } = this.uiElements;
 
 	// Add listeners for all audio events
@@ -11,7 +11,7 @@ async setupEventListeners() {
 	// Add listeners for playlist items
 	if(isPlaylist) {
 		this.setupPlaylistEventListeners();
-		if(allowPlaylistScroll && this.playlist.length > maxVisibleTracks && !isMobile) {
+		if(allowPlaylistScroll && this.playlist.length > maxVisibleSongs && !isMobile) {
 			this.setupScrollbarEventListeners();
 		}
 	}
@@ -48,14 +48,14 @@ setupButtonsEventListeners() {
 	const { isPlaylist, isMobile } = this.playerState;
 	const { showRepeatButton, showShuffleButton, showShareButton } = this.settings;
 	const { wrapper, playbackButton, prevButton, nextButton, volumeButton, repeatButton, shuffleButton, shareButton,
-		facebookButton, twitterButton, tumblrButton, togglePlaylistButton, errorCloseButton
+		facebookButton, xButton, tumblrButton, togglePlaylistButton, errorCloseButton
 	} = this.uiElements;
 	// Playback Button
 	playbackButton.addEventListener('click', this.playback.bind(this));
 	// Prev, Next, Shuffle, Toggle Playlist Button
 	if(isPlaylist) {
-		prevButton.addEventListener('click', this.prevTrack.bind(this));
-		nextButton.addEventListener('click', this.nextTrack.bind(this));
+		prevButton.addEventListener('click', this.prevSong.bind(this));
+		nextButton.addEventListener('click', this.nextSong.bind(this));
 		if(showShuffleButton) shuffleButton.addEventListener('click', this.shuffleToggle.bind(this));
 		togglePlaylistButton.addEventListener('click', this.togglePlaylist.bind(this));
 	}
@@ -65,7 +65,7 @@ setupButtonsEventListeners() {
 	if(showShareButton) {
 		shareButton.addEventListener('click', this.shareToggle.bind(this));
 		facebookButton.addEventListener('click', this.shareFacebook.bind(this));
-		twitterButton.addEventListener('click', this.shareTwitter.bind(this));
+		xButton.addEventListener('click', this.shareX.bind(this));
 		tumblrButton.addEventListener('click', this.shareTumblr.bind(this));
 	}
 	// Volume Button
@@ -79,16 +79,16 @@ setupPlaylistEventListeners() {
 	const { playlistItem } = this.uiElements;
 	// Add event listeners for playlist items
 	playlistItem.forEach((item, index) => {
-		const download = item.querySelector('.tp-playlist-track-download');
-		const buy = item.querySelector('.tp-playlist-track-buy');
+		const download = item.querySelector('.tp-playlist-song-download');
+		const buy = item.querySelector('.tp-playlist-song-buy');
 
-		// Select Track From Playlist
+		// Select Song From Playlist
 		item.addEventListener('click', () => {
-			if (this.currentTrack.index !== index) {
-				this.previousTrackIndex = this.currentTrack.index;
-				this.currentTrack.index = index;
+			if (this.currentSong.index !== index) {
+				this.previousSongIndex = this.currentSong.index;
+				this.currentSong.index = index;
 				this.playerState.autoplay = true;
-				this.switchTrack();
+				this.switchSong();
 			} else if (this.audio.paused) {
 				this.playback();
 			}

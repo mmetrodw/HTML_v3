@@ -16,6 +16,7 @@
 }
 
 .tp-wrapper * {
+	font-family: 'Roboto', sans-serif;
 	box-sizing: border-box;
 }
 
@@ -186,18 +187,19 @@
 	flex-direction: row;
 }
 
-.tp-track-title {
+.tp-song-title {
 	position: relative;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	color: var(--player-tracktitle);
+	color: var(--player-songtitle);
 	font-size: 28px;
 	font-weight: 100;
 	line-height: 35px;
+	margin-top: 30px;
 }
 
-.tp-track-title b {
+.tp-song-title b {
 	font-weight: 400;
 }
 
@@ -491,6 +493,7 @@
 .tp-playlist {
 	position: relative;
 	width: 100%;
+	min-width: 0;
 	height: 0px;
 	margin: 0 !important;
 	padding: 0 !important;
@@ -499,7 +502,7 @@
 
 .tp-wrapper.tp-scrollable .tp-playlist {
 	overflow-y: scroll;
-  scrollbar-width: none;
+	scrollbar-width: none;
 }
 
 .tp-wrapper.tp-mobile .tp-playlist {
@@ -632,7 +635,7 @@
 	animation-delay: 200ms;
 }
 
-.tp-playlist-item-track-title {
+.tp-playlist-item-song-title {
 	position: relative;
 	flex: 1 1 auto;
 	font-size: 14px;
@@ -643,15 +646,15 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	color: inherit;
-	flex: 1 1 auto;
+	text-align: left;
 }
 
-.tp-playlist-item-track-title b {
+.tp-playlist-item-song-title b {
 	font-weight: 700;
 }
 
-.tp-playlist-track-download,
-.tp-playlist-track-buy {
+.tp-playlist-song-download,
+.tp-playlist-song-buy {
 	position: relative;
 	width: 20px;
 	height: 20px;
@@ -660,18 +663,18 @@
 	flex: 0 0 auto;
 }
 
-.tp-playlist-item .tp-playlist-track-download path,
-.tp-playlist-item .tp-playlist-track-buy path {
+.tp-playlist-item .tp-playlist-song-download path,
+.tp-playlist-item .tp-playlist-song-buy path {
 	fill: var(--playlist-color);
 }
 
-.tp-playlist-item:hover .tp-playlist-track-download path,
-.tp-playlist-item:hover .tp-playlist-track-buy path {
+.tp-playlist-item:hover .tp-playlist-song-download path,
+.tp-playlist-item:hover .tp-playlist-song-buy path {
 	fill: var(--playlist-hover-color);
 }
 
-.tp-playlist-item.tp-active .tp-playlist-track-download,
-.tp-playlist-item.tp-active .tp-playlist-track-buy path {
+.tp-playlist-item.tp-active .tp-playlist-song-download path,
+.tp-playlist-item.tp-active .tp-playlist-song-buy path {
 	fill: var(--playlist-active-color);
 }
 
@@ -679,13 +682,13 @@
 	margin-right: 10px;
 }
 
-.tp-playlist-track-download:hover,
-.tp-playlist-track-buy:hover {
+.tp-playlist-song-download:hover,
+.tp-playlist-song-buy:hover {
 	transform: scale(1.25);
 }
 
-.tp-playlist-track-download:active,
-.tp-playlist-track-buy:active {
+.tp-playlist-song-download:active,
+.tp-playlist-song-buy:active {
 	transform: scale(0.75);
 }
 
@@ -832,12 +835,12 @@
 	width: 100%;
 }
 
-.tp-vertical .tp-player {
+.tp-vertical .tp-controls-container {
 	height: auto;
 }
 
-.tp-vertical .tp-controls-container {
-	height: auto;
+.tp-vertical .tp-song-title {
+	margin-top: 0;
 }
 
 .tp-vertical .tp-controls-body {

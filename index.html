@@ -18,7 +18,6 @@
 	</style>
 </head>
 <body>
-	тести <br>
 	документація <br>
 
 	<div id="playlist_01"></div>
@@ -26,7 +25,7 @@
 	<div id="playlist_03"></div>
 	<div id="playlist_04"></div>
 	<div id="radio"></div>
-	<script src="assets/js/bundle.js"></script>
+	<script src="assets/js/tPlayer-script.js"></script>
 	<script>
 
 var playlist_01 = [{
@@ -116,14 +115,28 @@ var playlist_01 = [{
 		cover: "https://www.musicstation.hu/wp-content/uploads/2023/02/aditya-chinchure-ZhQCZjr9fHo-unsplash.jpg"
 	}];
 	
+	const getRandomInteger = (min, max) => {
+		min = Math.ceil(min)
+		max = Math.floor(max)
+
+		return Math.floor(Math.random() * (max - min + 1)) + min
+	}
+
+	skin = ['default', 'vertical'];
+	bool = [true, false];
+	function getRandomHexColor() { const hexDigits = '0123456789ABCDEF'; let color = '#'; for (let i = 0; i < 6; i++) { color += hexDigits[Math.floor(Math.random() * 16)]; } return color; }
+
 	tPlayer({
 		container: "playlist_01",
-		playlist: _radio,
-		isRadio: true,
-		pluginDirectoryPath: 'http://localhost/radio-test/tp-radio-info.php',
-		autoUpdateRadioCovers: true,
-		updateRadioInterval: 10000,
-		
+		playlist: playlist_01,
+	});
+
+	tPlayer({
+		container: "playlist_02",
+		playlist: playlist_01,
+		album: {
+			cover: "https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg"
+		}
 	});
 
 
@@ -131,6 +144,10 @@ var playlist_01 = [{
 	tPlayer({
 		container: "playlist_02",
 		playlist: playlist_02
+		isRadio: true,
+		pluginDirectoryPath: 'http://localhost/radio-test/tp-radio-info.php',
+		autoUpdateRadioCovers: true,
+		updateRadioInterval: 10000,
 	});
 
 	tPlayer({

@@ -26,25 +26,25 @@ playback() {
 	}
 }
 
-// Handles the logic for switching to the previous track.
-prevTrack() {
+// Handles the logic for switching to the previous song.
+prevSong() {
 	// Simulate button click effect
 	this.simulateClickEffect(this.uiElements.prevButton);
 
-	// Store the current track index as the previous track index
-	this.previousTrackIndex = this.currentTrack.index;
+	// Store the current song index as the previous song index
+	this.previousSongIndex = this.currentSong.index;
 
 	if(this.playerState.shuffle) {
 		this.handleShuffleMode();
 	} else {
-		// If there is a previous track in the playlist
-		if(this.currentTrack.index - 1 >= 0) {
-			// Decrement the current track index
-			this.currentTrack.index--;
+		// If there is a previous song in the playlist
+		if(this.currentSong.index - 1 >= 0) {
+			// Decrement the current song index
+			this.currentSong.index--;
 		} else {
-			// If there is no previous track and Repeat Mode is On, play the last track in the playlist
+			// If there is no previous song and Repeat Mode is On, play the last song in the playlist
 			if(this.playerState.repeat) {
-				this.currentTrack.index = this.playlist.length - 1;
+				this.currentSong.index = this.playlist.length - 1;
 			} else {
 				// If Repeat Mode is Off, pause the audio, set current time to 0, and turn off autoplay
 				this.audio.pause();
@@ -54,28 +54,28 @@ prevTrack() {
 			}
 		}
 	}
-	// Switch to the next track
-	this.switchTrack();
+	// Switch to the next song
+	this.switchSong();
 }
 
-// Handles the logic for switching to the next track.
-nextTrack() {
+// Handles the logic for switching to the next song.
+nextSong() {
 	// Simulate the click effect on the next button
 	this.simulateClickEffect(this.uiElements.nextButton);
 
-	// Store the current track index as the previous track index
-	this.previousTrackIndex = this.currentTrack.index;
+	// Store the current song index as the previous song index
+	this.previousSongIndex = this.currentSong.index;
 
 	if(this.playerState.shuffle) {
 		this.handleShuffleMode();
 	} else {
-		// If shuffle is not enabled, move to the next track in the playlist
-		if(this.currentTrack.index + 1 < this.playlist.length) {
-			this.currentTrack.index++;
+		// If shuffle is not enabled, move to the next song in the playlist
+		if(this.currentSong.index + 1 < this.playlist.length) {
+			this.currentSong.index++;
 		} else {
-			// If repeat is enabled, go back to the first track
+			// If repeat is enabled, go back to the first song
 			if(this.playerState.repeat) {
-				this.currentTrack.index = 0;
+				this.currentSong.index = 0;
 			} else {
 				// If repeat is not enabled, stop the audio and reset the player state
 				this.audio.pause();
@@ -86,13 +86,13 @@ nextTrack() {
 		}
 	}
 
-	// Switch to the new track
-	this.switchTrack();
+	// Switch to the new song
+	this.switchSong();
 }
 
 handleShuffleMode() {
-	// If shuffle is enabled, get the next track index from the shuffled order list
-	this.currentTrack.index = this.orderList.shift();
+	// If shuffle is enabled, get the next song index from the shuffled order list
+	this.currentSong.index = this.orderList.shift();
 
 	// If the order list is empty, regenerate the shuffled playlist order
 	if(this.orderList.length === 0) {
@@ -147,21 +147,21 @@ shareToggle() {
 
 shareFacebook() {
 	const url = window.location.href;
-	const text = this.currentTrack.artist + " - " + this.currentTrack.title;
+	const text = this.currentSong.artist + " - " + this.currentSong.title;
 	const shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text);
 	this.openPopup(shareUrl);
 }
 
-shareTwitter() {
+shareX() {
 	const url = window.location.href;
-	const text = this.currentTrack.artist + " - " + this.currentTrack.title;
-	const shareUrl = 'https://twitter.com/intent/tweet?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text);
+	const text = this.currentSong.artist + " - " + this.currentSong.title;
+	const shareUrl = 'https://x.com/intent/tweet?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text);
 	this.openPopup(shareUrl);
 }
 
 shareTumblr() {
 	const url = window.location.href;
-	const text = this.currentTrack.artist + " - " + this.currentTrack.title;
+	const text = this.currentSong.artist + " - " + this.currentSong.title;
 	const shareUrl = 'https://www.tumblr.com/widgets/share/tool?canonicalUrl=' + encodeURIComponent(url) + '&caption=' + encodeURIComponent(text);
 	this.openPopup(shareUrl);
 }
@@ -179,7 +179,7 @@ openPopup(url) {
 togglePlaylist(isClick = true) {
 	let playlistHeight = 0;
 	const { togglePlaylistButton, playlistContainer } = this.uiElements;
-	const { maxVisibleTracks, allowPlaylistScroll } = this.settings;
+	const { maxVisibleSongs, allowPlaylistScroll } = this.settings;
 	const { toggleClass } = this;
 
 	// Toggle the "tp-active" class on the toggle playlist button
@@ -192,9 +192,9 @@ togglePlaylist(isClick = true) {
 	if (this.playerState.isPlaylistDisplayed) {
 		// Animate the button icon to the "opened" state
 		togglePlaylistButton.children[0].children[0].setAttribute('d', this.buttonIcons.close);
-		// Calculate the playlist height based on the number of tracks and settings
-		playlistHeight = (this.playlist.length > maxVisibleTracks && allowPlaylistScroll)
-		? maxVisibleTracks * 40 - 1
+		// Calculate the playlist height based on the number of songs and settings
+		playlistHeight = (this.playlist.length > maxVisibleSongs && allowPlaylistScroll)
+		? maxVisibleSongs * 40 - 1
 		: this.playlist.length * 40;
 	} else {
 		// Animate the button icon to the "closed" state
@@ -248,10 +248,10 @@ audioSeeking(event) {
 		const percent = Math.max(0, Math.min(1, (mousePosition - seekBarBounds.left) / seekBarBounds.width));
 		// Update the playback progress bar width
 		audioPlaybackProgress.style.width = `${percent * 100}%`;
-		// Update the current track time based on the percentage
-		this.currentTrack.currentTime = percent * this.audio.duration;
+		// Update the current song time based on the percentage
+		this.currentSong.currentTime = percent * this.audio.duration;
 		// Update the current time display
-		audioCurrentTime.textContent = secondsToTimecode(this.currentTrack.currentTime);
+		audioCurrentTime.textContent = secondsToTimecode(this.currentSong.currentTime);
 		// Calculate offsets for the current time and duration displays
 		const currentTimeOffset = mousePosition - seekBarBounds.left - audioCurrentTime.offsetWidth - 5;
 		const durationOffset = seekBarBounds.width - (mousePosition - seekBarBounds.left) - audioDuration.offsetWidth - 5;
@@ -271,8 +271,8 @@ audioSeeking(event) {
 		if(!this.playerState.isUserSeekingAudio) return;
 		// Set the user seeking state to false
 		this.playerState.isUserSeekingAudio = false;
-		// Update the audio current time to match the current track time
-		this.audio.currentTime = this.currentTrack.currentTime;
+		// Update the audio current time to match the current song time
+		this.audio.currentTime = this.currentSong.currentTime;
 		// Add transitions for smooth UI updates
 		Object.assign(audioCurrentTime.style, {
 				transition: "all 250ms var(--easeOutExpo)",
@@ -355,7 +355,7 @@ hideScrollbar() {
 	}, 2000);
 }
 
-// Initiates the scrollbar track seeking process.
+// Initiates the scrollbar song seeking process.
 scrollbarTrackSeekingStart(event) {
 	event.preventDefault();
 	const { playlist, scrollbarTrack } = this.uiElements;
@@ -373,7 +373,7 @@ scrollbarTrackSeekingStart(event) {
 			isDragging = true;
 		}
 
-		// Calculate new scroll position relative to the drag distance and track size
+		// Calculate new scroll position relative to the drag distance and song size
 		const newScrollTop = initialScrollTop + (dragDeltaY / scrollbarTrack.clientHeight) * maxScrollPosition;
 
 		// Set the new scrollTop, ensuring it doesn't exceed bounds
@@ -429,16 +429,16 @@ playerResize() {
 	}
 }
 
-// Switches to the next track in the playlist.
-switchTrack() {
-	this.playerState.log = 'Changing the Track';
+// Switches to the next song in the playlist.
+switchSong() {
+	this.playerState.log = 'Changing the Song';
 	let scrollDistance = 0;
 
-	const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, trackTitle } = this.uiElements;
-	const { allowPlaylistScroll, maxVisibleTracks } = this.settings;
+	const { audioBufferedProgress, audioPlaybackProgress, playlistItem, playlist, songTitle } = this.uiElements;
+	const { allowPlaylistScroll, maxVisibleSongs } = this.settings;
 	const { addClass, removeClass } = this;
 	const { isPlaylist } = this.playerState;
-	const currentTrackIndex = this.currentTrack.index;
+	const currentSongIndex = this.currentSong.index;
 
 	// Disable radio info update
 	this.playerState.allowRadioInfoUpdate = false;
@@ -450,13 +450,13 @@ switchTrack() {
 	this.audio.currentTime = 0;
 
 	// Update audio source and volume
-	this.audio.src = this.playlist[currentTrackIndex].audio;
+	this.audio.src = this.playlist[currentSongIndex].audio;
 	this.audio.volume = this.playerState.isVolumeMuted ? 0 : this.settings.volume;
 
 	// Update playlist item classes
 	if(isPlaylist) {
 		removeClass(playlistItem, ['tp-active', 'tp-playing']);
-		addClass(playlistItem[currentTrackIndex], 'tp-active');
+		addClass(playlistItem[currentSongIndex], 'tp-active');
 	}
 
 	// Handle autoplay
@@ -466,9 +466,9 @@ switchTrack() {
 	}
 
 	// Handle playlist scrolling
-	if(allowPlaylistScroll && this.playlist.length > maxVisibleTracks && this.playerState.isPlaylistDisplayed) {
-		if(currentTrackIndex + 1 >= maxVisibleTracks) {
-			scrollDistance = 40 * (currentTrackIndex - maxVisibleTracks + 1);
+	if(allowPlaylistScroll && this.playlist.length > maxVisibleSongs && this.playerState.isPlaylistDisplayed) {
+		if(currentSongIndex + 1 >= maxVisibleSongs) {
+			scrollDistance = 40 * (currentSongIndex - maxVisibleSongs + 1);
 		}
 		playlist.scrollTo({
 			top: scrollDistance,
@@ -476,42 +476,42 @@ switchTrack() {
 		});
 	}
 
-	// Update current track details
-	this.currentTrack.artist = this.playlist[currentTrackIndex].artist;
-	this.currentTrack.title = this.playlist[currentTrackIndex].title;
-	this.currentTrack.cover = this.playlist[currentTrackIndex].cover;
+	// Update current song details
+	this.currentSong.artist = this.playlist[currentSongIndex].artist;
+	this.currentSong.title = this.playlist[currentSongIndex].title;
+	this.currentSong.cover = this.playlist[currentSongIndex].cover;
 
 	// Animate text change
 	this.animateTextChange({
-		artist: this.previousTrackIndex === currentTrackIndex ? '' : this.playlist[this.previousTrackIndex].artist,
-		title: this.previousTrackIndex === currentTrackIndex ? '' : this.playlist[this.previousTrackIndex].title,
+		artist: this.previousSongIndex === currentSongIndex ? '' : this.playlist[this.previousSongIndex].artist,
+		title: this.previousSongIndex === currentSongIndex ? '' : this.playlist[this.previousSongIndex].title,
 	}, {
-		artist: this.currentTrack.artist,
-		title: this.currentTrack.title
+		artist: this.currentSong.artist,
+		title: this.currentSong.title
 	});
-	// Update track title attribute
-	trackTitle.setAttribute('title', `${this.currentTrack.artist} - ${this.currentTrack.title}`);
+	// Update song title attribute
+	songTitle.setAttribute('title', `${this.currentSong.artist} - ${this.currentSong.title}`);
 
 	// Handle cover display
-	const { cover } = this.playlist[currentTrackIndex];
+	const { cover } = this.playlist[currentSongIndex];
 	this.updateCovers(cover);
 	
-	this.playerState.log = 'Track Changed';
+	this.playerState.log = 'Song Changed';
 }
 
-// Function to animate the text change for the track title and artist
-animateTextChange(previousTrack, currentTrack) {
+// Function to animate the text change for the song title and artist
+animateTextChange(previousSong, currentSong) {
 	const { adjustText } = this;
 	// Clear any existing animation interval to prevent multiple animations running simultaneously
 	if (this.playerState.titleAnimationInterval) {
 		clearInterval(this.playerState.titleAnimationInterval);
 	}
 
-	// Extract artist and title from previous and current track objects
-	let previousArtist = previousTrack.artist;
-	let currentArtist = currentTrack.artist;
-	let previousTitle = previousTrack.title ? previousTrack.title : " ";
-	let currentTitle = currentTrack.title ? currentTrack.title : " ";
+	// Extract artist and title from previous and current song objects
+	let previousArtist = previousSong.artist;
+	let currentArtist = currentSong.artist;
+	let previousTitle = previousSong.title ? previousSong.title : " ";
+	let currentTitle = currentSong.title ? currentSong.title : " ";
 
 	// Function to update the text in the element, adjusting artist and title
 	const updateText = () => {
@@ -521,11 +521,11 @@ animateTextChange(previousTrack, currentTrack) {
 		// Adjust the title text based on its length compared to the current title
 		previousTitle = adjustText(previousTitle, currentTitle);
 			
-		// Update the track title element with the new artist and title
+		// Update the song title element with the new artist and title
 		if(previousTitle !== " ") {
-			this.uiElements.trackTitle.innerHTML = `<b>${previousArtist}</b> - ${previousTitle}`;
+			this.uiElements.songTitle.innerHTML = `<b>${previousArtist}</b> - ${previousTitle}`;
 		} else  {
-			this.uiElements.trackTitle.innerHTML = `<b>${previousArtist}</b>`;
+			this.uiElements.songTitle.innerHTML = `<b>${previousArtist}</b>`;
 		}
 
 		// Check if both artist and title have been fully updated to the current values
@@ -574,13 +574,13 @@ updateCovers(cover) {
 async updateRadioInfo() {
 	const { showCover, autoUpdateRadioCovers, pluginDirectoryPath } = this.settings;
 	const { allowRadioInfoUpdate, isRadioInfoUpdatePending } = this.playerState;
-	const { index: currentIndex, artist: currentArtist, title: currentTitle, cover: currentCover } = this.currentTrack;
-	const { trackTitle } = this.uiElements;
+	const { index: currentIndex, artist: currentArtist, title: currentTitle, cover: currentCover } = this.currentSong;
+	const { songTitle } = this.uiElements;
 
 	// Exit if updates are not allowed or if an update is already in progress
 	if (!allowRadioInfoUpdate || isRadioInfoUpdatePending) return;
 
-	// Retrieve the audio URL for the current track
+	// Retrieve the audio URL for the current song
 	const currentAudioUrl = this.playlist[currentIndex].audio;
 
 	// Determine if cover images should be updated based on settings
@@ -604,8 +604,8 @@ async updateRadioInfo() {
 		// Reset the pending state for the update
 		this.playerState.isRadioInfoUpdatePending = false;
 
-		// Abort the update if the track has changed since the request started
-		if (currentIndex !== this.currentTrack.index) return;
+		// Abort the update if the song has changed since the request started
+		if (currentIndex !== this.currentSong.index) return;
 
 		console.log(fetchedData);
 
@@ -618,20 +618,20 @@ async updateRadioInfo() {
 					{ artist: currentArtist, title: currentTitle },
 					{ artist: fetchedArtist, title: fetchedTitle }
 				);
-				this.currentTrack.artist = fetchedArtist;
-				this.currentTrack.title = fetchedTitle;
-				trackTitle.setAttribute('title', `${fetchedArtist} - ${fetchedTitle}`);
+				this.currentSong.artist = fetchedArtist;
+				this.currentSong.title = fetchedTitle;
+				songTitle.setAttribute('title', `${fetchedArtist} - ${fetchedTitle}`);
 			}
 
 			// Update cover if fetchedCover is different, or use playlist cover if not provided
 			if (fetchedCover) {
 				if (fetchedCover !== currentCover) {
-					this.currentTrack.cover = fetchedCover;
+					this.currentSong.cover = fetchedCover;
 					this.updateCovers(fetchedCover);
 				}
 			} else {
 				if (currentCover !== this.playlist[currentIndex].cover) {
-					this.currentTrack.cover = this.playlist[currentIndex].cover;
+					this.currentSong.cover = this.playlist[currentIndex].cover;
 					this.updateCovers(this.playlist[currentIndex].cover);
 				}
 			}
@@ -643,11 +643,11 @@ async updateRadioInfo() {
 					{ artist: currentArtist, title: currentTitle },
 					{ artist: this.playlist[currentIndex].artist, title: this.playlist[currentIndex].title }
 				);
-				this.currentTrack.artist = this.playlist[currentIndex].artist;
-				this.currentTrack.title = this.playlist[currentIndex].title;
+				this.currentSong.artist = this.playlist[currentIndex].artist;
+				this.currentSong.title = this.playlist[currentIndex].title;
 			}
 			if (currentCover !== this.playlist[currentIndex].cover) {
-				this.currentTrack.cover = this.playlist[currentIndex].cover;
+				this.currentSong.cover = this.playlist[currentIndex].cover;
 				this.updateCovers(this.playlist[currentIndex].cover);
 			}
 		}

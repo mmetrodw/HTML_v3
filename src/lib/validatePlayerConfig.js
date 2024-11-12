@@ -21,7 +21,7 @@ async validatePlayerConfig() {
 	// Check for audio link for each playlist item and update properties
 	for( const item of this.playlist) {
 		if(item.audio === undefined || item.audio === "") {
-			throw Error("tPlayer Error: Not all tracks in the playlist have the audio property.");
+			throw Error("tPlayer Error: Not all songs in the playlist have the audio property.");
 		}
 
 		// Update artist if Album Artist is set

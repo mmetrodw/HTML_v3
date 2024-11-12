@@ -21,7 +21,7 @@ addPlayerStyle(styles, element, prefix = '') {
 			this.addPlayerStyle(value, element, prefix ? `${prefix}-${key}` : key);
 		} else {
 			// Generate the CSS variable name using the key
-			// Replace camelCase with kebab-case (e.g., 'trackTitle' becomes 'track-title')
+			// Replace camelCase with kebab-case (e.g., 'songTitle' becomes 'song-title')
 			const cssVariableName = `--${prefix}${prefix ? '-' : ''}${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
 					
 			// Set the CSS variable on the provided element
