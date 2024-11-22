@@ -14,14 +14,15 @@
 		background: #eee;
 		padding: 20px;
 		}
-
 	</style>
 </head>
 <body>
 	документація <br>
 
-	<div id="playlist_01"></div>
-	<div id="playlist_02"></div>
+	<div id="playlist_01" class=""></div>
+	<div id="playlist_02">
+		<div class="children"></div>
+	</div>
 	<div id="playlist_03"></div>
 	<div id="playlist_04"></div>
 	<div id="radio"></div>
@@ -128,8 +129,8 @@ var playlist_01 = [{
 
 	tPlayer({
 		container: "playlist_01",
-		playlist: playlist_01,
-		theme: 'ocean-breaze'
+		playlist: playlist_02,
+		theme: 'ocean-breaze',
 	});
 	
 

@@ -43,7 +43,6 @@
 
 .tp-cover {
 	position: relative;
-	display: none;
 	width: 100%;
 	height: 100%;
 	z-index: 2;
@@ -276,7 +275,7 @@
 .tp-audio-seek-bar {
 	position: relative;
 	width: 100%;
-	min-width: 0;
+	min-width: 100px;
 	height: 20px;
 	display: flex;
 	justify-content: space-between;
@@ -825,6 +824,40 @@
 	width: 0px;
 }
 
+/* tp-response-controls Horizontal */
+
+.tp-response-controls .tp-player-container {
+	height: auto;
+}
+
+.tp-response-controls .tp-controls-container {
+	height: auto;
+}
+
+.tp-response-controls .tp-song-title {
+	margin-top: 0;
+}
+
+.tp-response-controls .tp-controls-body {
+	justify-content: center;
+	flex-wrap: wrap;
+}
+
+.tp-response-controls .tp-button {
+	order: 1;
+}
+
+.tp-response-controls .tp-audio-seek-bar {
+	order: 2;
+}
+
+.tp-response-controls .tp-volume-control {
+	order: 1;
+}
+
+.tp-response-controls .tp-volume-level-bar {
+	order: 1;
+}
 /* Skin Vertical */
 
 .tp-vertical .tp-player-container {
@@ -923,4 +956,25 @@
 	line-height: 20px;
 	font-weight: 400;
 	color: #fff;
+}
+
+
+
+#playlist_02 {
+	width: 300px;
+	height: 100px;
+  container-type: inline-size;
+  container-name: sidebar;
+}
+
+.children {
+	width: 100%;
+	height: 100%;
+	background: green;
+}
+
+@container sidebar (width < 400px) {
+  .children {
+		background: red;
+  }
 }

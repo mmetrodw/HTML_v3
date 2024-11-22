@@ -416,16 +416,15 @@ handleCoverLoaded() {
 // Adjusts the player layout based on the wrapper's width.
 handlePlayerResize() {
 	const { addClass, removeClass } = this;
-	// Check if the width of the wrapper element is less than 550 pixels
-	if(this.uiElements.wrapper.clientWidth < 550) {
-		// Add the 'tp-vertical' class to the wrapper element
-		addClass(this.uiElements.wrapper, 'tp-vertical');
-	} else {
-		// If the skin setting is not 'vertical', remove the 'tp-vertical' class
-		if(this.settings.skin !== 'vertical') {
-			removeClass(this.uiElements.wrapper, 'tp-vertical');
-		}
-	}
+	const { isPlaylist, isMobile } = this.playerState;
+	const { showCover, showRepeatButton, showShuffleButton, showShareButton } = this.settings;
+	const padding = 20;
+	const buttonsLength = this.uiElements.wrapper.querySelectorAll('.tp-controls-body .tp-button').length;
+	const seekBarMinWidth = 100;
+	const controlsBodyMinWidth = padding * 2 + (buttonsLength * 40) + seekBarMinWidth;
+	const controlsBodyWidth = this.uiElements.wrapper.querySelector('.tp-controls-body').scrollWidth;
+	console.log(controlsBodyWidth, controlsBodyMinWidth)
+
 }
 
 // Switches to the next song in the playlist.
