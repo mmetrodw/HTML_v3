@@ -51,7 +51,7 @@ emptied() {
 // Ended
 ended() {
 	// Play Next
-	this.nextSong();
+	this.handleNextSong();
 	// Set Audio Event
 	this.playerState.audioEvent = 'ended';
 }

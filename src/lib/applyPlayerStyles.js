@@ -1,9 +1,16 @@
 async applyPlayerStyles() {
 	this.playerState.log = 'Aplly Custom Styles';
 	const startTime = new Date().getTime();
+	let style =  this.settings.style;
 	
+	// Get the theme from the settings
+	const theme = this.settings.theme;
+	// If the theme is not 'custom', apply the corresponding styles
+	if(theme !== 'custom' && themes.hasOwnProperty(theme)) {
+		style = themes[theme];
+	}
 	// Call the applyPlayerStyles function with the styles and playerElement
-	this.addPlayerStyle(this.settings.style, this.uiElements.wrapper);
+	this.addPlayerStyle(style, this.uiElements.wrapper);
 
 	const endTime = new Date().getTime();
 	const duration = (endTime - startTime);

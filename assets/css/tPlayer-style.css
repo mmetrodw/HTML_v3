@@ -43,6 +43,7 @@
 
 .tp-cover {
 	position: relative;
+	display: none;
 	width: 100%;
 	height: 100%;
 	z-index: 2;
@@ -665,17 +666,17 @@
 
 .tp-playlist-item .tp-playlist-song-download path,
 .tp-playlist-item .tp-playlist-song-buy path {
-	fill: var(--playlist-color);
+	fill: var(--playlist-color) !important;
 }
 
 .tp-playlist-item:hover .tp-playlist-song-download path,
 .tp-playlist-item:hover .tp-playlist-song-buy path {
-	fill: var(--playlist-hover-color);
+	fill: var(--playlist-hover-color) !important;
 }
 
 .tp-playlist-item.tp-active .tp-playlist-song-download path,
 .tp-playlist-item.tp-active .tp-playlist-song-buy path {
-	fill: var(--playlist-active-color);
+	fill: var(--playlist-active-color) !important;
 }
 
 .tp-playlist-item a:last-of-type {

@@ -1,6 +1,8 @@
 var tPlayersCollection = [];
 // @include('data/defaultSettings.js')
 
+// @include('data/themes.js')
+
 class tPlayerClass {
 	constructor(options) {
 		this.settings = this.deepObjectMerge(defaultPlayerSettings, options);
@@ -56,13 +58,13 @@ class tPlayerClass {
 		// Add to List of Players
 		tPlayersCollection[this.playerId] = this.audio;
 		// Show playlist if the setting is enabled and its Playlist
-		if(showPlaylist && this.playerState.isPlaylist) this.togglePlaylist(false);
+		if(showPlaylist && this.playerState.isPlaylist) this.handleTogglePlaylist(false);
 		// Setup Event Listeners
 		this.setupEventListeners();
 		// Load And Prepare The Initial Song For Playback
 		this.switchSong();
 		// Adjust The Player Size To Fit It's Container Or Screen
-		this.playerResize();
+		this.handlePlayerResize();
 		// If In Radio Mode And A Plugin Path Is Specified, Set Up Periodic Info Updates
 		if(isRadio && pluginDirectoryPath) {
 			setInterval(this.updateRadioInfo.bind(this), updateRadioInterval);
@@ -93,6 +95,7 @@ class tPlayerClass {
 }
 
 function migrationFromOldVersion(oldOptions) {
+	console.log(oldOptions)
 	return {
 		container: oldOptions.container ?? null,
 		playlist: oldOptions.playlist ?? null,
@@ -101,6 +104,7 @@ function migrationFromOldVersion(oldOptions) {
 			cover: oldOptions.album?.cover ?? oldOptions.albumCover ?? null,
 		},
 		skin: oldOptions.skin ?? oldOptions.options?.skin ?? 'default',
+		theme: oldOptions.theme ?? oldOptions.options?.theme ?? 'custom',
 		rounded: oldOptions.rounded ?? oldOptions.options?.rounded ?? false,
 		showCover: oldOptions.showCover ?? oldOptions.options?.cover ?? true,
 		showPlaylist: oldOptions.showPlaylist ?? oldOptions.options?.playlist ?? true,

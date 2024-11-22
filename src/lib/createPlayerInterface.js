@@ -4,7 +4,7 @@ async createPlayerInterface() {
 	const startTime = new Date().getTime();
 
 	const { wrapper } = this.uiElements;
-	const { rounded, skin, showCover, showRepeatButton, showShuffleButton, showShareButton} = this.settings;
+	const { rounded, skin, showCover, showShareButton} = this.settings;
 	const { addClass } = this;
 	const { isMobile, isPlaylist } = this.playerState;
 

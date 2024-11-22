@@ -15,13 +15,13 @@ async setupEventListeners() {
 			this.setupScrollbarEventListeners();
 		}
 	}
-	// Add listeners for seek and volume bars 
+	// Add listeners for seek and volume bars s
 	this.setupSeekingEventListeners();
 	// Add listener for Cover Loading
-	if(showCover) coverImage.addEventListener('load', this.coverLoaded.bind(this));
+	if(showCover) coverImage.addEventListener('load', this.handleCoverLoaded.bind(this));
 
 	// Add listener for window resize
-	window.addEventListener("resize", this.playerResize.bind(this));
+	window.addEventListener("resize", this.handlePlayerResize.bind(this));
 	this.playerState.log = 'Event Listeners Are Set';
 }
 
@@ -51,25 +51,25 @@ setupButtonsEventListeners() {
 		facebookButton, xButton, tumblrButton, togglePlaylistButton, errorCloseButton
 	} = this.uiElements;
 	// Playback Button
-	playbackButton.addEventListener('click', this.playback.bind(this));
+	playbackButton.addEventListener('click', this.handlePlayback.bind(this));
 	// Prev, Next, Shuffle, Toggle Playlist Button
 	if(isPlaylist) {
-		prevButton.addEventListener('click', this.prevSong.bind(this));
-		nextButton.addEventListener('click', this.nextSong.bind(this));
-		if(showShuffleButton) shuffleButton.addEventListener('click', this.shuffleToggle.bind(this));
-		togglePlaylistButton.addEventListener('click', this.togglePlaylist.bind(this));
+		prevButton.addEventListener('click', this.handlePrevSong.bind(this));
+		nextButton.addEventListener('click', this.handleNextSong.bind(this));
+		if(showShuffleButton) shuffleButton.addEventListener('click', this.handleShuffleToggle.bind(this));
+		togglePlaylistButton.addEventListener('click', this.handleTogglePlaylist.bind(this));
 	}
 	// Repeat Button
-	if(showRepeatButton) repeatButton.addEventListener('click', this.repeatToggle.bind(this));
+	if(showRepeatButton) repeatButton.addEventListener('click', this.handleRepeatToggle.bind(this));
 	// Share Buttons
 	if(showShareButton) {
-		shareButton.addEventListener('click', this.shareToggle.bind(this));
-		facebookButton.addEventListener('click', this.shareFacebook.bind(this));
-		xButton.addEventListener('click', this.shareX.bind(this));
-		tumblrButton.addEventListener('click', this.shareTumblr.bind(this));
+		shareButton.addEventListener('click', this.handleShareToggle.bind(this));
+		facebookButton.addEventListener('click', this.handleShare.bind(this, 'facebook'));
+		xButton.addEventListener('click', this.handleShare.bind(this, 'x'));
+		tumblrButton.addEventListener('click', this.handleShare.bind(this, 'tumblr'));
 	}
 	// Volume Button
-	if(!isMobile) volumeButton.addEventListener('click', this.volumeToggle.bind(this));
+	if(!isMobile) volumeButton.addEventListener('click', this.handleMute.bind(this));
 	// Error Close
 	errorCloseButton.addEventListener('click', () => removeClass(wrapper, "tp-error"));
 }
@@ -90,7 +90,7 @@ setupPlaylistEventListeners() {
 				this.playerState.autoplay = true;
 				this.switchSong();
 			} else if (this.audio.paused) {
-				this.playback();
+				this.handlePlayback();
 			}
 		});
 
@@ -108,11 +108,11 @@ setupScrollbarEventListeners() {
 	playlistContainer.addEventListener('mouseenter', this.showScrollbar.bind(this)); // Show scrollbar on mouse enter
 	playlistContainer.addEventListener('mouseleave', this.hideScrollbar.bind(this)); // Hide scrollbar on mouse leave
 	playlist.addEventListener('scroll', this.updateScrollbarThumb.bind(this)); // Update scrollbar thumb position on scroll
-	scrollbarTrack.addEventListener('wheel', event => { // Handle mouse wheel scrolling
+	scrollbarTrack.addEventListener('wheel', event => { // Handle mouse wheel scrollings
 		event.preventDefault();
 		playlist.scrollTop += event.deltaY;
 	}, { passive: false });
-	scrollbarTrack.addEventListener('mousedown', this.scrollbarTrackSeekingStart.bind(this)); // Handle mouse down for scrollbar dragging
+	scrollbarTrack.addEventListener('mousedown', this.handleScrollbar.bind(this)); // Handle mouse down for scrollbar dragging
 	// Update The Position And Size Of The Scrollbar
 	this.updateScrollbarThumb();
 }
@@ -123,9 +123,9 @@ setupSeekingEventListeners() {
 	const { isMobile } = this.playerState;
 
 	if (!isMobile) {
-		audioSeekBar.addEventListener('mousedown', this.audioSeeking.bind(this));
-		volumeLevelBar.addEventListener('mousedown', this.volumeAdjustment.bind(this));
+		audioSeekBar.addEventListener('mousedown', this.handleAudioSeeking.bind(this));
+		volumeLevelBar.addEventListener('mousedown', this.handleVolumeLevel.bind(this));
 	} else {
-		audioSeekBar.addEventListener('touchstart', this.audioSeeking.bind(this), {passive: true});
+		audioSeekBar.addEventListener('touchstart', this.handleAudioSeeking.bind(this), {passive: true});
 	}
 }

@@ -1,5 +1,5 @@
 // Simulates a button click effect by adding and then removing a CSS class.
-simulateClickEffect(element) {
+handleButtonClick(element) {
 	// Add the "tp-click" class to the element
 	this.addClass(element, "tp-click");
 	// Remove the "tp-click" class after animation end
@@ -11,9 +11,9 @@ simulateClickEffect(element) {
 }
 
 // Toggles playback of the audio element and updates the player state.
-playback() {
+handlePlayback() {
 	// Simulate button click effect
-	this.simulateClickEffect(this.uiElements.playbackButton);
+	this.handleButtonClick(this.uiElements.playbackButton);
 
 	if (this.audio.paused) {
 		// Play the audio and set autoplay to true
@@ -27,9 +27,9 @@ playback() {
 }
 
 // Handles the logic for switching to the previous song.
-prevSong() {
+handlePrevSong() {
 	// Simulate button click effect
-	this.simulateClickEffect(this.uiElements.prevButton);
+	this.handleButtonClick(this.uiElements.prevButton);
 
 	// Store the current song index as the previous song index
 	this.previousSongIndex = this.currentSong.index;
@@ -59,9 +59,9 @@ prevSong() {
 }
 
 // Handles the logic for switching to the next song.
-nextSong() {
+handleNextSong() {
 	// Simulate the click effect on the next button
-	this.simulateClickEffect(this.uiElements.nextButton);
+	this.handleButtonClick(this.uiElements.nextButton);
 
 	// Store the current song index as the previous song index
 	this.previousSongIndex = this.currentSong.index;
@@ -101,25 +101,25 @@ handleShuffleMode() {
 }
 
 // Toggles the repeat state of the player.
-repeatToggle() {
+handleRepeatToggle() {
 	const { repeatButton } = this.uiElements;
 	const { toggleClass } = this;
 	// Toggle the "tp-active" class on the repeat button
 	toggleClass(repeatButton, "tp-active");
 	// Simulate the click effect on the repeat button
-	this.simulateClickEffect(repeatButton);
+	this.handleButtonClick(repeatButton);
 	// Toggle the repeat state
 	this.playerState.repeat = !this.playerState.repeat;
 }
 
 // Toggles the shuffle state of the player.
-shuffleToggle() {
+handleShuffleToggle() {
 	const { shuffleButton } = this.uiElements;
 	const { toggleClass } = this;
 	// Toggle the "tp-active" class on the shuffle button
 	toggleClass(shuffleButton, "tp-active");
 	// Simulate the click effect on the shuffle button
-	this.simulateClickEffect(shuffleButton);
+	this.handleButtonClick(shuffleButton);
 	// Toggle the shuffle state
 	this.playerState.shuffle = !this.playerState.shuffle;
 	// Regenerate the shuffled playlist order if shuffle is enabled, otherwise set to null
@@ -127,14 +127,14 @@ shuffleToggle() {
 }
 
 // Toggles the share state of the player.
-shareToggle() {
+handleShareToggle() {
 	const { shareButton, wrapper } = this.uiElements;
 	// Toggle the "tp-sharing" class on the player
 	this.toggleClass(wrapper, "tp-sharing");
 	// Toggle the "tp-active" class on the share button
 	this.toggleClass(shareButton, "tp-active");
 	// Simulate the click effect on the share button
-	this.simulateClickEffect(shareButton);
+	this.handleButtonClick(shareButton);
 	// Toggle the shera display state
 	this.playerState.isShareDisplayed = !this.playerState.isShareDisplayed;
 	if (this.playerState.isShareDisplayed) {
@@ -145,38 +145,34 @@ shareToggle() {
 	}
 }
 
-shareFacebook() {
+handleShare(socialMedia) {
 	const url = window.location.href;
 	const text = this.currentSong.artist + " - " + this.currentSong.title;
-	const shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text);
-	this.openPopup(shareUrl);
-}
-
-shareX() {
-	const url = window.location.href;
-	const text = this.currentSong.artist + " - " + this.currentSong.title;
-	const shareUrl = 'https://x.com/intent/tweet?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text);
-	this.openPopup(shareUrl);
-}
-
-shareTumblr() {
-	const url = window.location.href;
-	const text = this.currentSong.artist + " - " + this.currentSong.title;
-	const shareUrl = 'https://www.tumblr.com/widgets/share/tool?canonicalUrl=' + encodeURIComponent(url) + '&caption=' + encodeURIComponent(text);
-	this.openPopup(shareUrl);
-}
-
-openPopup(url) {
+	let shareUrl = '';
 	var width = 550;
 	var height = 400;
 	var left = (window.innerWidth - width) / 2;
 	var top = (window.innerHeight - height) / 2;
 	var options = 'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top;
-	window.open(url, 'Share', options);
+
+	switch(socialMedia) {
+		case 'facebook':
+			shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text);
+			break;
+		case 'x':
+			shareUrl = 'https://x.com/intent/tweet?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text);
+			break;
+		case 'tumblr':
+			shareUrl = 'https://www.tumblr.com/widgets/share/tool?canonicalUrl=' + encodeURIComponent(url) + '&caption=' + encodeURIComponent(text);
+			break;
+		default:
+			break;
+	}
+	window.open(shareUrl, 'Share', options);
 }
 
 // Toggle Playlist
-togglePlaylist(isClick = true) {
+handleTogglePlaylist(isClick = true) {
 	let playlistHeight = 0;
 	const { togglePlaylistButton, playlistContainer } = this.uiElements;
 	const { maxVisibleSongs, allowPlaylistScroll } = this.settings;
@@ -185,7 +181,7 @@ togglePlaylist(isClick = true) {
 	// Toggle the "tp-active" class on the toggle playlist button
 	toggleClass(togglePlaylistButton, "tp-active");
 	// Simulate the click effect on the toggle playlist button
-	if(isClick) this.simulateClickEffect(togglePlaylistButton);
+	if(isClick) this.handleButtonClick(togglePlaylistButton);
 	// Toggle the playlist display state
 	this.playerState.isPlaylistDisplayed = !this.playerState.isPlaylistDisplayed;
 
@@ -206,14 +202,14 @@ togglePlaylist(isClick = true) {
 }
 
 // Toggles the mute state of the volume.
-volumeToggle() {
+handleMute() {
 	const { volumeButton, volumeLevel } = this.uiElements;
 	const { toggleClass } = this;
 
 	// Toggle the "tp-active" class on the volume button
 	toggleClass(volumeButton, "tp-active");
 	// Simulate the click effect on the volume button
-	this.simulateClickEffect(volumeButton);
+	this.handleButtonClick(volumeButton);
 	// Toggle the mute state
 	this.playerState.isVolumeMuted = !this.playerState.isVolumeMuted;
 	// Adjust the audio volume based on the mute state
@@ -223,7 +219,7 @@ volumeToggle() {
 }
 
 // the audio seeking process.
-audioSeeking(event) {
+handleAudioSeeking(event) {
 	const { isMobile } = this.playerState;
 	// Check if the event is from a non-primary mouse button on non-mobile devices
 	if(!isMobile && event.button !== 0) return false;
@@ -261,6 +257,7 @@ audioSeeking(event) {
 			audioDuration.style.right = `${durationOffset}px`;
 		}
 	}
+
 	seeking(event);
 
 	const seeked = (event) => {
@@ -290,8 +287,10 @@ audioSeeking(event) {
 }
 
 // the volume adjustment process.
-volumeAdjustment(event) {
+handleVolumeLevel(event) {
 	event.preventDefault();
+	// Check if the event is from a non-primary mouse button
+	if(event.button !== 0) return false;
 	// Set the user adjusting volume state to true
 	this.playerState.isUserAdjustingVolume = true;
 	// Cache DOM references and calculations
@@ -300,7 +299,7 @@ volumeAdjustment(event) {
 	const barLeft = volumeBarBounds.left;
 	const barWidth = volumeBarBounds.width;
 
-	const seeking = (event) => {
+	const changing = (event) => {
 		// Return if the user is not adjusting the volume
 		if(!this.playerState.isUserAdjustingVolume) return;
 		// Determine the mouse position
@@ -311,19 +310,19 @@ volumeAdjustment(event) {
 		this.audio.volume = percent;
 	};
 
-	const seeked = (event) => {
-		document.removeEventListener('mousemove', seeking);
-		document.removeEventListener('mouseup', seeked);
+	const changed = (event) => {
+		document.removeEventListener('mousemove', changing);
+		document.removeEventListener('mouseup', changed);
 		// Set the user adjusting volume state to false
 		this.playerState.isUserAdjustingVolume = false;
 	};
 
 	// Intial Seek for click
-	seeking(event);
+	changing(event);
 
 	// Add event listeners for dragging and releasing the mouse
-	document.addEventListener('mousemove', seeking);
-	document.addEventListener('mouseup', seeked);
+	document.addEventListener('mousemove', changing);
+	document.addEventListener('mouseup', changed);
 }
 
 // Function to update the scrollbar thumb's size and position
@@ -356,7 +355,7 @@ hideScrollbar() {
 }
 
 // Initiates the scrollbar song seeking process.
-scrollbarTrackSeekingStart(event) {
+handleScrollbar(event) {
 	event.preventDefault();
 	const { playlist, scrollbarTrack } = this.uiElements;
 	const initialMouseY = event.clientY; // Starting Y position of the mouse
@@ -365,7 +364,7 @@ scrollbarTrackSeekingStart(event) {
 	let isDragging = false; // Flag to detect dragging vs. clicking
 
 	// Function to handle mouse movements for dragging
-	const scrollbarTrackSeeking = (event) => {
+	const changing = (event) => {
 		const dragDeltaY = event.clientY - initialMouseY; // Mouse movement distance
 
 		// Determine if dragging has started (more than 5px of movement)
@@ -381,9 +380,9 @@ scrollbarTrackSeekingStart(event) {
 	};
 
 	// Function to handle mouse release (mouseup event)
-	const scrollbarTrackSeekingEnd = (event) => {
-		document.removeEventListener("mousemove", scrollbarTrackSeeking);
-		document.removeEventListener("mouseup", scrollbarTrackSeekingEnd);
+	const changed = (event) => {
+		document.removeEventListener("mousemove", changing);
+		document.removeEventListener("mouseup", changed);
 
 		// If it was a simple click (no dragging), scroll to the click position
 		if (!isDragging) {
@@ -398,11 +397,11 @@ scrollbarTrackSeekingStart(event) {
 	};
 
 	// Add event listeners for dragging and releasing the mouse
-	document.addEventListener("mousemove", scrollbarTrackSeeking);
-	document.addEventListener("mouseup", scrollbarTrackSeekingEnd);
+	document.addEventListener("mousemove", changing);
+	document.addEventListener("mouseup", changed);
 }
 
-coverLoaded() {
+handleCoverLoaded() {
 	const { addClass, removeClass } = this;
 	const { coverContainer } = this.uiElements;
 
@@ -415,7 +414,7 @@ coverLoaded() {
 }
 
 // Adjusts the player layout based on the wrapper's width.
-playerResize() {
+handlePlayerResize() {
 	const { addClass, removeClass } = this;
 	// Check if the width of the wrapper element is less than 550 pixels
 	if(this.uiElements.wrapper.clientWidth < 550) {
