@@ -21,7 +21,7 @@ async setupEventListeners() {
 	if(showCover) coverImage.addEventListener('load', this.handleCoverLoaded.bind(this));
 
 	// Add listener for window resize
-	window.addEventListener("resize", this.handlePlayerResize.bind(this));
+	window.addEventListener("resize", this.updatePlayerLayout.bind(this));
 	this.playerState.log = 'Event Listeners Are Set';
 }
 
@@ -63,6 +63,12 @@ setupButtonsEventListeners() {
 	if(showRepeatButton) repeatButton.addEventListener('click', this.handleRepeatToggle.bind(this));
 	// Share Buttons
 	if(showShareButton) {
+		// Fix player resize Bug
+		this.uiElements.socialMediaContainer.addEventListener("transitionend", () => {
+			this.uiElements.socialMediaContainer.style.transition = 'none';
+			// Adjust The Player Size To Fit It's Container Or Screen
+			this.updatePlayerLayout();
+		}, false);
 		shareButton.addEventListener('click', this.handleShareToggle.bind(this));
 		facebookButton.addEventListener('click', this.handleShare.bind(this, 'facebook'));
 		xButton.addEventListener('click', this.handleShare.bind(this, 'x'));

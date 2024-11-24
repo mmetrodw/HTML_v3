@@ -19,7 +19,7 @@
 <body>
 	документація <br>
 
-	<div id="playlist_01" class=""></div>
+	<div id="playlist_01"></div>
 	<div id="playlist_02">
 		<div class="children"></div>
 	</div>
@@ -129,8 +129,11 @@ var playlist_01 = [{
 
 	tPlayer({
 		container: "playlist_01",
-		playlist: playlist_02,
+		playlist: playlist_01,
 		theme: 'ocean-breaze',
+		showRepeatButton: true,
+		showShuffleButton: true,
+		showShareButton: true,
 	});
 	
 

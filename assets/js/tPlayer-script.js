@@ -973,7 +973,7 @@ class tPlayerClass {
 			"tp-wrapper",
 			"tp-loading",
 			rounded ? "tp-rounded" : "",
-			(skin === "vertical" || isMobile) ? "tp-vertical" : ""
+			(skin === "vertical") ? "tp-vertical" : ""
 		]);
 	
 		// Determine button icon style based on "rounded" setting
@@ -1085,10 +1085,10 @@ class tPlayerClass {
 	}
 	
 	createSocialMediaButtons(playerContainer) {
-		const socialMediaContainer = this.createElement("div", "tp-social-media-container", playerContainer);
-		this.uiElements.facebookButton = this.createButtonWithIcon("facebook", "facebook", socialMediaContainer);
-		this.uiElements.xButton = this.createButtonWithIcon("x", "x", socialMediaContainer);
-		this.uiElements.tumblrButton = this.createButtonWithIcon("tumblr", "tumblr", socialMediaContainer);
+		this.uiElements.socialMediaContainer = this.createElement("div", "tp-social-media-container", playerContainer);
+		this.uiElements.facebookButton = this.createButtonWithIcon("facebook", "facebook", this.uiElements.socialMediaContainer);
+		this.uiElements.xButton = this.createButtonWithIcon("x", "x", this.uiElements.socialMediaContainer);
+		this.uiElements.tumblrButton = this.createButtonWithIcon("tumblr", "tumblr", this.uiElements.socialMediaContainer);
 	}
 	
 	createPlaylist(fragment) {
@@ -1254,7 +1254,7 @@ class tPlayerClass {
 		if(showCover) coverImage.addEventListener('load', this.handleCoverLoaded.bind(this));
 	
 		// Add listener for window resize
-		window.addEventListener("resize", this.handlePlayerResize.bind(this));
+		window.addEventListener("resize", this.updatePlayerLayout.bind(this));
 		this.playerState.log = 'Event Listeners Are Set';
 	}
 	
@@ -1296,6 +1296,12 @@ class tPlayerClass {
 		if(showRepeatButton) repeatButton.addEventListener('click', this.handleRepeatToggle.bind(this));
 		// Share Buttons
 		if(showShareButton) {
+			// Fix player resize Bug
+			this.uiElements.socialMediaContainer.addEventListener("transitionend", () => {
+				this.uiElements.socialMediaContainer.style.transition = 'none';
+				// Adjust The Player Size To Fit It's Container Or Screen
+				this.updatePlayerLayout();
+			}, false);
 			shareButton.addEventListener('click', this.handleShareToggle.bind(this));
 			facebookButton.addEventListener('click', this.handleShare.bind(this, 'facebook'));
 			xButton.addEventListener('click', this.handleShare.bind(this, 'x'));
@@ -1779,6 +1785,7 @@ class tPlayerClass {
 	// Toggles the share state of the player.
 	handleShareToggle() {
 		const { shareButton, wrapper } = this.uiElements;
+		this.uiElements.socialMediaContainer.style.transition = 'all 500ms var(--easeOutExpo)';
 		// Toggle the "tp-sharing" class on the player
 		this.toggleClass(wrapper, "tp-sharing");
 		// Toggle the "tp-active" class on the share button
@@ -2064,17 +2071,54 @@ class tPlayerClass {
 	}
 	
 	// Adjusts the player layout based on the wrapper's width.
-	handlePlayerResize() {
-		const { addClass, removeClass } = this;
-		const { isPlaylist, isMobile } = this.playerState;
-		const { showCover, showRepeatButton, showShuffleButton, showShareButton } = this.settings;
-		const padding = 20;
-		const buttonsLength = this.uiElements.wrapper.querySelectorAll('.tp-controls-body .tp-button').length;
-		const seekBarMinWidth = 100;
-		const controlsBodyMinWidth = padding * 2 + (buttonsLength * 40) + seekBarMinWidth;
-		const controlsBodyWidth = this.uiElements.wrapper.querySelector('.tp-controls-body').scrollWidth;
-		console.log(controlsBodyWidth, controlsBodyMinWidth)
+	updatePlayerLayout() {
+	  const { addClass, removeClass } = this;
+	  const { isShareDisplayed } = this.playerState;
+		const { showCover, skin } = this.settings;
+		const padding = 20; // Default padding
+		const buttonWidth = 20; // Width of a single button
+		const gapWidth = 20; // Gap between buttons
+		const seekBarMinWidth = 100; // Minimum width of the seek bar
+		// Calculate available width for the player controls
+		const playerWidth = this.uiElements.wrapper.offsetWidth
+		- (showCover ? 200 : 0) // Subtract width for cover if displayed
+		- (isShareDisplayed ? 60 : 0); // Subtract width for sharing options if displayed
 	
+		// Determine the number of control buttons
+		const controlsBodyButtonsCount = this.uiElements.wrapper.querySelectorAll('.tp-controls-body .tp-button').length;
+	
+		// Calculate minimum widths for wide and medium layouts
+		const controlsBodyMinWideWidth = (buttonWidth + gapWidth) * controlsBodyButtonsCount + seekBarMinWidth + padding * 2;
+		const controlsBodyMinMediumWidth = (buttonWidth + gapWidth) * controlsBodyButtonsCount + padding * 2 - gapWidth;
+	
+		// Calculate the minimum width required for the footer
+		const controlsFooterChildren = Array.from(this.uiElements.wrapper.querySelector('.tp-controls-footer').children);
+		const controlsFooterMinWidth = controlsFooterChildren.reduce((totalWidth, element) => {
+	    return totalWidth + element.offsetWidth + gapWidth;
+	  }, -gapWidth) + padding * 2; // Add padding, adjust for the initial gap
+	
+		// Determine the larger of the two minimum widths for wide and medium layouts
+	  const minWideWidth = Math.max(controlsBodyMinWideWidth, controlsFooterMinWidth);
+	  const minMediumWidth = Math.max(controlsBodyMinMediumWidth, controlsFooterMinWidth);
+	
+		// Set the CSS custom property for the minimum width
+		this.uiElements.wrapper.style.setProperty('--minWidth', `${minMediumWidth}px`);
+	
+		// If the skin is vertical, do not apply width adjustments
+	  if (skin === 'vertical') {
+	    return;
+	  }
+	
+		// Adjust the player's layout based on the available width
+		if (playerWidth < minWideWidth && playerWidth > minMediumWidth) {
+			addClass(this.uiElements.wrapper, 'tp-medium'); // Apply medium layout
+			removeClass(this.uiElements.wrapper, 'tp-vertical'); // Ensure vertical layout is removed
+		} else if (playerWidth <= minMediumWidth) {
+			addClass(this.uiElements.wrapper, 'tp-vertical'); // Apply vertical layout
+			removeClass(this.uiElements.wrapper, 'tp-medium'); // Ensure medium layout is removed
+		} else {
+			removeClass(this.uiElements.wrapper, ['tp-medium', 'tp-vertical']); // Remove all layout-specific classes
+		}
 	}
 	
 	// Switches to the next song in the playlist.
@@ -2330,12 +2374,11 @@ class tPlayerClass {
 		// Load And Prepare The Initial Song For Playback
 		this.switchSong();
 		// Adjust The Player Size To Fit It's Container Or Screen
-		this.handlePlayerResize();
+		this.updatePlayerLayout();
 		// If In Radio Mode And A Plugin Path Is Specified, Set Up Periodic Info Updates
 		if(isRadio && pluginDirectoryPath) {
 			setInterval(this.updateRadioInfo.bind(this), updateRadioInterval);
 		}
-		console.log(this);
 	}
 
 	/* UTILS */
@@ -2489,73 +2532,73 @@ class tPlayerClass {
 }
 
 function migrationFromOldVersion(oldOptions) {
-	console.log(oldOptions)
+
 	return {
-		container: oldOptions.container ?? null,
-		playlist: oldOptions.playlist ?? null,
+		container: oldOptions.container ?? defaultPlayerSettings.container,
+		playlist: oldOptions.playlist ?? defaultPlayerSettings.playlist,
 		album: {
-			artist: oldOptions.album?.artist ?? oldOptions.albumArtist ?? null,
-			cover: oldOptions.album?.cover ?? oldOptions.albumCover ?? null,
+			artist: oldOptions.album?.artist ?? oldOptions.albumArtist ?? defaultPlayerSettings.album.artist,
+			cover: oldOptions.album?.cover ?? oldOptions.albumCover ?? defaultPlayerSettings.album.cover,
 		},
-		skin: oldOptions.skin ?? oldOptions.options?.skin ?? 'default',
-		theme: oldOptions.theme ?? oldOptions.options?.theme ?? 'custom',
-		rounded: oldOptions.rounded ?? oldOptions.options?.rounded ?? false,
-		showCover: oldOptions.showCover ?? oldOptions.options?.cover ?? true,
-		showPlaylist: oldOptions.showPlaylist ?? oldOptions.options?.playlist ?? true,
-		showRepeatButton: oldOptions.showRepeatButton ?? oldOptions.options?.repeat ?? true,
-		showShuffleButton: oldOptions.showShuffleButton ?? oldOptions.options?.shuffle ?? true,
-		showShareButton: oldOptions.showShareButton ?? oldOptions.options?.share ?? true,
-		allowPlaylistScroll: oldOptions.allowPlaylistScroll ?? (oldOptions.options?.scrollAfter !== null),
-		maxVisibleSongs: oldOptions.maxVisibleSongs ? oldOptions.maxVisibleSongs : oldOptions.options?.scrollAfter > 0 ? oldOptions.options.scrollAfter : 5,
-		volume: oldOptions.volume ?? oldOptions.options?.volume ?? 1,
-		isRadio: oldOptions.isRadio ?? oldOptions.options?.radio ?? false,
-		pluginDirectoryPath: oldOptions.pluginDirectoryPath ?? oldOptions.options?.pluginPath ?? null,
-		autoUpdateRadioCovers: oldOptions.autoUpdateRadioCovers ?? oldOptions.options?.coverUpdate ?? true,
-		updateRadioInterval: oldOptions.updateRadioInterval ?? oldOptions.options?.updateRadioInterval ?? 10000,
+		skin: oldOptions.skin ?? oldOptions.options?.skin ?? defaultPlayerSettings.skin,
+		theme: oldOptions.theme ?? oldOptions.options?.theme ?? defaultPlayerSettings.theme,
+		rounded: oldOptions.rounded ?? oldOptions.options?.rounded ?? defaultPlayerSettings.rounded,
+		showCover: oldOptions.showCover ?? oldOptions.options?.cover ?? defaultPlayerSettings.showCover,
+		showPlaylist: oldOptions.showPlaylist ?? oldOptions.options?.playlist ?? defaultPlayerSettings.showPlaylist,
+		showRepeatButton: oldOptions.showRepeatButton ?? oldOptions.options?.repeat ?? defaultPlayerSettings.showRepeatButton,
+		showShuffleButton: oldOptions.showShuffleButton ?? oldOptions.options?.shuffle ?? defaultPlayerSettings.showShuffleButton,
+		showShareButton: oldOptions.showShareButton ?? oldOptions.options?.share ?? defaultPlayerSettings.showShareButton,
+		allowPlaylistScroll: oldOptions.allowPlaylistScroll ?? (oldOptions.options?.scrollAfter ?? 0) !== 0,
+		maxVisibleSongs: oldOptions.maxVisibleSongs ? oldOptions.maxVisibleSongs : oldOptions.options?.scrollAfter > 0 ? oldOptions.options.scrollAfter : defaultPlayerSettings.maxVisibleSongs,
+		volume: oldOptions.volume ?? oldOptions.options?.volume ?? defaultPlayerSettings.volume,
+		isRadio: oldOptions.isRadio ?? oldOptions.options?.radio ?? defaultPlayerSettings.isRadio,
+		pluginDirectoryPath: oldOptions.pluginDirectoryPath ?? oldOptions.options?.pluginPath ?? defaultPlayerSettings.pluginDirectoryPath,
+		autoUpdateRadioCovers: oldOptions.autoUpdateRadioCovers ?? oldOptions.options?.coverUpdate ?? defaultPlayerSettings.autoUpdateRadioCovers,
+		updateRadioInterval: oldOptions.updateRadioInterval ?? oldOptions.options?.updateRadioInterval ?? defaultPlayerSettings.updateRadioInterval,
 		style: {
 			player: {
-				background: oldOptions.style?.player?.background ?? "#FFF",
+				background: oldOptions.style?.player?.background ?? defaultPlayerSettings.style.player.background,
 				cover: {
-					background: oldOptions.style?.player?.cover?.background ?? "#3EC3D5",
-					loader: oldOptions.style?.player?.cover?.loader ?? "#FFF"
+					background: oldOptions.style?.player?.cover?.background ?? defaultPlayerSettings.style.player.cover.background,
+					loader: oldOptions.style?.player?.cover?.loader ?? defaultPlayerSettings.style.player.cover.loader,
 				},
-				songtitle: oldOptions.style?.player?.songtitle ?? oldOptions.style?.player?.songtitle ?? "#555",
+				songtitle: oldOptions.style?.player?.songtitle ?? oldOptions.style?.player?.songtitle ?? defaultPlayerSettings.style.player.songtitle,
 				buttons: {
-					wave: oldOptions.style?.player?.buttons?.wave ?? "#3EC3D5",
-					normal: oldOptions.style?.player?.buttons?.normal ?? "#555",
-					hover: oldOptions.style?.player?.buttons?.hover ?? "#3EC3D5",
-					active: oldOptions.style?.player?.buttons?.active ?? "#3EC3D5",
+					wave: oldOptions.style?.player?.buttons?.wave ?? defaultPlayerSettings.style.player.buttons.wave,
+					normal: oldOptions.style?.player?.buttons?.normal ?? defaultPlayerSettings.style.player.buttons.normal,
+					hover: oldOptions.style?.player?.buttons?.hover ?? defaultPlayerSettings.style.player.buttons.hover,
+					active: oldOptions.style?.player?.buttons?.active ?? defaultPlayerSettings.style.player.buttons.active,
 				},
-				seekbar: oldOptions.style?.player?.seekbar ?? oldOptions.style?.player?.seek ?? "#555",
-				buffered: oldOptions.style?.player?.buffered ?? "rgba(255, 255, 255, 0.15)",
-				progress: oldOptions.style?.player?.progress ?? "#3EC3D5",
-				timestamps: oldOptions.style?.player?.timestamps ?? "#FFF",
+				seekbar: oldOptions.style?.player?.seekbar ?? oldOptions.style?.player?.seek ?? defaultPlayerSettings.style.player.seekbar,
+				buffered: oldOptions.style?.player?.buffered ?? defaultPlayerSettings.style.player.buffered,
+				progress: oldOptions.style?.player?.progress ?? defaultPlayerSettings.style.player.progress,
+				timestamps: oldOptions.style?.player?.timestamps ?? defaultPlayerSettings.style.player.timestamps,
 				loader: {
-					background: oldOptions.style?.player?.loader?.background ?? "#555",
-					color: oldOptions.style?.player?.loader?.color ?? "#3EC3D5"
+					background: oldOptions.style?.player?.loader?.background ?? defaultPlayerSettings.style.player.loader.background,
+					color: oldOptions.style?.player?.loader?.color ?? defaultPlayerSettings.style.player.loader.color,
 				},
 				volume: {
-					levelbar: oldOptions.style?.player?.volume?.levelbar ?? oldOptions.style?.player?.volume?.seek ?? "#555",
-					level: oldOptions.style?.player?.volume?.level ?? oldOptions.style?.player?.volume?.value ?? "#3EC3D5"
+					levelbar: oldOptions.style?.player?.volume?.levelbar ?? oldOptions.style?.player?.volume?.seek ?? defaultPlayerSettings.style.player.volume.levelbar,
+					level: oldOptions.style?.player?.volume?.level ?? oldOptions.style?.player?.volume?.value ?? defaultPlayerSettings.style.player.volume.level,
 				}
 			},
-				playlist: {
+			playlist: {
 				scrollbar: {
-					track: oldOptions.style?.playlist?.scrollbar?.track ?? oldOptions.style?.playlist?.scroll?.track ?? "rgba(255, 255, 255, 0.5)",
-					thumb: oldOptions.style?.playlist?.scrollbar?.thumb ?? oldOptions.style?.playlist?.scroll?.thumb ?? "rgba(255, 255, 255, 0.75)"
+					track: oldOptions.style?.playlist?.scrollbar?.track ?? oldOptions.style?.playlist?.scroll?.track ?? defaultPlayerSettings.style.playlist.scrollbar.track,
+					thumb: oldOptions.style?.playlist?.scrollbar?.thumb ?? oldOptions.style?.playlist?.scroll?.thumb ?? defaultPlayerSettings.style.playlist.scrollbar.thumb,
 				},
-				background: oldOptions.style?.playlist?.background ?? "#3EC3D5",
-				color: oldOptions.style?.playlist?.color ?? "#FFF",
-				separator: oldOptions.style?.playlist?.separator ?? "rgba(255, 255, 255, 0.25)",
+				background: oldOptions.style?.playlist?.background ?? defaultPlayerSettings.style.playlist.background,
+				color: oldOptions.style?.playlist?.color ?? defaultPlayerSettings.style.playlist.color,
+				separator: oldOptions.style?.playlist?.separator ?? defaultPlayerSettings.style.playlist.separator,
 				hover: {
-					background: oldOptions.style?.playlist?.hover?.background ?? "#42CFE2",
-					color: oldOptions.style?.playlist?.hover?.color ?? "#FFF",
-					separator: oldOptions.style?.playlist?.hover?.separator ?? "rgba(255, 255, 255, 0.25)"
+					background: oldOptions.style?.playlist?.hover?.background ?? defaultPlayerSettings.style.playlist.hover.background,
+					color: oldOptions.style?.playlist?.hover?.color ?? defaultPlayerSettings.style.playlist.hover.color,
+					separator: oldOptions.style?.playlist?.hover?.separator ?? defaultPlayerSettings.style.playlist.hover.separator
 				},
 				active: {
-					background: oldOptions.style?.playlist?.active?.background ?? "#42CFE2",
-					color: oldOptions.style?.playlist?.active?.color ?? "#FFF",
-					separator: oldOptions.style?.playlist?.active?.separator ?? "rgba(255, 255, 255, 0.25)"
+					background: oldOptions.style?.playlist?.active?.background ?? defaultPlayerSettings.style.playlist.active.background,
+					color: oldOptions.style?.playlist?.active?.color ?? defaultPlayerSettings.style.playlist.active.color,
+					separator: oldOptions.style?.playlist?.active?.separator ?? defaultPlayerSettings.style.playlist.active.separator,
 				}
 			}
 		}

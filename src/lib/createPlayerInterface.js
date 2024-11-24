@@ -13,7 +13,7 @@ async createPlayerInterface() {
 		"tp-wrapper",
 		"tp-loading",
 		rounded ? "tp-rounded" : "",
-		(skin === "vertical" || isMobile) ? "tp-vertical" : ""
+		(skin === "vertical") ? "tp-vertical" : ""
 	]);
 
 	// Determine button icon style based on "rounded" setting
@@ -125,10 +125,10 @@ createBuyDownloadButtons(controlsFooter) {
 }
 
 createSocialMediaButtons(playerContainer) {
-	const socialMediaContainer = this.createElement("div", "tp-social-media-container", playerContainer);
-	this.uiElements.facebookButton = this.createButtonWithIcon("facebook", "facebook", socialMediaContainer);
-	this.uiElements.xButton = this.createButtonWithIcon("x", "x", socialMediaContainer);
-	this.uiElements.tumblrButton = this.createButtonWithIcon("tumblr", "tumblr", socialMediaContainer);
+	this.uiElements.socialMediaContainer = this.createElement("div", "tp-social-media-container", playerContainer);
+	this.uiElements.facebookButton = this.createButtonWithIcon("facebook", "facebook", this.uiElements.socialMediaContainer);
+	this.uiElements.xButton = this.createButtonWithIcon("x", "x", this.uiElements.socialMediaContainer);
+	this.uiElements.tumblrButton = this.createButtonWithIcon("tumblr", "tumblr", this.uiElements.socialMediaContainer);
 }
 
 createPlaylist(fragment) {

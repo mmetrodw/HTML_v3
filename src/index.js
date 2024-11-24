@@ -64,12 +64,11 @@ class tPlayerClass {
 		// Load And Prepare The Initial Song For Playback
 		this.switchSong();
 		// Adjust The Player Size To Fit It's Container Or Screen
-		this.handlePlayerResize();
+		this.updatePlayerLayout();
 		// If In Radio Mode And A Plugin Path Is Specified, Set Up Periodic Info Updates
 		if(isRadio && pluginDirectoryPath) {
 			setInterval(this.updateRadioInfo.bind(this), updateRadioInterval);
 		}
-		console.log(this);
 	}
 
 	/* UTILS */
@@ -95,73 +94,73 @@ class tPlayerClass {
 }
 
 function migrationFromOldVersion(oldOptions) {
-	console.log(oldOptions)
+
 	return {
-		container: oldOptions.container ?? null,
-		playlist: oldOptions.playlist ?? null,
+		container: oldOptions.container ?? defaultPlayerSettings.container,
+		playlist: oldOptions.playlist ?? defaultPlayerSettings.playlist,
 		album: {
-			artist: oldOptions.album?.artist ?? oldOptions.albumArtist ?? null,
-			cover: oldOptions.album?.cover ?? oldOptions.albumCover ?? null,
+			artist: oldOptions.album?.artist ?? oldOptions.albumArtist ?? defaultPlayerSettings.album.artist,
+			cover: oldOptions.album?.cover ?? oldOptions.albumCover ?? defaultPlayerSettings.album.cover,
 		},
-		skin: oldOptions.skin ?? oldOptions.options?.skin ?? 'default',
-		theme: oldOptions.theme ?? oldOptions.options?.theme ?? 'custom',
-		rounded: oldOptions.rounded ?? oldOptions.options?.rounded ?? false,
-		showCover: oldOptions.showCover ?? oldOptions.options?.cover ?? true,
-		showPlaylist: oldOptions.showPlaylist ?? oldOptions.options?.playlist ?? true,
-		showRepeatButton: oldOptions.showRepeatButton ?? oldOptions.options?.repeat ?? true,
-		showShuffleButton: oldOptions.showShuffleButton ?? oldOptions.options?.shuffle ?? true,
-		showShareButton: oldOptions.showShareButton ?? oldOptions.options?.share ?? true,
-		allowPlaylistScroll: oldOptions.allowPlaylistScroll ?? (oldOptions.options?.scrollAfter !== null),
-		maxVisibleSongs: oldOptions.maxVisibleSongs ? oldOptions.maxVisibleSongs : oldOptions.options?.scrollAfter > 0 ? oldOptions.options.scrollAfter : 5,
-		volume: oldOptions.volume ?? oldOptions.options?.volume ?? 1,
-		isRadio: oldOptions.isRadio ?? oldOptions.options?.radio ?? false,
-		pluginDirectoryPath: oldOptions.pluginDirectoryPath ?? oldOptions.options?.pluginPath ?? null,
-		autoUpdateRadioCovers: oldOptions.autoUpdateRadioCovers ?? oldOptions.options?.coverUpdate ?? true,
-		updateRadioInterval: oldOptions.updateRadioInterval ?? oldOptions.options?.updateRadioInterval ?? 10000,
+		skin: oldOptions.skin ?? oldOptions.options?.skin ?? defaultPlayerSettings.skin,
+		theme: oldOptions.theme ?? oldOptions.options?.theme ?? defaultPlayerSettings.theme,
+		rounded: oldOptions.rounded ?? oldOptions.options?.rounded ?? defaultPlayerSettings.rounded,
+		showCover: oldOptions.showCover ?? oldOptions.options?.cover ?? defaultPlayerSettings.showCover,
+		showPlaylist: oldOptions.showPlaylist ?? oldOptions.options?.playlist ?? defaultPlayerSettings.showPlaylist,
+		showRepeatButton: oldOptions.showRepeatButton ?? oldOptions.options?.repeat ?? defaultPlayerSettings.showRepeatButton,
+		showShuffleButton: oldOptions.showShuffleButton ?? oldOptions.options?.shuffle ?? defaultPlayerSettings.showShuffleButton,
+		showShareButton: oldOptions.showShareButton ?? oldOptions.options?.share ?? defaultPlayerSettings.showShareButton,
+		allowPlaylistScroll: oldOptions.allowPlaylistScroll ?? (oldOptions.options?.scrollAfter ?? 0) !== 0,
+		maxVisibleSongs: oldOptions.maxVisibleSongs ? oldOptions.maxVisibleSongs : oldOptions.options?.scrollAfter > 0 ? oldOptions.options.scrollAfter : defaultPlayerSettings.maxVisibleSongs,
+		volume: oldOptions.volume ?? oldOptions.options?.volume ?? defaultPlayerSettings.volume,
+		isRadio: oldOptions.isRadio ?? oldOptions.options?.radio ?? defaultPlayerSettings.isRadio,
+		pluginDirectoryPath: oldOptions.pluginDirectoryPath ?? oldOptions.options?.pluginPath ?? defaultPlayerSettings.pluginDirectoryPath,
+		autoUpdateRadioCovers: oldOptions.autoUpdateRadioCovers ?? oldOptions.options?.coverUpdate ?? defaultPlayerSettings.autoUpdateRadioCovers,
+		updateRadioInterval: oldOptions.updateRadioInterval ?? oldOptions.options?.updateRadioInterval ?? defaultPlayerSettings.updateRadioInterval,
 		style: {
 			player: {
-				background: oldOptions.style?.player?.background ?? "#FFF",
+				background: oldOptions.style?.player?.background ?? defaultPlayerSettings.style.player.background,
 				cover: {
-					background: oldOptions.style?.player?.cover?.background ?? "#3EC3D5",
-					loader: oldOptions.style?.player?.cover?.loader ?? "#FFF"
+					background: oldOptions.style?.player?.cover?.background ?? defaultPlayerSettings.style.player.cover.background,
+					loader: oldOptions.style?.player?.cover?.loader ?? defaultPlayerSettings.style.player.cover.loader,
 				},
-				songtitle: oldOptions.style?.player?.songtitle ?? oldOptions.style?.player?.songtitle ?? "#555",
+				songtitle: oldOptions.style?.player?.songtitle ?? oldOptions.style?.player?.songtitle ?? defaultPlayerSettings.style.player.songtitle,
 				buttons: {
-					wave: oldOptions.style?.player?.buttons?.wave ?? "#3EC3D5",
-					normal: oldOptions.style?.player?.buttons?.normal ?? "#555",
-					hover: oldOptions.style?.player?.buttons?.hover ?? "#3EC3D5",
-					active: oldOptions.style?.player?.buttons?.active ?? "#3EC3D5",
+					wave: oldOptions.style?.player?.buttons?.wave ?? defaultPlayerSettings.style.player.buttons.wave,
+					normal: oldOptions.style?.player?.buttons?.normal ?? defaultPlayerSettings.style.player.buttons.normal,
+					hover: oldOptions.style?.player?.buttons?.hover ?? defaultPlayerSettings.style.player.buttons.hover,
+					active: oldOptions.style?.player?.buttons?.active ?? defaultPlayerSettings.style.player.buttons.active,
 				},
-				seekbar: oldOptions.style?.player?.seekbar ?? oldOptions.style?.player?.seek ?? "#555",
-				buffered: oldOptions.style?.player?.buffered ?? "rgba(255, 255, 255, 0.15)",
-				progress: oldOptions.style?.player?.progress ?? "#3EC3D5",
-				timestamps: oldOptions.style?.player?.timestamps ?? "#FFF",
+				seekbar: oldOptions.style?.player?.seekbar ?? oldOptions.style?.player?.seek ?? defaultPlayerSettings.style.player.seekbar,
+				buffered: oldOptions.style?.player?.buffered ?? defaultPlayerSettings.style.player.buffered,
+				progress: oldOptions.style?.player?.progress ?? defaultPlayerSettings.style.player.progress,
+				timestamps: oldOptions.style?.player?.timestamps ?? defaultPlayerSettings.style.player.timestamps,
 				loader: {
-					background: oldOptions.style?.player?.loader?.background ?? "#555",
-					color: oldOptions.style?.player?.loader?.color ?? "#3EC3D5"
+					background: oldOptions.style?.player?.loader?.background ?? defaultPlayerSettings.style.player.loader.background,
+					color: oldOptions.style?.player?.loader?.color ?? defaultPlayerSettings.style.player.loader.color,
 				},
 				volume: {
-					levelbar: oldOptions.style?.player?.volume?.levelbar ?? oldOptions.style?.player?.volume?.seek ?? "#555",
-					level: oldOptions.style?.player?.volume?.level ?? oldOptions.style?.player?.volume?.value ?? "#3EC3D5"
+					levelbar: oldOptions.style?.player?.volume?.levelbar ?? oldOptions.style?.player?.volume?.seek ?? defaultPlayerSettings.style.player.volume.levelbar,
+					level: oldOptions.style?.player?.volume?.level ?? oldOptions.style?.player?.volume?.value ?? defaultPlayerSettings.style.player.volume.level,
 				}
 			},
-				playlist: {
+			playlist: {
 				scrollbar: {
-					track: oldOptions.style?.playlist?.scrollbar?.track ?? oldOptions.style?.playlist?.scroll?.track ?? "rgba(255, 255, 255, 0.5)",
-					thumb: oldOptions.style?.playlist?.scrollbar?.thumb ?? oldOptions.style?.playlist?.scroll?.thumb ?? "rgba(255, 255, 255, 0.75)"
+					track: oldOptions.style?.playlist?.scrollbar?.track ?? oldOptions.style?.playlist?.scroll?.track ?? defaultPlayerSettings.style.playlist.scrollbar.track,
+					thumb: oldOptions.style?.playlist?.scrollbar?.thumb ?? oldOptions.style?.playlist?.scroll?.thumb ?? defaultPlayerSettings.style.playlist.scrollbar.thumb,
 				},
-				background: oldOptions.style?.playlist?.background ?? "#3EC3D5",
-				color: oldOptions.style?.playlist?.color ?? "#FFF",
-				separator: oldOptions.style?.playlist?.separator ?? "rgba(255, 255, 255, 0.25)",
+				background: oldOptions.style?.playlist?.background ?? defaultPlayerSettings.style.playlist.background,
+				color: oldOptions.style?.playlist?.color ?? defaultPlayerSettings.style.playlist.color,
+				separator: oldOptions.style?.playlist?.separator ?? defaultPlayerSettings.style.playlist.separator,
 				hover: {
-					background: oldOptions.style?.playlist?.hover?.background ?? "#42CFE2",
-					color: oldOptions.style?.playlist?.hover?.color ?? "#FFF",
-					separator: oldOptions.style?.playlist?.hover?.separator ?? "rgba(255, 255, 255, 0.25)"
+					background: oldOptions.style?.playlist?.hover?.background ?? defaultPlayerSettings.style.playlist.hover.background,
+					color: oldOptions.style?.playlist?.hover?.color ?? defaultPlayerSettings.style.playlist.hover.color,
+					separator: oldOptions.style?.playlist?.hover?.separator ?? defaultPlayerSettings.style.playlist.hover.separator
 				},
 				active: {
-					background: oldOptions.style?.playlist?.active?.background ?? "#42CFE2",
-					color: oldOptions.style?.playlist?.active?.color ?? "#FFF",
-					separator: oldOptions.style?.playlist?.active?.separator ?? "rgba(255, 255, 255, 0.25)"
+					background: oldOptions.style?.playlist?.active?.background ?? defaultPlayerSettings.style.playlist.active.background,
+					color: oldOptions.style?.playlist?.active?.color ?? defaultPlayerSettings.style.playlist.active.color,
+					separator: oldOptions.style?.playlist?.active?.separator ?? defaultPlayerSettings.style.playlist.active.separator,
 				}
 			}
 		}

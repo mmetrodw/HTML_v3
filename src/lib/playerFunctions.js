@@ -129,6 +129,7 @@ handleShuffleToggle() {
 // Toggles the share state of the player.
 handleShareToggle() {
 	const { shareButton, wrapper } = this.uiElements;
+	this.uiElements.socialMediaContainer.style.transition = 'all 500ms var(--easeOutExpo)';
 	// Toggle the "tp-sharing" class on the player
 	this.toggleClass(wrapper, "tp-sharing");
 	// Toggle the "tp-active" class on the share button
@@ -414,17 +415,54 @@ handleCoverLoaded() {
 }
 
 // Adjusts the player layout based on the wrapper's width.
-handlePlayerResize() {
-	const { addClass, removeClass } = this;
-	const { isPlaylist, isMobile } = this.playerState;
-	const { showCover, showRepeatButton, showShuffleButton, showShareButton } = this.settings;
-	const padding = 20;
-	const buttonsLength = this.uiElements.wrapper.querySelectorAll('.tp-controls-body .tp-button').length;
-	const seekBarMinWidth = 100;
-	const controlsBodyMinWidth = padding * 2 + (buttonsLength * 40) + seekBarMinWidth;
-	const controlsBodyWidth = this.uiElements.wrapper.querySelector('.tp-controls-body').scrollWidth;
-	console.log(controlsBodyWidth, controlsBodyMinWidth)
+updatePlayerLayout() {
+  const { addClass, removeClass } = this;
+  const { isShareDisplayed } = this.playerState;
+	const { showCover, skin } = this.settings;
+	const padding = 20; // Default padding
+	const buttonWidth = 20; // Width of a single button
+	const gapWidth = 20; // Gap between buttons
+	const seekBarMinWidth = 100; // Minimum width of the seek bar
+	// Calculate available width for the player controls
+	const playerWidth = this.uiElements.wrapper.offsetWidth
+	- (showCover ? 200 : 0) // Subtract width for cover if displayed
+	- (isShareDisplayed ? 60 : 0); // Subtract width for sharing options if displayed
 
+	// Determine the number of control buttons
+	const controlsBodyButtonsCount = this.uiElements.wrapper.querySelectorAll('.tp-controls-body .tp-button').length;
+
+	// Calculate minimum widths for wide and medium layouts
+	const controlsBodyMinWideWidth = (buttonWidth + gapWidth) * controlsBodyButtonsCount + seekBarMinWidth + padding * 2;
+	const controlsBodyMinMediumWidth = (buttonWidth + gapWidth) * controlsBodyButtonsCount + padding * 2 - gapWidth;
+
+	// Calculate the minimum width required for the footer
+	const controlsFooterChildren = Array.from(this.uiElements.wrapper.querySelector('.tp-controls-footer').children);
+	const controlsFooterMinWidth = controlsFooterChildren.reduce((totalWidth, element) => {
+    return totalWidth + element.offsetWidth + gapWidth;
+  }, -gapWidth) + padding * 2; // Add padding, adjust for the initial gap
+
+	// Determine the larger of the two minimum widths for wide and medium layouts
+  const minWideWidth = Math.max(controlsBodyMinWideWidth, controlsFooterMinWidth);
+  const minMediumWidth = Math.max(controlsBodyMinMediumWidth, controlsFooterMinWidth);
+
+	// Set the CSS custom property for the minimum width
+	this.uiElements.wrapper.style.setProperty('--minWidth', `${minMediumWidth}px`);
+
+	// If the skin is vertical, do not apply width adjustments
+  if (skin === 'vertical') {
+    return;
+  }
+
+	// Adjust the player's layout based on the available width
+	if (playerWidth < minWideWidth && playerWidth > minMediumWidth) {
+		addClass(this.uiElements.wrapper, 'tp-medium'); // Apply medium layout
+		removeClass(this.uiElements.wrapper, 'tp-vertical'); // Ensure vertical layout is removed
+	} else if (playerWidth <= minMediumWidth) {
+		addClass(this.uiElements.wrapper, 'tp-vertical'); // Apply vertical layout
+		removeClass(this.uiElements.wrapper, 'tp-medium'); // Ensure medium layout is removed
+	} else {
+		removeClass(this.uiElements.wrapper, ['tp-medium', 'tp-vertical']); // Remove all layout-specific classes
+	}
 }
 
 // Switches to the next song in the playlist.
